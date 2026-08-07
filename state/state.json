@@ -1,5 +1,5 @@
 {
-  "episode": 0,
+  "episode": 1,
   "history": [
     {
       "episode": 0,
@@ -13,6 +13,19 @@
       "publish_at": "2026-08-07T10:41:14Z",
       "short_publish_at": "2026-08-07T11:00:31Z",
       "at": "2026-08-07T08:56:10+00:00"
+    },
+    {
+      "episode": 1,
+      "kind": "full",
+      "youtube_id": "NE3zaw9AqcM",
+      "video_id": "NE3zaw9AqcM",
+      "short_id": "bcq3yQWsKa8",
+      "title": "mirrorshade mile \u2014 Nix Speech (official audio)",
+      "name": "mirrorshade mile",
+      "genre": "drift_phonk",
+      "publish_at": "2026-08-07T13:49:23Z",
+      "short_publish_at": "2026-08-07T14:08:41Z",
+      "at": "2026-08-07T12:05:31+00:00"
     }
   ]
 }

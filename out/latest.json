@@ -7,11 +7,11 @@
   "duration_s": 165.45285714285714,
   "meta": {
     "channel": "Nix Speech",
-    "name": "nitro psalm",
-    "title": "nitro psalm \u2014 Nix Speech (official audio)",
-    "description": "nitro psalm\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.001 \u00b7 drift phonk \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#phonk #driftphonk #nightdrive\n",
+    "name": "mirrorshade mile",
+    "title": "mirrorshade mile \u2014 Nix Speech (official audio)",
+    "description": "mirrorshade mile\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.001 \u00b7 drift phonk \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#phonk #driftphonk #nightdrive\n",
     "tags": [
-      "nitro psalm",
+      "mirrorshade mile",
       "new music",
       "dark phonk",
       "night drive music",
@@ -25,9 +25,9 @@
   },
   "schedule": {
     "video_offset_s": 6307,
-    "video_publish_at": "2026-08-07T10:41:14Z",
+    "video_publish_at": "2026-08-07T13:49:23Z",
     "short_offset_s": 7464,
-    "short_publish_at": "2026-08-07T11:00:31Z"
+    "short_publish_at": "2026-08-07T14:08:41Z"
   },
   "video_today": true,
   "ai_copy": null,
@@ -37,8 +37,10 @@
   "short_hook": "POV: it's 3am and this comes on",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.png"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.mp4",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001_short.mp4"
   ],
-  "video_id": "f4jTaThgMoQ",
-  "short_id": null
+  "video_id": "NE3zaw9AqcM",
+  "short_id": "bcq3yQWsKa8"
 }
