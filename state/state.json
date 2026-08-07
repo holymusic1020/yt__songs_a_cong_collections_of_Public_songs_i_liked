@@ -1,1 +1,18 @@
-{"episode": 0, "history": []}
+{
+  "episode": 1,
+  "history": [
+    {
+      "episode": 1,
+      "kind": "video",
+      "youtube_id": "f4jTaThgMoQ",
+      "video_id": "f4jTaThgMoQ",
+      "short_id": null,
+      "title": "nitro psalm \u2014 Nix Speech (official audio)",
+      "name": "nitro psalm",
+      "genre": "drift_phonk",
+      "publish_at": "2026-08-07T10:41:14Z",
+      "short_publish_at": "2026-08-07T11:00:31Z",
+      "at": "2026-08-07T08:56:10+00:00"
+    }
+  ]
+}

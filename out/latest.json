@@ -1,0 +1,44 @@
+{
+  "episode": 1,
+  "genre": "drift phonk",
+  "seed": 8138,
+  "bpm": 132,
+  "key": "G minor",
+  "duration_s": 165.45285714285714,
+  "meta": {
+    "channel": "Nix Speech",
+    "name": "nitro psalm",
+    "title": "nitro psalm \u2014 Nix Speech (official audio)",
+    "description": "nitro psalm\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.001 \u00b7 drift phonk \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#phonk #driftphonk #nightdrive\n",
+    "tags": [
+      "nitro psalm",
+      "new music",
+      "dark phonk",
+      "night drive music",
+      "instrumental",
+      "official audio"
+    ],
+    "genre": "drift phonk",
+    "genre_key": "drift_phonk",
+    "bpm": 132,
+    "key": "G minor"
+  },
+  "schedule": {
+    "video_offset_s": 6307,
+    "video_publish_at": "2026-08-07T10:41:14Z",
+    "short_offset_s": 7464,
+    "short_publish_at": "2026-08-07T11:00:31Z"
+  },
+  "video_today": true,
+  "ai_copy": null,
+  "visuals": {
+    "kind": "cover"
+  },
+  "short_hook": "POV: it's 3am and this comes on",
+  "files": [
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.png"
+  ],
+  "video_id": "f4jTaThgMoQ",
+  "short_id": null
+}
