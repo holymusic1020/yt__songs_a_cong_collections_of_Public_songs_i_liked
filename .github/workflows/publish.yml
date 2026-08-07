@@ -24,6 +24,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: 🎬 Ensure ffmpeg (static build — never trust the image)
+        uses: FedericoCarboni/setup-ffmpeg@v3
+        with:
+          ffmpeg-version: release
+
       - name: Install deps
         run: pip install -r requirements.txt
 
