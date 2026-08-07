@@ -268,14 +268,21 @@ def main() -> None:
             print(f"  (adaptive weights skipped: {e})")
         # ---------- uploads: each isolated so one failure CANNOT kill the other ----------
         if video_today:
-            print("  uploading video…")
-            try:
-                vid = uploader.upload(long_mp4 or wav, meta,
-                                      publish_at=sched["video_publish_at"])
-                print(f"  ✅ video: https://youtu.be/{vid}")
-            except Exception as e:
-                errors.append(f"video upload failed: {e}")
-                print(f"  ❌ video upload failed: {e}")
+            if not (long_mp4 and Path(long_mp4).exists()):
+                # HARD GUARD: an audio-only file on YouTube = "Processing
+                # abandoned" junk on the channel (EP.001 incident). Fail loud,
+                # upload nothing, alert the boss. Never `or wav` again.
+                errors.append("video render missing (ffmpeg absent on runner?) — audio-only upload refused")
+                print("  ❌ no rendered mp4 — refusing to upload audio-only junk")
+            else:
+                print("  uploading video…")
+                try:
+                    vid = uploader.upload(long_mp4, meta,
+                                          publish_at=sched["video_publish_at"])
+                    print(f"  ✅ video: https://youtu.be/{vid}")
+                except Exception as e:
+                    errors.append(f"video upload failed: {e}")
+                    print(f"  ❌ video upload failed: {e}")
         if short_mp4:
             smeta = metadata.short_meta(meta, short_pack["hook_line"])
             print("  uploading short…")
