@@ -1,46 +1,46 @@
 {
-  "episode": 2,
-  "genre": "baroque waltz",
-  "seed": 16058,
-  "bpm": 173,
-  "key": "E minor",
-  "duration_s": 139.41469387755103,
+  "episode": 3,
+  "genre": "dark ambient",
+  "seed": 23977,
+  "bpm": 77,
+  "key": "F minor",
+  "duration_s": 143.3760544217687,
   "meta": {
     "channel": "Nix Speech",
-    "name": "bramble nocturne",
-    "title": "bramble nocturne \u2014 Nix Speech (official audio)",
-    "description": "bramble nocturne\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.002 \u00b7 baroque waltz \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#waltz #baroquepop #vintage\n",
+    "name": "peat halo",
+    "title": "peat halo \u2014 Nix Speech (official audio)",
+    "description": "peat halo\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.003 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
     "tags": [
-      "bramble nocturne",
-      "vintage waltz",
-      "waltz",
-      "type beat",
-      "classical crossover",
-      "aesthetic"
+      "peat halo",
+      "rain sounds",
+      "dark ambient",
+      "sleep music",
+      "chill",
+      "official audio"
     ],
-    "genre": "baroque waltz",
-    "genre_key": "baroque_waltz",
-    "bpm": 173,
-    "key": "E minor",
-    "style_variant": "1990s retro anime film still: opulent old ballroom glowing amber, hand-painted background, empty and romantic (free engine)"
+    "genre": "dark ambient",
+    "genre_key": "dark_ambient",
+    "bpm": 77,
+    "key": "F minor",
+    "style_variant": "abandoned concrete interior, single light shaft cutting through dust, brutalist silence, cinematic still (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 8466,
-    "short_publish_at": "2026-08-08T12:14:44Z"
+    "short_offset_s": 8655,
+    "short_publish_at": "2026-08-08T13:29:25Z"
   },
   "video_today": false,
   "ai_copy": null,
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "this is what missing someone sounds like",
+  "short_hook": "sound on. trust me.",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep002.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep002.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep002_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep003.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep003.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep003_short.mp4"
   ],
   "video_id": null,
-  "short_id": "JagOSWavfJ4"
+  "short_id": "W5_YktRl4m8"
 }

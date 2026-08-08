@@ -1,5 +1,5 @@
 {
-  "episode": 2,
+  "episode": 3,
   "history": [
     {
       "episode": 0,
@@ -39,6 +39,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-08T12:14:44Z",
       "at": "2026-08-08T09:54:38+00:00"
+    },
+    {
+      "episode": 3,
+      "kind": "short",
+      "youtube_id": "W5_YktRl4m8",
+      "video_id": null,
+      "short_id": "W5_YktRl4m8",
+      "title": "peat halo \u2014 Nix Speech (official audio)",
+      "name": "peat halo",
+      "genre": "dark_ambient",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-08T13:29:25Z",
+      "at": "2026-08-08T11:06:08+00:00"
     }
   ]
 }
