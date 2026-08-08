@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import random
+import re
 import shutil
 import subprocess
 from datetime import datetime, timedelta, timezone
@@ -53,6 +54,7 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True):
             print(f"  ⚠ Veo unavailable ({e}) — trying image scenes")
 
     if clip is None and mode in ("auto", "clip", "scenes"):
+        variant = None
         try:
             from src import art_gemini
             variant = rng.choice(art_gemini.SCENE_VARIANTS[meta["genre_key"]])
@@ -60,10 +62,21 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True):
             print(f"     style: {variant[:72]}…")
             scenes = art_gemini.generate_scenes(meta, n=4, scene_text=variant)
             meta["style_variant"] = variant
+        except Exception as e:
+            print(f"  ⚠ gemini scenes failed ({e})")
+            # free, keyless middle fallback — real anime scenes for $0
+            try:
+                from src import art_free
+                if variant is None:
+                    variant = "empty neon city street in night rain"
+                print("  🖼  painting 4 scenes with the free engine…")
+                scenes = art_free.generate_scenes(variant, n=4, seed0=ep * 101)
+                meta["style_variant"] = variant + " (free engine)"
+            except Exception as e2:
+                print(f"  ⚠ free-engine scenes failed ({e2}) — static cover it is")
+        if scenes:
             for i, im in enumerate(scenes):
                 im.save(OUT / f"ep{ep:03d}_scene{i}.png")
-        except Exception as e:
-            print(f"  ⚠ scenes failed ({e}) — static cover it is")
 
     if have_ff and want_long:
         from src import video_render
@@ -90,6 +103,63 @@ def _write_summary(path: Path, meta: dict, sched: dict, video_today: bool,
         f"| video | {(link(vid) + ' · ' + str(sched['video_publish_at'] or 'immediate')) if video_today else '— (shorts-only day)'} |\n"
         f"| short | {link(sid)} · {sched['short_publish_at']} |\n"
     )
+
+
+AUDIO_EXTS = {".mp3", ".wav", ".ogg", ".m4a", ".flac", ".oga"}
+
+
+def _take_external_song(ep: int, cur_genre: str):
+    """Boss's queue: incoming/ may hold a HUMAN drop (any audio file) and/or the
+    bot's prefetched space song (named next_song--<genre>.<ext>).
+
+    Priority: human drops first (the soul beats the machine), then the queue.
+    Returns (wav_path, source_path, name_override|None, genre_override|None)
+    or (None, None, None, None). Files are deleted from incoming/ only after a
+    REAL publish — see the publish block.
+    """
+    inc = ROOT / "incoming"
+    if not inc.is_dir():
+        return None, None, None, None
+    files = sorted(p for p in inc.iterdir()
+                   if p.suffix.lower() in AUDIO_EXTS and p.is_file())
+    if not files:
+        return None, None, None, None
+    human = [p for p in files if not p.stem.startswith("next_song")]
+    queue = [p for p in files if p.stem.startswith("next_song")]
+    src = (human or queue)[0]
+
+    # genre: human file → guess from filename tokens, else keep the wheel;
+    # queue file → self-describing name next_song--<genre>.mp3
+    genre = cur_genre
+    if src in queue:
+        for g in composer.GENRES:
+            if f"--{g}" in src.stem:
+                genre = g
+                break
+    else:
+        for g in composer.GENRES:
+            if g.replace("_", " ") in src.stem.lower() or g in src.stem.lower():
+                genre = g
+                break
+
+    # normalize to a 44.1 kHz mono wav for the whole pipeline
+    out_wav = OUT / f"ep{ep:03d}.wav"
+    out_wav.parent.mkdir(parents=True, exist_ok=True)
+    if shutil.which("ffmpeg"):
+        subprocess.run([shutil.which("ffmpeg"), "-y", "-v", "error",
+                        "-i", str(src), "-ac", "1", "-ar", "44100",
+                        "-c:a", "pcm_s16le", str(out_wav)],
+                       check=True)
+    elif src.suffix.lower() == ".wav":
+        shutil.copy(src, out_wav)
+    else:
+        print(f"  ⚠ no ffmpeg to read {src.name} — engine composes instead")
+        return None, None, None, None
+
+    if src in human:  # "midnight drive.mp3" → song named "midnight drive"
+        name = re.sub(r"\s+", " ", re.sub(r"[^\w\s\-']", " ", src.stem)).strip()
+        return out_wav, src, (name[:60] or None), genre
+    return out_wav, src, None, genre
 
 
 def main() -> None:
@@ -138,8 +208,27 @@ def main() -> None:
     target = args.length or float(rng.integers(95, 201))
     print(f"  target={target:.0f}s · seed={seed}")
 
-    print("  composing…")
-    song, info = composer.compose(genre_key, rng, target)
+    # ---------- song source (boss's queue): human drop > prefetched space song > engine ----------
+    GENRE_LABEL = {"drift_phonk": "drift phonk", "deep_pop": "deep pop",
+                   "dark_ambient": "dark ambient", "lofi": "lofi",
+                   "baroque_waltz": "baroque waltz", "disco_house": "disco house"}
+    ext_wav = ext_src = ext_name = ext_genre = None
+    if video_today:
+        ext_wav, ext_src, ext_name, ext_genre = _take_external_song(ep, genre_key)
+    if ext_genre:
+        print(f"  📦 queue says genre={ext_genre}")
+        genre_key = ext_genre
+    if ext_wav:
+        print(f"  🎁 using queued song: {ext_src.name}")
+        import wave as _wave
+        with _wave.open(str(ext_wav), "rb") as _w:
+            dur = _w.getnframes() / _w.getframerate()
+        info = {"bpm": "~", "key": "—", "genre": GENRE_LABEL[genre_key],
+                "duration_s": dur}
+    else:
+        print("  composing…")
+        song, info = composer.compose(genre_key, rng, target)
+        song = composer.arrange_arc(song, info.get("bpm", 120))
     used_names = {h.get("name") for h in st.get("history", []) if h.get("name")}
     dur = info["duration_s"]
 
@@ -154,6 +243,8 @@ def main() -> None:
         except Exception:
             pass
     name = naming.pick_name(genre_key, used_names, rng, probe, ai_fn=ai_namer)
+    if ext_name:
+        name = ext_name            # a hand-dropped file names its own song
     meta = metadata.build(genre_key, info, ep, rng_py,
                           used_names=used_names, name=name)
 
@@ -167,7 +258,7 @@ def main() -> None:
     print(f"  '{meta['title']}' · {dur:.0f}s · {info['bpm']} bpm · {info['key']}")
 
     print("  rendering audio + cover…")
-    wav = composer.write_wav(OUT / f"ep{ep:03d}.wav", song)
+    wav = ext_wav if ext_wav else composer.write_wav(OUT / f"ep{ep:03d}.wav", song)
 
     cover = None
     art_mode = args.art_mode
@@ -328,6 +419,25 @@ def main() -> None:
             except OSError:
                 pass
         print(f"  🧹 cleaned {freed / 1e6:.0f} MB of renders (uploaded copies live on YouTube)")
+        # ---------- boss's queue bookkeeping ----------
+        if ext_src and ext_src.exists():
+            ext_src.unlink()              # consumed — git records the deletion
+            print(f"  📥 consumed queue file '{ext_src.name}' — never re-used")
+        try:
+            inc = ROOT / "incoming"
+            queue_left = inc.is_dir() and any(inc.glob("next_song*"))
+            if not queue_left:            # only cook when the queue is empty
+                from src import music_space
+                keys = list(composer.GENRES)
+                nxt_genre = keys[(keys.index(genre_key) + 1) % len(keys)]
+                print(f"  🔮 cooking tomorrow's {nxt_genre} on the free space…")
+                inc.mkdir(exist_ok=True)
+                music_space.generate(nxt_genre, max(150, dur),
+                                     inc / f"next_song--{nxt_genre}.mp3")
+            else:
+                print("  📦 queue still stocked — nothing to cook today")
+        except Exception as e:
+            print(f"  (queue cook skipped: {e} — tomorrow will ask the space live)")
     else:
         print("  DRY-RUN — no upload, state untouched.")
 
