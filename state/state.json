@@ -1,5 +1,5 @@
 {
-  "episode": 1,
+  "episode": 2,
   "history": [
     {
       "episode": 0,
@@ -26,6 +26,19 @@
       "publish_at": "2026-08-07T13:49:23Z",
       "short_publish_at": "2026-08-07T14:08:41Z",
       "at": "2026-08-07T12:05:31+00:00"
+    },
+    {
+      "episode": 2,
+      "kind": "short",
+      "youtube_id": "JagOSWavfJ4",
+      "video_id": null,
+      "short_id": "JagOSWavfJ4",
+      "title": "bramble nocturne \u2014 Nix Speech (official audio)",
+      "name": "bramble nocturne",
+      "genre": "baroque_waltz",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-08T12:14:44Z",
+      "at": "2026-08-08T09:54:38+00:00"
     }
   ]
 }
