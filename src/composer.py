@@ -457,6 +457,35 @@ def compose(genre: str, rng: np.random.Generator, target_s: float):
     return GENRES[genre](rng, target_s)
 
 
+def arrange_arc(x, bpm, sr=SR):
+    """Give the mix a SONG-shaped energy arc (in-place-free, returns new array).
+
+    Autopsy of early renders showed a 10x intro build… then ~2.5 min of
+    perfectly flat RMS — a loop, not an arc. Real phonk/lofi tracks breathe:
+      0-10%    intro (engines already ramp this)
+      10-45%   main groove, untouched
+      45-62%   BREAKDOWN: dip to 58% + 'underwater' low-pass blend
+      62-96%   finale, lifted +8%
+      96-100%  guaranteed outro fade (early renders ended abruptly)
+    """
+    n = len(x)
+    if n < sr * 30:                      # too short to break down — leave it
+        return x
+    t = np.linspace(0.0, 1.0, n, endpoint=False, dtype=np.float32)
+    knots_t = [0.00, 0.10, 0.45, 0.50, 0.62, 0.68, 0.96, 1.00]
+    knots_g = [1.00, 1.00, 1.00, 0.58, 0.58, 1.08, 1.05, 0.00]
+    g = np.interp(t, knots_t, knots_g).astype(np.float32)
+
+    # underwater version: one FFT, smooth low-pass taper 900→1800 Hz
+    spec = np.fft.rfft(x)
+    taper = np.clip((1800.0 - np.fft.rfftfreq(n, 1.0 / sr)) / 900.0, 0, 1)
+    x_lp = np.fft.irfft(spec * taper, n).astype(np.float32)
+
+    # blend into the filtered copy only while dipped
+    a = np.clip((1.0 - g) / 0.42, 0, 1).astype(np.float32) * 0.75
+    return (x * g * (1 - a) + x_lp * g * a).astype(np.float32)
+
+
 def write_wav(path: Path, x, sr=SR):
     pcm = (np.clip(x, -1, 1) * 32767).astype(np.int16)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -466,3 +495,4 @@ def write_wav(path: Path, x, sr=SR):
         w.setframerate(sr)
         w.writeframes(pcm.tobytes())
     return path
+
