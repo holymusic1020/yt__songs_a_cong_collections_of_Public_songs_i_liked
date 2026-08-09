@@ -1,0 +1,146 @@
+name: yt-auto · publish episode
+
+on:
+  workflow_dispatch:            # manual "Run workflow" button
+  schedule:
+    - cron: "23 9 * * *"        # DAILY: a short every day; a full video every 3rd EP
+
+# 🔒 one release at a time — kills the duplicate-EP race (manual spam-safe)
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write               # state.json commit keeps the repo active
+  # (no 'workflows' key — invalid scope; self-upgrade zips carry NO
+  #  workflow files, so plain contents:write is always enough)
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest      # ffmpeg: brought in by our own step below
+    timeout-minutes: 60         # 35-min base + free-space song cooking headroom
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🤖 Self-upgrade insurance (eat any pending mail-slot zips)
+        run: |                  # belt & suspenders for upgrades/ — works even
+          set -e                # if upgrade.yml is skipped/deleted someday
+          shopt -s nullglob
+          zips=(upgrades/*.zip)
+          [ ${#zips[@]} -eq 0 ] && { echo "no upgrades pending"; exit 0; }
+          for z in "${zips[@]}"; do
+            echo "📦 applying $z"
+            tmp=$(mktemp -d)
+            unzip -oq "$z" -d "$tmp"
+            rsync -a --exclude ".git/" --exclude ".github/" --exclude "upgrades/" "$tmp"/ .
+            rm -rf "$tmp" "$z"
+          done
+          git config user.name "nix-bot"
+          git config user.email "nix-bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || {
+            git commit -m "🤖 self-upgrade (publish-run)" && git push
+          }
+          echo "upgrade applied — the REST of this run already uses the new code"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 🎬 Ensure ffmpeg (deterministic static build)
+        run: |  # third-party installer action proved flaky (run #4) — do it ourselves
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            echo "image lacks ffmpeg — fetching static build…"
+            curl -fsSL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o /tmp/ff.tar.xz
+            tar -xJf /tmp/ff.tar.xz -C /tmp
+            FF=$(echo /tmp/ffmpeg-*-amd64-static)
+            sudo install -m 755 "$FF/ffmpeg" "$FF/ffprobe" /usr/local/bin/
+          fi
+          ffmpeg -version | head -1
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: 🎁 Fetch queued song (cooked by the previous run)
+        id: queue
+        run: |
+          PREV=$(gh run list --workflow publish.yml --limit 6 \
+                 --json databaseId,status --jq \
+                 '[.[] | select(.databaseId != ${{ github.run_id }} and .status=="completed")][0].databaseId // empty')
+          echo "prev=$PREV" >> "$GITHUB_OUTPUT"
+          [ -n "$PREV" ] || { echo "no previous run — nothing queued yet"; exit 0; }
+          mkdir -p incoming
+          gh run download "$PREV" -n next-song -D incoming || echo "queue empty — engine will compose today"
+          ls -la incoming/ || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🩺 Pre-flight doctor
+        run: python tools/doctor.py
+
+      - name: Compose + render + upload episode
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}               # free-space vocal GPU quota ⭐
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  # community post packs 📮
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WORLD_TOUR_EVERY: ${{ vars.WORLD_TOUR_EVERY }}  # 🌍 dials (optional)
+          WORLD_LANGS: ${{ vars.WORLD_LANGS }}
+          POSTS_OFF: ${{ vars.POSTS_OFF }}                # 1 = silence post packs
+        run: |
+          set -o pipefail
+          mkdir -p out
+          python -m src.main --publish 2>&1 | tee out/run.log
+
+      - name: 📋 Release summary
+        if: always()
+        run: cat out/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Save run records (text only — media is wiped after upload)
+        if: always()                    # also on failure — run.log helps debugging
+        uses: actions/upload-artifact@v4
+        with:
+          name: episode-latest
+          path: |
+            out/latest.json
+            out/summary.md
+            out/run.log
+            out/post_card.png
+          if-no-files-found: ignore     # never fail the job over a missing log
+          retention-days: 14            # auto-expire — zero storage pile-up
+
+      - name: 📦 Queue tomorrow's song (artifact hand-off)
+        if: always()                    # queue refreshes its 14-day TTL every run
+        continue-on-error: true         # queue miss must never redden a run
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-song
+          path: incoming/next_song*.*
+          if-no-files-found: ignore     # no song cooked today? tomorrow asks live
+          retention-days: 14
+
+      - name: 📣 Status alerts (Telegram / Discord — optional)
+        if: always()                    # fires on success AND failure
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NOTIFY_WEBHOOK: ${{ secrets.NOTIFY_WEBHOOK }}
+        run: |                          # a dead alert step must never turn a good run red
+          python -m src.notify \
+            --status "${{ job.status }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --log out/run.log || echo "⚠️ notify glitched — the release itself is unaffected"
+
+      - name: Commit state (self-healing on drift)
+        if: always()                    # partial-failure runs must ALSO commit
+        run: |                          # state, or tomorrow re-uploads a duplicate
+          git config user.name "yt-auto-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/state.json out/latest.json 2>/dev/null || true
+          [ -d incoming ] && git add -A incoming || true   # consumed drops + human uploads
+          git commit -m "ep: publish run $(date -u +%Y-%m-%d)" || echo "no changes"
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git push || echo "nothing to push"
