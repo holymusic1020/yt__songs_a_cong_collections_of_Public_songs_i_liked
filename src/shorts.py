@@ -36,6 +36,10 @@ def read_wav(path: Path) -> np.ndarray:
 
 def pick_hook_window(x: np.ndarray, sr: int, bpm: float) -> tuple[float, float]:
     """Highest-energy contiguous window, snapped to bar boundaries."""
+    try:                                # queue songs may ship '~' — never die
+        bpm = float(bpm)
+    except (TypeError, ValueError):
+        bpm = 110.0
     dur = len(x) / sr
     bar = 4 * 60.0 / bpm
     target = min(34.0, max(18.0, dur * 0.45))
@@ -69,6 +73,52 @@ def _slice_with_fades(x: np.ndarray, sr: int, t0: float, L: float) -> np.ndarray
     return seg / peak * 0.95
 
 
+def _chunk_lines(lines: list[str], L: float) -> list[str]:
+    """Shatter lyric lines into quick cards of ~2 s (Gemini cut-rhythm rule:
+    a visual change every 1.5-2.5 s).  One long static card per line was the
+    'lame' feeling — this keeps eyes chasing."""
+    target = max(5, int(L // 2.1))
+    words = [ln.split() for ln in lines]
+    total = max(1, sum(len(w) for w in words))
+    chunks: list[str] = []
+    for ws in words:
+        k = max(1, min(4, round(len(ws) / total * target)))
+        per = -(-len(ws) // k)                       # ceil-split, near equal
+        for i in range(0, len(ws), per):
+            chunks.append(" ".join(ws[i:i + per]))
+    return chunks
+
+
+def _sfx_marks(seg: np.ndarray, sr: int, card_times: list) -> np.ndarray:
+    """Percussive ticks at every card change + small riser into the final
+    card's bait. The eye changes, the ear confirms it — tactile weight."""
+    out = seg.copy()
+    n_tick = int(0.055 * sr)
+    t = np.arange(n_tick) / sr
+    chirp = np.sin(2 * np.pi * (2600 - 26000 * t) * t).astype(np.float32)
+    tick = chirp * np.exp(-t * 60) * 0.16
+    click = (np.random.default_rng(7).standard_normal(n_tick)
+             * np.exp(-t * 220) * 0.07).astype(np.float32)
+    for i, (a, b) in enumerate(card_times):
+        if a <= 0.05:
+            continue
+        s = int(a * sr)
+        if s + n_tick < len(out):
+            sig = tick if i < len(card_times) - 1 else click
+            out[s:s + n_tick] += sig.astype(np.float32)
+    # riser rising into the LAST card start
+    a_last = card_times[-1][0]
+    n_r = int(0.9 * sr)
+    s = max(0, int(a_last * sr) - n_r)
+    n_r = min(n_r, len(out) - s)
+    if n_r > sr // 4:
+        tr = np.arange(n_r) / n_r
+        noise = np.random.default_rng(11).standard_normal(n_r)
+        noise = np.convolve(noise, np.ones(25) / 25, mode="same")
+        out[s:s + n_r] += (noise * tr ** 2 * 0.05).astype(np.float32)
+    return out
+
+
 # ------------------------------------------------------------------ visuals
 
 def _base_image(cover: Path, meta: dict, ep: int, out: Path) -> Path:
@@ -92,9 +142,8 @@ def _base_image(cover: Path, meta: dict, ep: int, out: Path) -> Path:
     d.rounded_rectangle([SW - 54 - cw - 34, 40, SW - 54, 96], radius=26,
                         fill=(245, 245, 248))
     d.text((SW - 54 - cw - 17, 51), chip, font=f_chip, fill=(16, 16, 20))
-
-    footer = f"EP.{ep:03d}  ·  {meta['genre'].upper()}"
-    d.text((54, SH - 92), footer, font=art_mod._font(30), fill=(205, 205, 212))
+    # (footer removed: the bottom ~200 px of a Short is YouTube's own UI —
+    #  anything drawn there gets buried and looks amateur)
     out.parent.mkdir(parents=True, exist_ok=True)
     bg.save(out, quality=92)
     return out
@@ -105,8 +154,8 @@ def _lyric_card(line: str, out: Path) -> Path:
     d = ImageDraw.Draw(card)
     f = art_mod._font(72)
     import textwrap
-    lines = textwrap.wrap(line, width=15)
-    y = int(SH * 0.70) - (len(lines) * 88) // 2
+    lines = textwrap.wrap(line, width=13)          # respect the right rail
+    y = int(SH * 0.64) - (len(lines) * 88) // 2    # clear of bottom UI zone
     for ln in lines:
         w = d.textlength(ln, font=f)
         d.text(((SW - w) / 2, y), ln, font=f, fill=(250, 250, 252, 255),
@@ -130,7 +179,7 @@ def render_video(pack: dict, out_path: Path) -> Path | None:
         start = ["[0:v]format=rgba[bg]"]
     else:
         inputs = [ff, "-y", "-loop", "1", "-i", str(pack["base"]), "-i", str(pack["wav"])]
-        start = ["[0:v]format=rgba,zoompan=z='min(1.0+0.0004*on,1.12)':d=1:"
+        start = ["[0:v]format=rgba,zoompan=z='min(1.0+0.00055*on,1.14)':d=1:"
                  f"s={SW}x{SH}:fps=25[bg]"]
     for c in pack["cards"]:
         inputs += ["-i", str(c)]
@@ -162,8 +211,6 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
     x, sr = read_wav(wav_path), 44100
     t0, L = pick_hook_window(x, sr, info["bpm"])
     seg = _slice_with_fades(x, sr, t0, L)
-    from src.composer import write_wav
-    short_wav = write_wav(out_dir / f"ep{ep:03d}_short.wav", seg)
 
     if lines_override:
         lines = lines_override[:max(4, int(L // 5.2))]
@@ -172,13 +219,17 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
                                    n=max(4, int(L // 5.2)))
     if rng_py.random() < 0.6:                     # comment-bait closer card
         lines = list(lines) + [rng_py.choice(lyrics.BAITS)]
+    lines = _chunk_lines(lines, L)                # ~2 s quick-cuts, not 5 s slabs
     cards = [_lyric_card(ln, out_dir / f"ep{ep:03d}_card{i}.png")
              for i, ln in enumerate(lines)]
     base = _base_image(cover_path, meta, ep, out_dir / f"ep{ep:03d}_short_base.jpg")
 
-    per = L / len(cards)
-    card_times = [(i * per + (0 if i else 0.0), (i + 1) * per)
-                  for i in range(len(cards))]
+    per = (L - 0.45) / len(cards)                 # beat of air before the loop
+    card_times = [(i * per, (i + 1) * per) for i in range(len(cards))]
+
+    seg = _sfx_marks(seg, sr, card_times)         # ticks + riser = tactile cuts
+    from src.composer import write_wav
+    short_wav = write_wav(out_dir / f"ep{ep:03d}_short.wav", seg)
 
     # composite preview for QA (base + first card)
     prev = Image.alpha_composite(Image.open(base).convert("RGBA"),

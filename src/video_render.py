@@ -46,6 +46,68 @@ def _run_variants(label: str, cmds: list[list[str]]) -> None:
                        f"{last.stderr.decode(errors='ignore')[-400:] if last else '?'}")
 
 
+# karaoke overlay (v18) — the words land ON the beat they are sung 🎤
+LYRIC_FONTS = [
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+]
+
+
+def _lyric_font() -> str | None:
+    return next((p for p in LYRIC_FONTS if Path(p).exists()), None)
+
+
+def _dt_esc(t: str) -> str:
+    return (t.replace("\\", "\\\\").replace(":", "\\:")
+             .replace("'", "’").replace("%", "\\%"))
+
+
+_HAS_DRAW = {}
+
+
+def _drawtext_ok() -> bool:
+    """Some ffmpegs (static builds) ship without drawtext/freetype — detect
+    once, degrade to plain video, never crash a release over karaoke."""
+    if "ok" not in _HAS_DRAW:
+        try:
+            out = subprocess.run([FFMPEG, "-hide_banner", "-filters"],
+                                 capture_output=True, text=True, timeout=20)
+            _HAS_DRAW["ok"] = "drawtext" in out.stdout
+        except Exception:
+            _HAS_DRAW["ok"] = False
+        if not _HAS_DRAW["ok"]:
+            print("  ⚠ ffmpeg lacks drawtext — karaoke overlay skipped "
+                  "(CI's runner ffmpeg has it; static builds don't)")
+    return _HAS_DRAW["ok"]
+
+
+def lyric_chain(entries, w: int, h: int, dur: float) -> str:
+    """drawtext chain of timed sung lines → '' when unavailable."""
+    font = _lyric_font()
+    if not font or not entries or not _drawtext_ok():
+        return ""
+    size = max(30, int(h * 0.045))
+    y = int(h * 0.76)                      # lower-third, above the chip zone
+    parts = []
+    for i, (t0, txt) in enumerate(entries):
+        t1 = entries[i + 1][0] if i + 1 < len(entries) else dur
+        if t1 - t0 < 0.5:
+            continue
+        parts.append(
+            f"drawtext=fontfile='{font}':text='{_dt_esc(txt)}':fontsize={size}:"
+            f"fontcolor=white:borderw=3:bordercolor=black@0.9:"
+            f"shadowcolor=black@0.6:shadowx=2:shadowy=2:"
+            f"x=(w-text_w)/2:y={y}:enable='between(t,{t0:.2f},{t1:.2f})'")
+    return ",".join(parts)
+
+
+def _vout(prev: str, chain: str) -> str:
+    """Final stage: karaoke chain (if any) → yuv420p, same [vout] label."""
+    return (f"[{prev}]{chain},format=yuv420p[vout]" if chain
+            else f"[{prev}]format=yuv420p[vout]")
+
+
 def _image_segments(images: list, per_s: float, w: int, h: int) -> list[str]:
     frames = max(1, int(FPS * per_s))
     parts = []
@@ -64,7 +126,8 @@ def _audio_branch(idx: int, fc: list[str], wav=None) -> None:
     fc.append(f"[{idx}:a]{chain}[aout]")
 
 
-def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx):
+def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
+              lyrics=None):
     has_audio = wav is not None
     maps = (["-map", "[vout]", "-map", "[aout]"] if has_audio
             else ["-map", "[vout]"])
@@ -72,6 +135,7 @@ def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx):
     if has_audio:
         tail += ["-c:a", "aac", "-b:a", "320k"]
     tail += ["-c:v", "libx264", "-preset", "medium", "-crf", "21", str(out)]
+    lyr = lyric_chain(lyrics, w, h, dur)
 
     # variant 1: xfade crossfades
     per = dur / n
@@ -84,32 +148,36 @@ def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx):
                   f"offset={off:.3f}[{lbl}]")
         prev = lbl
     if chip is not None:
-        fc.append(f"[{prev}][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto,"
-                  f"format=yuv420p[vout]")
+        fc.append(f"[{prev}][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto"
+                  f"[vpre]")
     else:
-        fc.append(f"[{prev}]format=yuv420p[vout]")
+        prev_lbl = prev
+    if chip is None:
+        fc.append(f"[{prev_lbl}]copy[vpre]")
+    fc.append(_vout("vpre", lyr))
     if has_audio:
         _audio_branch(audio_idx, fc, wav)
-    cmd1 = inputs + ["-filter_complex", ";".join(fc)] + maps + tail
+    cmd1 = ["-y"] + inputs + ["-filter_complex", ";".join(fc)] + maps + tail
 
     # variant 2: plain concat
     fc2 = list(segs)
     cat = "".join(f"[s{i}]" for i in range(n))
     fc2.append(f"{cat}concat=n={n}:v=1:a=0[cat]")
     if chip is not None:
-        fc2.append(f"[cat][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto,"
-                   f"format=yuv420p[vout]")
+        fc2.append(f"[cat][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto"
+                   f"[vpre2]")
     else:
-        fc2.append("[cat]format=yuv420p[vout]")
+        fc2.append("[cat]copy[vpre2]")
+    fc2.append(_vout("vpre2", lyr))
     if has_audio:
         _audio_branch(audio_idx, fc2, wav)
-    cmd2 = inputs + ["-filter_complex", ";".join(fc2)] + maps + tail
+    cmd2 = ["-y"] + inputs + ["-filter_complex", ";".join(fc2)] + maps + tail
     return [cmd1, cmd2]
 
 
 def from_images(images: list[Path], dur: float, out_path: Path,
                 wav: Path | None = None, chip: Path | None = None,
-                size=LONG) -> Path:
+                size=LONG, lyrics=None) -> Path:
     w, h = size
     n = len(images)
     per = dur / n
@@ -125,13 +193,13 @@ def from_images(images: list[Path], dur: float, out_path: Path,
         chip_idx = len(images) + (1 if wav else 0)
     segs = _image_segments(images, per, w, h)
     cmds = _assemble(segs, inputs, wav, chip, out_path, dur, n, w, h,
-                     audio_idx, chip_idx)
+                     audio_idx, chip_idx, lyrics=lyrics)
     _run_variants("slideshow", cmds)
     return out_path
 
 
 def from_clip(clip: Path, dur: float, out_path: Path, wav: Path | None = None,
-              chip: Path | None = None, size=LONG) -> Path:
+              chip: Path | None = None, size=LONG, lyrics=None) -> Path:
     """Loop a generated clip (e.g. Veo 8s) to any duration."""
     w, h = size
     inputs = ["-stream_loop", "-1", "-i", str(clip)]
@@ -142,13 +210,15 @@ def from_clip(clip: Path, dur: float, out_path: Path, wav: Path | None = None,
     if chip is not None:
         inputs += ["-loop", "1", "-i", str(chip)]
         chip_idx = 1 + (1 if wav else 0)
+    lyr = lyric_chain(lyrics, w, h, dur)
     fc = [f"[0:v]scale={w}:{h}:force_original_aspect_ratio=increase,"
           f"crop={w}:{h},setsar=1,format=yuv420p[cv]"]
     if chip is not None:
-        fc.append(f"[cv][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto,"
-                  f"format=yuv420p[vout]")
+        fc.append(f"[cv][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto"
+                  f"[vpre]")
     else:
-        fc.append("[cv]copy[vout]")
+        fc.append("[cv]copy[vpre]")
+    fc.append(_vout("vpre", lyr))
     if wav:
         fc.append(f"[{audio_idx}:a]{loudnorm_filter(wav)}[aout]")
     maps = ["-map", "[vout]"] + (["-map", "[aout]"] if wav else [])
@@ -156,6 +226,6 @@ def from_clip(clip: Path, dur: float, out_path: Path, wav: Path | None = None,
     if wav:
         tail += ["-c:a", "aac", "-b:a", "320k"]
     tail += ["-c:v", "libx264", "-preset", "medium", "-crf", "21", str(out_path)]
-    cmd = inputs + ["-filter_complex", ";".join(fc)] + maps + tail
+    cmd = ["-y"] + inputs + ["-filter_complex", ";".join(fc)] + maps + tail
     _run_variants("clip-loop", [cmd])
     return out_path

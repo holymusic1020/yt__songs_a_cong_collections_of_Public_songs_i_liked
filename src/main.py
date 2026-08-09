@@ -24,7 +24,7 @@ from pathlib import Path
 
 import numpy as np
 
-from src import art, composer, metadata, state
+from src import art, composer, lyrics, metadata, state
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out"
@@ -37,11 +37,34 @@ IMMEDIATE_UNDER_S = 900
 VIDEO_EVERY = 3          # long-form cadence: every Nth episode
 
 
+def _pick_lang(ep: int) -> str:
+    """🌍 World Tour (v17): every Nth COOKED song is a foreign-language drop.
+
+    Dials (repo Actions SECRETS/vars — no code edits needed):
+      WORLD_TOUR_EVERY  default 5  ('0' → international OFF, all-English)
+      WORLD_LANGS       default 'pt-BR,es,fr,tr' — rotation order
+    Brazilian phonk first: PT-vocal phonk is the genre's hottest lane rn.
+    """
+    try:
+        every = int((os.environ.get("WORLD_TOUR_EVERY", "5") or "0").strip())
+    except ValueError:
+        every = 5
+    if every <= 0 or ep % every:
+        return "en"
+    langs = [l.strip() for l in os.environ.get(
+        "WORLD_LANGS", "pt-BR,es,fr,tr").split(",")
+        if l.strip() in lyrics.LANGS and l.strip() != "en"]
+    if not langs:
+        return "en"
+    return langs[(ep // every - 1) % len(langs)]
+
+
 def _iso(dt: datetime) -> str:
     return dt.isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True):
+def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
+                  sung_lines=None, lrc_entries=None):
     scenes, clip, long_mp4 = [], None, None
     have_ff = shutil.which("ffmpeg")
 
@@ -55,9 +78,16 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True):
 
     if clip is None and mode in ("auto", "clip", "scenes"):
         variant = None
+        try:                       # v18: scene meaning pulled from the SONG
+            from src import copy_ai as _cai
+            variant = _cai.scene_prompt(meta, sung_lines)
+            print(f"  🧠 meaningful scene from the song itself: '{variant[:70]}…'")
+        except Exception:
+            variant = None
         try:
             from src import art_gemini
-            variant = rng.choice(art_gemini.SCENE_VARIANTS[meta["genre_key"]])
+            if variant is None:
+                variant = rng.choice(art_gemini.SCENE_VARIANTS[meta["genre_key"]])
             print("  🖼  painting 4 matching scenes with Gemini…")
             print(f"     style: {variant[:72]}…")
             scenes = art_gemini.generate_scenes(meta, n=4, scene_text=variant)
@@ -81,15 +111,20 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True):
     if have_ff and want_long:
         from src import video_render
         chip = art.chip_png(OUT / "chip.png")
+        if lrc_entries:
+            print(f"  🎤⏱ burning {len(lrc_entries)} synced lyric lines "
+                  f"into the video (karaoke!)")
         if clip:
             print("  🎞  looping clip to song length…")
             long_mp4 = video_render.from_clip(clip, dur, OUT / f"ep{ep:03d}.mp4",
-                                              wav=wav, chip=chip)
+                                              wav=wav, chip=chip,
+                                              lyrics=lrc_entries)
         elif scenes:
             print("  🎞  Ken Burns slideshow (xfades)…")
             long_mp4 = video_render.from_images(
                 [OUT / f"ep{ep:03d}_scene{i}.png" for i in range(len(scenes))],
-                dur, OUT / f"ep{ep:03d}.mp4", wav=wav, chip=chip)
+                dur, OUT / f"ep{ep:03d}.mp4", wav=wav, chip=chip,
+                lyrics=lrc_entries)
     return long_mp4, clip, scenes
 
 
@@ -110,26 +145,28 @@ AUDIO_EXTS = {".mp3", ".wav", ".ogg", ".m4a", ".flac", ".oga"}
 
 def _take_external_song(ep: int, cur_genre: str):
     """Boss's queue: incoming/ may hold a HUMAN drop (any audio file) and/or the
-    bot's prefetched space song (named next_song--<genre>.<ext>).
+    bot's prefetched space song (named next_song--<genre>[--<lang>].<ext>).
+    An optional `<stem>.lyrics.txt` sidecar rides with queue files — the words
+    that were actually SUNG, so the short's cards quote the real song 🎤
 
     Priority: human drops first (the soul beats the machine), then the queue.
-    Returns (wav_path, source_path, name_override|None, genre_override|None)
-    or (None, None, None, None). Files are deleted from incoming/ only after a
-    REAL publish — see the publish block.
+    Returns (wav_path, source_path, name|None, genre, lang, lyrics_path|None)
+    or six Nones. Files are deleted from incoming/ only after a REAL publish.
     """
     inc = ROOT / "incoming"
+    none7 = (None,) * 7
     if not inc.is_dir():
-        return None, None, None, None
+        return none7
     files = sorted(p for p in inc.iterdir()
                    if p.suffix.lower() in AUDIO_EXTS and p.is_file())
     if not files:
-        return None, None, None, None
+        return none7
     human = [p for p in files if not p.stem.startswith("next_song")]
     queue = [p for p in files if p.stem.startswith("next_song")]
     src = (human or queue)[0]
 
     # genre: human file → guess from filename tokens, else keep the wheel;
-    # queue file → self-describing name next_song--<genre>.mp3
+    # queue file → self-describing name next_song--<genre>[--<lang>].mp3
     genre = cur_genre
     if src in queue:
         for g in composer.GENRES:
@@ -141,6 +178,16 @@ def _take_external_song(ep: int, cur_genre: str):
             if g.replace("_", " ") in src.stem.lower() or g in src.stem.lower():
                 genre = g
                 break
+
+    # language + sung-lyrics sidecar (both optional; queue files carry them)
+    lang = "en"
+    m = re.search(r"--(pt-BR|es|fr|tr|ja|ko|en)(?:\b|\.|$)", src.stem)
+    if m:
+        lang = m.group(1)
+    lyc = src.with_name(src.stem + ".lyrics.txt")
+    lyc = lyc if lyc.exists() else None
+    lrc = src.with_name(src.stem + ".lrc.txt")          # 🎤⏱ karaoke map
+    lrc = lrc if lrc.exists() else None
 
     # normalize to a 44.1 kHz mono wav for the whole pipeline
     out_wav = OUT / f"ep{ep:03d}.wav"
@@ -154,12 +201,12 @@ def _take_external_song(ep: int, cur_genre: str):
         shutil.copy(src, out_wav)
     else:
         print(f"  ⚠ no ffmpeg to read {src.name} — engine composes instead")
-        return None, None, None, None
+        return none7
 
     if src in human:  # "midnight drive.mp3" → song named "midnight drive"
         name = re.sub(r"\s+", " ", re.sub(r"[^\w\s\-']", " ", src.stem)).strip()
-        return out_wav, src, (name[:60] or None), genre
-    return out_wav, src, None, genre
+        return out_wav, src, (name[:60] or None), genre, lang, lyc, lrc
+    return out_wav, src, None, genre, lang, lyc, lrc
 
 
 def main() -> None:
@@ -213,17 +260,25 @@ def main() -> None:
                    "dark_ambient": "dark ambient", "lofi": "lofi",
                    "baroque_waltz": "baroque waltz", "disco_house": "disco house"}
     ext_wav = ext_src = ext_name = ext_genre = None
+    ext_lang, ext_lyc, ext_lrc = "en", None, None
     if video_today:
-        ext_wav, ext_src, ext_name, ext_genre = _take_external_song(ep, genre_key)
+        (ext_wav, ext_src, ext_name, ext_genre, ext_lang,
+         ext_lyc, ext_lrc) = _take_external_song(ep, genre_key) or (None,) * 7
+        ext_lang = ext_lang or "en"
     if ext_genre:
-        print(f"  📦 queue says genre={ext_genre}")
+        print(f"  📦 queue says genre={ext_genre}"
+              + (f" · 🌍 {lyrics.LANGS.get(ext_lang, {}).get('label', ext_lang)}"
+                 if ext_lang != "en" else ""))
         genre_key = ext_genre
     if ext_wav:
         print(f"  🎁 using queued song: {ext_src.name}")
         import wave as _wave
         with _wave.open(str(ext_wav), "rb") as _w:
             dur = _w.getnframes() / _w.getframerate()
-        info = {"bpm": "~", "key": "—", "genre": GENRE_LABEL[genre_key],
+        from src import music_space as _ms
+        # queue file was cooked AT this exact bpm; human drops guess the wheel
+        bpm_est = _ms.GENRE_BPM.get(genre_key, 110)
+        info = {"bpm": bpm_est, "key": "—", "genre": GENRE_LABEL[genre_key],
                 "duration_s": dur}
     else:
         print("  composing…")
@@ -232,9 +287,28 @@ def main() -> None:
     used_names = {h.get("name") for h in st.get("history", []) if h.get("name")}
     dur = info["duration_s"]
 
+    # words actually SUNG on today's queue song (if any) — feed cards + tags
+    lyr_today = (ext_lyc.read_text(encoding="utf-8").strip()
+                 if ext_lyc and ext_lyc.exists() else None)
+    if lyr_today:
+        print(f"  🎤 vocals on deck: {len(lyr_today.splitlines())} sung lines "
+              f"({ext_lang})")
+
+    # karaoke map for the long video (v18 lyric-video upgrade)
+    lrc_entries: list = []
+    if ext_lrc and ext_lrc.exists():
+        try:
+            from src import music_space as _ms
+            lrc_entries = _ms.parse_lrc(ext_lrc.read_text(encoding="utf-8"))
+            if lrc_entries:
+                print(f"  🎤⏱ karaoke map: {len(lrc_entries)} timed lines")
+        except Exception:
+            lrc_entries = []
+
     from src import naming
     probe = {"genre": info["genre"], "genre_key": genre_key,
-             "key": info["key"], "bpm": info["bpm"], "name": "(untitled)"}
+             "key": info["key"], "bpm": info["bpm"], "name": "(untitled)",
+             "lang": ext_lang}
     ai_namer = None
     if os.environ.get("GEMINI_API_KEY", "").strip():
         try:
@@ -246,7 +320,8 @@ def main() -> None:
     if ext_name:
         name = ext_name            # a hand-dropped file names its own song
     meta = metadata.build(genre_key, info, ep, rng_py,
-                          used_names=used_names, name=name)
+                          used_names=used_names, name=name,
+                          lang=ext_lang, vocal=bool(lyr_today))
 
     copy = None
     try:
@@ -279,7 +354,10 @@ def main() -> None:
     if args.visual_mode != "cover":
         # shorts-only days: scenes/clip still feed the short's background
         long_mp4, clip, scenes = build_visuals(
-            meta, ep, rng, wav, dur, args.visual_mode, want_long=video_today)
+            meta, ep, rng, wav, dur, args.visual_mode, want_long=video_today,
+            sung_lines=(lyrics.cards_from_lyrics(lyr_today, 6)
+                        if lyr_today else None),
+            lrc_entries=lrc_entries)
 
     # ---------- schedule ----------
     now = datetime.now(timezone.utc)
@@ -313,7 +391,15 @@ def main() -> None:
     if not args.no_shorts:
         from src import shorts, video_render
         print("  cutting lyric short…")
-        lines = ([copy["hook"]] + copy["lines"]) if copy else None
+        lines = None
+        if lyr_today:                      # cards = the words actually sung 🎤
+            sung = lyrics.cards_from_lyrics(lyr_today, k=7)
+            if sung:
+                hook = copy["hook"] if copy else rng_py.choice(lyrics.HOOKS)
+                lines = [hook] + sung
+                print(f"  🎤 short cards quote the {ext_lang} vocals it plays")
+        elif copy:
+            lines = [copy["hook"]] + copy["lines"]
         short_pack = shorts.build(wav, cover, meta, info, ep, rng, rng_py, OUT,
                                   lines_override=lines)
         print(f"  hook @{short_pack['hook_t0']:.0f}s · "
@@ -340,7 +426,8 @@ def main() -> None:
 
     manifest = {"episode": ep, "genre": genre_key, "seed": seed, **info,
                 "meta": meta, "schedule": sched, "video_today": video_today,
-                "ai_copy": copy,
+                "ai_copy": copy, "lang": ext_lang, "vocals": bool(lyr_today),
+                "karaoke": len(lrc_entries),
                 "visuals": {"kind": "clip" if clip else "scenes" if scenes else "cover"},
                 "short_hook": short_pack["hook_line"] if short_pack else None,
                 "files": [str(f) for f in (wav, cover, long_mp4, short_mp4) if f]}
@@ -408,6 +495,14 @@ def main() -> None:
                 print("  🔗 funnel comment posted under the short")
             except Exception as e:
                 print(f"  (funnel comment skipped: {e})")
+        # ---------- community post pack (boss taps it from Telegram) ----------
+        try:
+            from src import posts
+            posts.maybe_post(ep=ep, meta=meta, sched=sched,
+                             hook=(short_pack["hook_line"] if short_pack else None),
+                             cover=cover, vid=vid, sid=sid)
+        except Exception as e:
+            print(f"  📮 community post skipped: {e}")
         # housekeeping — upload is done, the media lives on YouTube now.
         # wipe this episode's heavy renders (ep*.wav/mp4/png); keep only the
         # tiny text records (latest.json, summary.md, run.log).
@@ -423,6 +518,10 @@ def main() -> None:
         if ext_src and ext_src.exists():
             ext_src.unlink()              # consumed — git records the deletion
             print(f"  📥 consumed queue file '{ext_src.name}' — never re-used")
+        if ext_lyc and ext_lyc.exists():
+            ext_lyc.unlink()              # its words were spent too
+        if ext_lrc and ext_lrc.exists():
+            ext_lrc.unlink()              # and its timings
         try:
             inc = ROOT / "incoming"
             queue_left = inc.is_dir() and any(inc.glob("next_song*"))
@@ -430,10 +529,33 @@ def main() -> None:
                 from src import music_space
                 keys = list(composer.GENRES)
                 nxt_genre = keys[(keys.index(genre_key) + 1) % len(keys)]
-                print(f"  🔮 cooking tomorrow's {nxt_genre} on the free space…")
+                nxt_lang = _pick_lang(ep + 1)
+                nxt_lyc = None
+                try:
+                    from src import copy_ai as _ca
+                    print(f"  ✍️  Gemini songwriting "
+                          f"({lyrics.LANGS[nxt_lang]['label']})…")
+                    nxt_lyc = _ca.song_lyrics(
+                        {"name": "(untitled)", "genre": GENRE_LABEL[nxt_genre]},
+                        nxt_lang, max(150, dur))
+                except Exception as e:
+                    print(f"  (songwriting: {e} — bank lyrics tonight)")
+                    nxt_lyc = lyrics.song_lyrics(nxt_genre, "(untitled)",
+                                                 rng_py, nxt_lang)
+                if nxt_lang != "en":
+                    print(f"  🌍 WORLD TOUR drop tomorrow: "
+                          f"{lyrics.LANGS[nxt_lang]['label']}")
+                print(f"  🔮 cooking tomorrow's {nxt_genre} "
+                      f"({nxt_lang} vocals 🎤) on the free space…")
                 inc.mkdir(exist_ok=True)
-                music_space.generate(nxt_genre, max(150, dur),
-                                     inc / f"next_song--{nxt_genre}.mp3")
+                stem = f"next_song--{nxt_genre}--{nxt_lang}"
+                cooked = music_space.generate(
+                    nxt_genre, max(150, dur), inc / f"{stem}.mp3",
+                    lyrics=nxt_lyc, lang=nxt_lang,
+                    lrc_out=inc / f"{stem}.lrc.txt")   # 🎤⏱ karaoke rides too
+                if cooked and nxt_lyc:      # the words ride with the mp3
+                    (inc / f"{stem}.lyrics.txt").write_text(
+                        nxt_lyc, encoding="utf-8")
             else:
                 print("  📦 queue still stocked — nothing to cook today")
         except Exception as e:

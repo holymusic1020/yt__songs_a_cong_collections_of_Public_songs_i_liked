@@ -1,10 +1,16 @@
-"""Vibe + lyric-line engine for Shorts captions.
+"""Vibe + sung-lyrics engine.
 
-Psychology baked in (from short-form research):
-  - Card 1 is a HOOK (curiosity gap / direct recognition) — first 2-3 seconds
-    decide everything.
-  - Lines are short (3-7 words) so they're readable at a glance, sound on OR off.
-  - The last line is chosen to loop emotionally back into the hook.
+Two jobs:
+  1) Shorts caption lines (banks below) — used when a day has no sung words.
+  2) REAL sung lyrics for the ACE-Step space songs (`song_lyrics`) in
+     English + World Tour languages, with `[verse]/[chorus]` structure tags
+     the singer follows. copy_ai writes fresh ones with Gemini; these banks
+     are the no-key fallback. `cards_from_lyrics` turns the sung words into
+     the short's lyric cards — viewers read what they actually hear 🎧
+
+Psychology baked in (unchanged from research):
+  - Card 1 is a HOOK (curiosity gap / direct recognition).
+  - Lines are short (3-7 words) — readable at a glance, sound on OR off.
 """
 from __future__ import annotations
 
@@ -100,6 +106,113 @@ BAITS = [
 ]
 
 
+# ==================================================================
+# SUNG VOCALS — languages, voice + lyric banks, card extractor
+# ==================================================================
+
+# channel identity = English; World Tour drops rotate these flavors.
+# (ja/ko supported but kept OUT of the default wheel: their cards would need
+#  CJK fonts; opt-in via WORLD_LANGS and lyrics come back romanized latin.)
+LANGS = {
+    "en":    {"label": "english",              "hint": ""},
+    "pt-BR": {"label": "brazilian portuguese", "hint": "brazilian slang welcome"},
+    "es":    {"label": "spanish",              "hint": ""},
+    "fr":    {"label": "french",               "hint": ""},
+    "tr":    {"label": "turkish",              "hint": ""},
+    "ja":    {"label": "japanese",
+              "hint": "write in romanized latin script (romaji), no kanji/kana"},
+    "ko":    {"label": "korean",
+              "hint": "write in romanized latin script, no hangul"},
+}
+
+SONG_BANKS = {
+    "en": {
+        "verse": ["i left my headlights on the freeway",
+                  "your ghost still riding next to me",
+                  "the dashboard glows like last july",
+                  "nothing moves but memories"],
+        "chorus": ["so take the night, take it slow",
+                   "every mile just lets you go",
+                   "i keep your name on my radio",
+                   "singing low, low, low"],
+        "bridge": ["if morning comes, don't wake me yet",
+                   "let the dark hold what we left"],
+    },
+    "pt-BR": {
+        "verse": ["rua vazia, neon no chão",
+                  "teu cheiro ainda no meu casaco",
+                  "a cidade inteira em câmera lenta",
+                  "eu e a saudade, passo a passo"],
+        "chorus": ["vem, vem, a noite é nossa",
+                   "joga a mão pra lua, esquece a outra",
+                   "se o mundo acabar de madrugada",
+                   "a gente dança devagar na calçada"],
+        "bridge": ["quando o sol nascer, me acorda não",
+                   "deixa a saudade na minha mão"],
+    },
+    "es": {
+        "verse": ["la luna sabe dónde estás",
+                  "tu nombre escrito en el cristal",
+                  "conduzco lento sin mirar atrás",
+                  "buscando tu luz en la ciudad"],
+        "chorus": ["quédate un poco más",
+                   "que la noche nos da alas",
+                   "si el sol nos quiere encontrar",
+                   "que nos busque mañana"],
+        "bridge": ["apaga la radio, quédate aquí",
+                   "la madrugada sabe de ti y de mí"],
+    },
+    "fr": {
+        "verse": ["sous la pluie de néon pâle",
+                  "ton ombre danse sur le pavé",
+                  "je conduis vers nulle part",
+                  "ton nom en bouche à répéter"],
+        "chorus": ["reste encore une chanson",
+                   "la nuit nous appartient",
+                   "si le monde tourne trop vite",
+                   "nous on ralentit"],
+        "bridge": ["le jour se lève, pas encore",
+                   "une danse de plus, je t'adore"],
+    },
+    "tr": {
+        "verse": ["gece yarısı boş sokaklar",
+                  "neon ışıklar yüzünde",
+                  "seni düşünmeden geçmiyor",
+                  "bir dakika bile, bilesin"],
+        "chorus": ["kal benimle bu gece",
+                   "şehir uyurken ikimiz",
+                   "yarın güneş doğsa bile",
+                   "biz bu şarkıyı söyleriz"],
+        "bridge": ["sabah olmasın, biraz daha",
+                   "kalbim sana yar ola"],
+    },
+    "ja": {  # romaji by design (font-safe cards, still sung)
+        "verse": ["ame no naka kimi no koe",
+                  "neon gairo de kietanda",
+                  "ano yoru no yakusoku dake",
+                  "mada mune ni nokotteru"],
+        "chorus": ["konya mo hoshi ga ochiteku",
+                   "kimi no namae wo yobunda",
+                   "toki wo tomete one more night",
+                   "zutto soba ni ite"],
+        "bridge": ["asa ga kitara wasurenai",
+                   "kono uta dake nokoshite"],
+    },
+    "ko": {  # romanized, same reason
+        "verse": ["neon bulbit arae honja",
+                  "ni saenggage bameul dallyeo",
+                  "moratdeon ireumcheoreom neon",
+                  "nae mame sarajijil ana"],
+        "chorus": ["oneul bamen nohji ma",
+                   "son kkwak jaba nal bwa",
+                   "achimi wado urin yeogi",
+                   "ttodasi chumeul chwo tonight"],
+        "bridge": ["shigani meomchwojundamyeon",
+                   "i bam soge salge neowa na"],
+    },
+}
+
+
 def build_lines(genre_key: str, name: str, rng: random.Random, n: int = 5) -> list[str]:
     """Return [hook, *lines...] — card 1 is always the scroll-stopper."""
     hook = rng.choice(HOOKS)
@@ -108,3 +221,54 @@ def build_lines(genre_key: str, name: str, rng: random.Random, n: int = 5) -> li
     if len(out) < n and rng.random() < 0.6:
         out.append(rng.choice(LOOP_BRIDGES))
     return out[:n]
+
+
+def song_lyrics(genre_key: str, title: str, rng: random.Random,
+                lang: str = "en") -> str:
+    """Tagged sung lyrics for the ACE-Step space — bank fallback shape.
+
+    Always: verse / chorus / verse / chorus / bridge / chorus (~24 sung
+    lines ≈ 2-3 min of song). Genre only seasons one swapped-in line so the
+    fallback stays genre-aware without pretending to be poetry.
+    """
+    b = SONG_BANKS.get(lang, SONG_BANKS["en"])
+    flavor = rng.choice(LINES.get(genre_key, LINES["drift_phonk"]))
+    if lang == "en":                      # steal one bank caption for cohesion
+        verse2 = [flavor] + rng.sample(b["verse"], 3)
+    else:
+        verse2 = list(b["verse"])
+        verse2[rng.randrange(4)] = b["bridge"][0]   # rotate, keep language pure
+    parts = [
+        "[verse]", *b["verse"],
+        "[chorus]", *b["chorus"],
+        "[verse]", *verse2,
+        "[chorus]", *b["chorus"],
+        "[bridge]", *b["bridge"],
+        "[chorus]", *b["chorus"],
+    ]
+    return "\n".join(parts)
+
+
+def cards_from_lyrics(lyrics_text: str, k: int = 7) -> list[str]:
+    """The short's cards = the words the viewer ACTUALLY hears sung.
+
+    Chorus lines first (that's the part that hooks), then verse lines to
+    fill. Tags removed, screen-filler kept short so quick-cut chunking works.
+    """
+    sections: dict[str, list[str]] = {}
+    cur = None
+    for raw in lyrics_text.splitlines():
+        ln = raw.strip()
+        if not ln:
+            continue
+        if ln.startswith("[") and ln.endswith("]"):
+            cur = ln.strip("[]").lower()
+            sections.setdefault(cur, [])
+            continue
+        if cur:
+            sections[cur].append(ln)
+    chorus = sections.get("chorus", [])[:4]
+    pool = (sections.get("verse", []) + sections.get("bridge", [])
+            + sections.get("pre-chorus", []) + sections.get("outro", []))
+    out = chorus + [ln for ln in pool if ln not in chorus]
+    return out[:max(1, k)]

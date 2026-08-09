@@ -169,6 +169,56 @@ def master(bus, fade_s=3.0, sr=SR):
     return x
 
 
+# ------------------------------------------------------------------
+# human-voice layer — formant vox chops (phonk's ghost "singer") 🎤
+# Synthesized vowel-ish voice: the engine's own tracks stop sounding
+# 100% robotic WITHOUT any samples. Full sung words come from the
+# free space; this is the offline engine's human seasoning.
+# ------------------------------------------------------------------
+_VOWELS = {"a": (730, 1090), "e": (530, 1840), "i": (270, 2290),
+           "o": (570, 840), "u": (300, 870)}
+
+
+def _bq(x, freq, q, sr=SR):
+    """RBJ bandpass biquad (zero-DC) — one vocal-tract resonance."""
+    w = 2 * np.pi * float(freq) / sr
+    alpha = np.sin(w) / (2 * q)
+    b0, b1, b2 = alpha, 0.0, -alpha
+    a0, a1, a2 = 1 + alpha, -2 * np.cos(w), 1 - alpha
+    y = np.empty_like(x)
+    z1 = z2 = 0.0
+    for i in range(len(x)):
+        xs = x[i]
+        ys = (b0 / a0) * xs + z1
+        z1 = (b1 / a0) * xs - (a1 / a0) * ys + z2
+        z2 = (b2 / a0) * xs - (a2 / a0) * ys
+        y[i] = ys
+    return y
+
+
+def vox_chop(rng, note: float, dur: float, vowel=("a", "e"), sr=SR):
+    """One sung vowel-chop: saw voice + vibrato through morphing formants."""
+    n = max(64, int(dur * sr))
+    f0 = midi(note)
+    t = np.arange(n, dtype=np.float32) / sr
+    vib = 1.0 + 0.006 * np.sin(2 * np.pi * 5.2 * t)       # human wobble
+    ph = np.cumsum(f0 * vib / sr) % 1.0
+    saw = 2.0 * ph - 1.0
+    sine = np.sin(2 * np.pi * ph)
+    src = (saw * 0.7 + sine * 0.3 +
+           rng.standard_normal(n).astype(np.float32) * 0.04)
+    out = np.zeros(n, dtype=np.float32)
+    per = max(1, n // len(vowel))
+    for i, v in enumerate(vowel):
+        f1, f2 = _VOWELS.get(v, _VOWELS["a"])
+        sl = slice(i * per, min(n, (i + 1) * per))
+        out[sl] = _bq(src[sl], f1, 7) * 1.6 + _bq(src[sl], f2, 9)
+    out = out - lowpass(out, 201)                          # crud high-pass
+    out *= adsr(n, 0.015, 0.05, 0.75, 0.06)                # sung envelope
+    peak = float(np.max(np.abs(out)))
+    return (out / peak * 0.9) if peak > 1e-6 else out
+
+
 def walk(rng, scale, n, span=7):
     """Random-walk melody over a scale (semitone offsets)."""
     seq, idx = [], 0
@@ -203,12 +253,21 @@ def drift_phonk(rng, target_s):
     prog = [0, -4, -7, -5]
     melody = walk(rng, MINOR_PENT, bars * 8)
 
-    drums, music, lead = Mix(total), Mix(total), Mix(total)
+    drums, music, lead, vox = Mix(total), Mix(total), Mix(total), Mix(total)
+    vox_shapes = [("a", "e"), ("o", "a"), ("u", "i"), ("e", "a")]
     for b in range(bars):
         base = b * bar_n
         croot = root + prog[(b // 2) % 4]
         music.add(pad([croot + 12 + i for i in (0, 3, 7, 10)], 4 * 60 / bpm, swell=0.6),
                   base, gain=0.5)
+        if hook[b] and b % 2 == 0:                       # ghost singer answers
+            note = root + 12 + melody[(b * 8) % len(melody)]
+            vox.add(vox_chop(rng, note, 1.8 * 60 / bpm,
+                             vowel=vox_shapes[(b // 2) % len(vox_shapes)]),
+                    base, gain=0.55)
+            vox.add(vox_chop(rng, note - 3, 0.9 * 60 / bpm,
+                             vowel=vox_shapes[(b // 2 + 1) % len(vox_shapes)]),
+                    base + bar_n // 2, gain=0.4)
         for s in range(16):
             at = base + s * step
             if b >= intro_b:
@@ -229,7 +288,8 @@ def drift_phonk(rng, target_s):
                 lead.add(pluck(croot + 12 + arp[(s // 4) % 4]), at, gain=0.15)
 
     lead.buf = echo(lead.buf, 0.75 * 60 / bpm)
-    out = master(drums.buf * 0.9 + music.buf + lead.buf * 0.85)
+    vox.buf = echo(vox.buf, 0.5 * 60 / bpm, gains=(0.28, 0.1))
+    out = master(drums.buf * 0.9 + music.buf + lead.buf * 0.85 + vox.buf * 0.8)
     return out, {"genre": "drift phonk", "bpm": bpm,
                  "key": f"{NOTE_NAMES[root % 12]} minor", "duration_s": total / SR}
 
@@ -495,4 +555,3 @@ def write_wav(path: Path, x, sr=SR):
         w.setframerate(sr)
         w.writeframes(pcm.tobytes())
     return path
-

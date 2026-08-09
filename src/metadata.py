@@ -94,36 +94,54 @@ def _fresh_name(bank: tuple, used_names: set, rng: random.Random) -> str:
     return f"{base} {ROMAN[k - 1]}"
 
 
-GENERIC_TAGS = ["instrumental", "type beat", "chill", "night drive music",
+GENERIC_TAGS = ["type beat", "chill", "night drive music",
                 "aesthetic", "official audio", "new music"]
 
+# World Tour (v17) — foreign-language drops get honest, clickable labels
+LANG_LABEL = {"pt-BR": "brazilian portuguese", "es": "spanish", "fr": "french",
+              "tr": "turkish", "ja": "japanese", "ko": "korean"}
+LANG_HASHTAG = {"pt-BR": " #brazilianphonk #international",
+                "es": " #latinpop #international",
+                "fr": " #frenchpop #international",
+                "tr": " #turkishpop #international",
+                "ja": " #jpop #international",
+                "ko": " #kpop #international"}
 
-def _tags_for(genre_key: str, name: str, rng: random.Random) -> list[str]:
+
+def _tags_for(genre_key: str, name: str, rng: random.Random,
+              vocal: bool = False) -> list[str]:
     """Rotating tag set — identical blocks across uploads read as spam."""
-    pool = TAGS[genre_key] + GENERIC_TAGS
+    pool = list(dict.fromkeys(t for t in TAGS[genre_key] + GENERIC_TAGS
+                              if not (vocal and t == "instrumental")))
     picks = rng.sample(pool, k=min(len(pool), 5))
+    if vocal and rng.random() < 0.75:
+        picks.append(rng.choice(["vocal", "lyrics", "singer"]))
     return [name] + picks                      # unique title tag = free SEO
 
 
 def build(genre_key: str, info: dict, ep: int, rng: random.Random,
-          used_names: set | None = None, name: str | None = None) -> dict:
+          used_names: set | None = None, name: str | None = None,
+          lang: str = "en", vocal: bool = False) -> dict:
     bank = NAME_BANKS[genre_key][0]
     name = name or _fresh_name(bank, used_names or set(), rng)
     genre = info["genre"]
+    if lang != "en":                      # world-tour honesty label (looks pro)
+        genre = f"{genre} · {LANG_LABEL.get(lang, lang)} version"
     year = datetime.now(timezone.utc).year
     title = f"{name} — {CHANNEL} (official audio)"
     description = DESCRIPTION_TMPL.format(
         name=name, genre=genre, ep=ep, channel=CHANNEL,
-        year=year, hashtags=HASHTAGS[genre_key],
+        year=year, hashtags=HASHTAGS[genre_key] + LANG_HASHTAG.get(lang, ""),
     )
     return {
         "channel": CHANNEL,
         "name": name,
         "title": title[:100],
         "description": description,
-        "tags": _tags_for(genre_key, name, rng),
+        "tags": _tags_for(genre_key, name, rng, vocal=vocal),
         "genre": genre,
         "genre_key": genre_key,
+        "lang": lang,
         "bpm": info["bpm"],
         "key": info["key"],
     }
@@ -134,6 +152,7 @@ def short_meta(meta: dict, hook_line: str) -> dict:
     title = f'"{hook_line}" 🤍 {meta["name"]}'
     desc = (f"{meta['name']} — full version on the channel.\n"
             f"by Nix Speech\n"
-            f"{HASHTAGS[meta['genre_key']]} #shorts")
+            f"{HASHTAGS[meta['genre_key']]}"
+            f"{LANG_HASHTAG.get(meta.get('lang', 'en'), '')} #shorts")
     return {"title": title[:100], "description": desc,
             "tags": TAGS[meta["genre_key"]] + ["shorts"]}
