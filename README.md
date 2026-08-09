@@ -1,5 +1,13 @@
 # 🌙 yt-auto — Nix Speech
 
+> **v20 "SUNO STUDIO CHAIN"** — cook chain: SUNO studio (best vocals, optional key) → ACE-Step space (free, Apache-2.0) → offline engine. Karaoke LRC survives all the way. Receipts: `python tools/v20_receipt.py`.
+>
+> **v19 "SILK POCKET"** — the engine now *produces*: sidechain kick-pump (−6.9 dB pocket),
+> humanized velocity & micro-timing (no two hits alike), hook-synced filter sweeps + chorus,
+> real builds/drops (risers · accelerating snare rolls · crash landings — 4 of each per full
+> track, old engine had 0), and phrase-based ghost-singer call-&-answer on hooks.
+> Receipts: `python tools/v19_receipt.py`.
+
 > **🚀 IMPATIENT? Start here → [`docs/LAUNCH.md`](docs/LAUNCH.md) — one sitting, running in ~45 min.**
 
 A fully automated YouTube music channel in a box. Every ~3 days, a GitHub
