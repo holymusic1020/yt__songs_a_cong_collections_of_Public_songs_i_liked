@@ -1,5 +1,5 @@
 {
-  "episode": 3,
+  "episode": 4,
   "history": [
     {
       "episode": 0,
@@ -52,6 +52,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-08T13:29:25Z",
       "at": "2026-08-08T11:06:08+00:00"
+    },
+    {
+      "episode": 4,
+      "kind": "full",
+      "youtube_id": "N1QPBPf8JyQ",
+      "video_id": "N1QPBPf8JyQ",
+      "short_id": "2zCOkOiufbw",
+      "title": "sneakers on marble \u2014 Nix Speech (official audio)",
+      "name": "sneakers on marble",
+      "genre": "disco_house",
+      "publish_at": "2026-08-09T02:58:08Z",
+      "short_publish_at": "2026-08-09T05:26:33Z",
+      "at": "2026-08-09T02:41:28+00:00"
     }
   ]
 }
