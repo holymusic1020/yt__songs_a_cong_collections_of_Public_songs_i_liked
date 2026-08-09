@@ -1,0 +1,52 @@
+name: 🤖 self-upgrade
+
+# Boss's one-click upgrades: upload yt-auto-upload-ready.zip into the
+# upgrades/ folder (web UI, "Add file → Upload files") → this workflow
+# unpacks it over the repo and commits. ONE file upload, zero pasting,
+# zero keys (GITHUB_TOKEN is built-in, needs no secret).
+on:
+  push:
+    paths: ["upgrades/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  # NOTE: there is intentionally NO 'workflows' key — it does not exist.
+  # No automation token may push changes under .github/workflows/, by GitHub
+  # design. Upgrades therefore never carry workflow files (zips keep them
+  # out); rare workflow edits are hands-on: boss uploads 1-2 loose files.
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: unpack upgrade zips
+        run: |
+          set -e
+          shopt -s nullglob
+          zips=(upgrades/*.zip)
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "no zip in upgrades/ — nothing to do (manual trigger)"
+            exit 0
+          fi
+          for z in "${zips[@]}"; do
+            echo "📦 applying $z"
+            tmp=$(mktemp -d)
+            unzip -oq "$z" -d "$tmp"
+            if [ -d "$tmp/.github" ]; then
+              echo "⚠️ zip carries .github/ — SKIPPED on purpose (push-safety)."
+              echo "   workflow updates are manual: boss uploads the 1-2 loose"
+              echo "   .yml files from the card when an update says so."
+            fi
+            rsync -a --exclude ".git/" --exclude ".github/" --exclude "upgrades/" "$tmp"/ .
+            rm -rf "$tmp" "$z"
+          done
+      - name: commit to repo
+        run: |
+          git config user.name "nix-bot"
+          git config user.email "nix-bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "nothing changed"; exit 0; }
+          git commit -m "🤖 self-upgrade: applied $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git push
