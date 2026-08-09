@@ -85,6 +85,9 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}               # free-space vocal GPU quota ⭐
+          SUNO_API_KEY: ${{ secrets.SUNO_API_KEY }}       # premium studio slot 🍳 (optional)
+          SUNO_MODEL: ${{ vars.SUNO_MODEL }}              # default V4_5ALL
+          SUNO_OFF: ${{ vars.SUNO_OFF }}                  # 1 = skip suno slot
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  # community post packs 📮
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           WORLD_TOUR_EVERY: ${{ vars.WORLD_TOUR_EVERY }}  # 🌍 dials (optional)
