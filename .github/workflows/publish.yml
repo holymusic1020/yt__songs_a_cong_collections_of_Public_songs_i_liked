@@ -11,6 +11,9 @@ on:
 
 permissions:
   contents: write
+  workflows: write    # ✅ REQUIRED: lets the bot commit .github/workflows/*
+                      #    changes (GitHub blocks workflow-file pushes without
+                      #    this exact scope — v17 run #1 rejection)
 
 jobs:
   apply:
