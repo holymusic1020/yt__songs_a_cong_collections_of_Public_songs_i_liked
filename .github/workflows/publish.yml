@@ -1,116 +1,43 @@
-name: yt-auto · publish episode
+name: 🤖 self-upgrade
 
+# Boss's one-click upgrades: upload yt-auto-upload-ready.zip into the
+# upgrades/ folder (web UI, "Add file → Upload files") → this workflow
+# unpacks it over the repo and commits. ONE file upload, zero pasting,
+# zero keys (GITHUB_TOKEN is built-in, needs no secret).
 on:
-  workflow_dispatch:            # manual "Run workflow" button
-  schedule:
-    - cron: "23 9 * * *"        # DAILY: a short every day; a full video every 3rd EP
-
-# 🔒 one release at a time — kills the duplicate-EP race (manual spam-safe)
-concurrency:
-  group: publish
-  cancel-in-progress: false
+  push:
+    paths: ["upgrades/**"]
+  workflow_dispatch:
 
 permissions:
-  contents: write               # state.json commit keeps the repo active
+  contents: write
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest      # ffmpeg: brought in by our own step below
-    timeout-minutes: 60         # 35-min base + free-space song cooking headroom
+  apply:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: 🎬 Ensure ffmpeg (deterministic static build)
-        run: |  # third-party installer action proved flaky (run #4) — do it ourselves
-          if ! command -v ffmpeg >/dev/null 2>&1; then
-            echo "image lacks ffmpeg — fetching static build…"
-            curl -fsSL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o /tmp/ff.tar.xz
-            tar -xJf /tmp/ff.tar.xz -C /tmp
-            FF=$(echo /tmp/ffmpeg-*-amd64-static)
-            sudo install -m 755 "$FF/ffmpeg" "$FF/ffprobe" /usr/local/bin/
+      - name: unpack upgrade zips
+        run: |
+          set -e
+          shopt -s nullglob
+          zips=(upgrades/*.zip)
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "no zip in upgrades/ — nothing to do (manual trigger)"
+            exit 0
           fi
-          ffmpeg -version | head -1
-
-      - name: Install deps
-        run: pip install -r requirements.txt
-
-      - name: 🎁 Fetch queued song (cooked by the previous run)
-        id: queue
+          for z in "${zips[@]}"; do
+            echo "📦 applying $z"
+            tmp=$(mktemp -d)
+            unzip -oq "$z" -d "$tmp"
+            rsync -a --exclude ".git/" --exclude "upgrades/" "$tmp"/ .
+            rm -rf "$tmp" "$z"
+          done
+      - name: commit to repo
         run: |
-          PREV=$(gh run list --workflow publish.yml --limit 6 \
-                 --json databaseId,status --jq \
-                 '[.[] | select(.databaseId != ${{ github.run_id }} and .status=="completed")][0].databaseId // empty')
-          echo "prev=$PREV" >> "$GITHUB_OUTPUT"
-          [ -n "$PREV" ] || { echo "no previous run — nothing queued yet"; exit 0; }
-          mkdir -p incoming
-          gh run download "$PREV" -n next-song -D incoming || echo "queue empty — engine will compose today"
-          ls -la incoming/ || true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🩺 Pre-flight doctor
-        run: python tools/doctor.py
-
-      - name: Compose + render + upload episode
-        env:
-          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
-          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          set -o pipefail
-          mkdir -p out
-          python -m src.main --publish 2>&1 | tee out/run.log
-
-      - name: 📋 Release summary
-        if: always()
-        run: cat out/summary.md >> "$GITHUB_STEP_SUMMARY" || true
-
-      - name: Save run records (text only — media is wiped after upload)
-        if: always()                    # also on failure — run.log helps debugging
-        uses: actions/upload-artifact@v4
-        with:
-          name: episode-latest
-          path: |
-            out/latest.json
-            out/summary.md
-            out/run.log
-          if-no-files-found: ignore     # never fail the job over a missing log
-          retention-days: 14            # auto-expire — zero storage pile-up
-
-      - name: 📦 Queue tomorrow's song (artifact hand-off)
-        if: always()                    # queue refreshes its 14-day TTL every run
-        continue-on-error: true         # queue miss must never redden a run
-        uses: actions/upload-artifact@v4
-        with:
-          name: next-song
-          path: incoming/next_song*.*
-          if-no-files-found: ignore     # no song cooked today? tomorrow asks live
-          retention-days: 14
-
-      - name: 📣 Status alerts (Telegram / Discord — optional)
-        if: always()                    # fires on success AND failure
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          NOTIFY_WEBHOOK: ${{ secrets.NOTIFY_WEBHOOK }}
-        run: |                          # a dead alert step must never turn a good run red
-          python -m src.notify \
-            --status "${{ job.status }}" \
-            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --log out/run.log || echo "⚠️ notify glitched — the release itself is unaffected"
-
-      - name: Commit state (self-healing on drift)
-        if: always()                    # partial-failure runs must ALSO commit
-        run: |                          # state, or tomorrow re-uploads a duplicate
-          git config user.name "yt-auto-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add state/state.json out/latest.json 2>/dev/null || true
-          [ -d incoming ] && git add -A incoming || true   # consumed drops + human uploads
-          git commit -m "ep: publish run $(date -u +%Y-%m-%d)" || echo "no changes"
-          git pull --rebase origin "${GITHUB_REF_NAME}" || true
-          git push || echo "nothing to push"
+          git config user.name "nix-bot"
+          git config user.email "nix-bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "nothing changed"; exit 0; }
+          git commit -m "🤖 self-upgrade: applied $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git push
