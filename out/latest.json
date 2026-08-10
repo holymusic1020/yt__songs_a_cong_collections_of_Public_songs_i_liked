@@ -1,37 +1,42 @@
 {
-  "episode": 5,
-  "genre": "lo-fi",
-  "seed": 39816,
-  "bpm": 83,
-  "key": "G minor",
-  "duration_s": 167.71074829931973,
+  "episode": 1,
+  "genre": "drift phonk",
+  "seed": 8141,
+  "bpm": 128,
+  "key": "A minor",
+  "duration_s": 144.37412698412697,
+  "events": {
+    "risers": 4,
+    "rolls": 4,
+    "crashes": 4
+  },
   "meta": {
     "channel": "Nix Speech",
-    "name": "toast weather",
-    "title": "toast weather \u2014 Nix Speech (official audio)",
-    "description": "toast weather\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.005 \u00b7 lo-fi \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#lofi #chillbeats #studymusic\n",
+    "name": "mirrorshade mile",
+    "title": "mirrorshade mile \u2014 Nix Speech (official audio)",
+    "description": "mirrorshade mile\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.001 \u00b7 drift phonk \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#phonk #driftphonk #nightdrive\n",
     "tags": [
-      "toast weather",
-      "chill",
-      "relaxing beats",
-      "official audio",
-      "lo-fi beats",
-      "type beat"
+      "mirrorshade mile",
+      "dark phonk",
+      "drift phonk",
+      "phonk",
+      "night drive music",
+      "aesthetic"
     ],
-    "genre": "lo-fi",
-    "genre_key": "lofi",
+    "genre": "drift phonk",
+    "genre_key": "drift_phonk",
     "lang": "en",
-    "bpm": 83,
-    "key": "G minor",
-    "style_variant": "1990s retro anime film still: cozy room at golden hour, plants and books, warm cel shading, no characters (free engine)"
+    "bpm": 128,
+    "key": "A minor",
+    "style_variant": "deserted neon-lit city street at night, puddles mirroring pink neon, haze drifting through the light, 35mm film photo, phonk aesthetic (free engine)"
   },
   "schedule": {
-    "video_offset_s": 0,
-    "video_publish_at": null,
-    "short_offset_s": 5715,
-    "short_publish_at": "2026-08-09T12:42:09Z"
+    "video_offset_s": 7206,
+    "video_publish_at": "2026-08-10T06:01:58Z",
+    "short_offset_s": 4894,
+    "short_publish_at": "2026-08-10T05:23:26Z"
   },
-  "video_today": false,
+  "video_today": true,
   "ai_copy": null,
   "lang": "en",
   "vocals": false,
@@ -39,12 +44,13 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "the part",
+  "short_hook": "if this played",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.mp4",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001_short.mp4"
   ],
-  "video_id": null,
-  "short_id": "X_hV5q_r-OA"
+  "video_id": "TeSrV4fIdQs",
+  "short_id": "oCwfgyg2Y4E"
 }
