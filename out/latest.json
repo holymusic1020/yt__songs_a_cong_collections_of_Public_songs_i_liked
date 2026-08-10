@@ -1,42 +1,37 @@
 {
-  "episode": 1,
-  "genre": "drift phonk",
-  "seed": 8141,
-  "bpm": 128,
-  "key": "A minor",
-  "duration_s": 144.37412698412697,
-  "events": {
-    "risers": 4,
-    "rolls": 4,
-    "crashes": 4
-  },
+  "episode": 2,
+  "genre": "baroque waltz",
+  "seed": 16060,
+  "bpm": 180,
+  "key": "D minor",
+  "duration_s": 196.0,
   "meta": {
     "channel": "Nix Speech",
-    "name": "mirrorshade mile",
-    "title": "mirrorshade mile \u2014 Nix Speech (official audio)",
-    "description": "mirrorshade mile\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.001 \u00b7 drift phonk \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#phonk #driftphonk #nightdrive\n",
+    "name": "sienna minuet",
+    "title": "sienna minuet \u2014 Nix Speech (official audio)",
+    "description": "sienna minuet\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.002 \u00b7 baroque waltz \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#waltz #baroquepop #vintage\n",
     "tags": [
-      "mirrorshade mile",
-      "dark phonk",
-      "drift phonk",
-      "phonk",
+      "sienna minuet",
+      "harmonium",
+      "new music",
       "night drive music",
-      "aesthetic"
+      "aesthetic",
+      "instrumental"
     ],
-    "genre": "drift phonk",
-    "genre_key": "drift_phonk",
+    "genre": "baroque waltz",
+    "genre_key": "baroque_waltz",
     "lang": "en",
-    "bpm": 128,
-    "key": "A minor",
-    "style_variant": "deserted neon-lit city street at night, puddles mirroring pink neon, haze drifting through the light, 35mm film photo, phonk aesthetic (free engine)"
+    "bpm": 180,
+    "key": "D minor",
+    "style_variant": "grand old ballroom at candle-lit dusk, chandeliers over empty marble, warm amber light, dust motes floating, vintage film photo (free engine)"
   },
   "schedule": {
-    "video_offset_s": 7206,
-    "video_publish_at": "2026-08-10T06:01:58Z",
-    "short_offset_s": 4894,
-    "short_publish_at": "2026-08-10T05:23:26Z"
+    "video_offset_s": 0,
+    "video_publish_at": null,
+    "short_offset_s": 4829,
+    "short_publish_at": "2026-08-10T13:22:37Z"
   },
-  "video_today": true,
+  "video_today": false,
   "ai_copy": null,
   "lang": "en",
   "vocals": false,
@@ -44,13 +39,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "if this played",
+  "short_hook": "the part",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001.mp4",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep001_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep002.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep002.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep002_short.mp4"
   ],
-  "video_id": "TeSrV4fIdQs",
-  "short_id": "oCwfgyg2Y4E"
+  "video_id": null,
+  "short_id": "c2VxPh79BD8"
 }
