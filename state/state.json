@@ -1,5 +1,5 @@
 {
-  "episode": 2,
+  "episode": 3,
   "history": [
     {
       "episode": 1,
@@ -26,6 +26,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-10T13:22:37Z",
       "at": "2026-08-10T12:03:10+00:00"
+    },
+    {
+      "episode": 3,
+      "kind": "short",
+      "youtube_id": "6frB4bAS7mE",
+      "video_id": null,
+      "short_id": "6frB4bAS7mE",
+      "title": "harlequin interlude \u2014 Nix Speech (official audio)",
+      "name": "harlequin interlude",
+      "genre": "baroque_waltz",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-11T13:08:49Z",
+      "at": "2026-08-11T11:58:12+00:00"
     }
   ]
 }
