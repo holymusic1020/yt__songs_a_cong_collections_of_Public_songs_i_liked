@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import shutil
 import subprocess
 import wave
@@ -136,6 +137,18 @@ def _base_image(cover: Path, meta: dict, ep: int, out: Path) -> Path:
     f_small = art_mod._font(30)
     d.text((54, 52), meta["channel"].upper(), font=f_small, fill=(235, 235, 240))
 
+    import os as _os
+    # 😼 NYX rides the shorts too — static sprite on the left rail, clear of
+    # the artwork, caption zone and button rail. Channel name is at y=52,
+    # artwork starts at SH*0.16 — NYX perches in the gap. MASCOT_OFF=1 skips.
+    if _os.environ.get("MASCOT_OFF", "") != "1":
+        try:
+            from src import mascot as _mx
+            nyx_p, _ = _mx.sprites(out.parent)
+            nyx = Image.open(nyx_p).convert("RGBA")
+            bg.paste(nyx, (54, int(SH * 0.16) - nyx.height - 14), nyx)
+        except Exception as e:
+            print(f"  (NYX short stamp skipped: {e})")
     chip = "OFFICIAL AUDIO"
     f_chip = art_mod._font(26)
     cw = d.textlength(chip, font=f_chip)
@@ -149,7 +162,8 @@ def _base_image(cover: Path, meta: dict, ep: int, out: Path) -> Path:
     return out
 
 
-def _lyric_card(line: str, out: Path) -> Path:
+def _lyric_card(line: str, out: Path, credit: bool = False,
+                cta: bool = False) -> Path:
     card = Image.new("RGBA", (SW, SH), (0, 0, 0, 0))
     d = ImageDraw.Draw(card)
     f = art_mod._font(72)
@@ -161,6 +175,20 @@ def _lyric_card(line: str, out: Path) -> Path:
         d.text(((SW - w) / 2, y), ln, font=f, fill=(250, 250, 252, 255),
                stroke_width=3, stroke_fill=(0, 0, 0, 200))
         y += 88
+    if credit:                                     # first screen names the chef
+        fc = art_mod._font(30)
+        tag = "by NIX SPEECH · official audio"
+        tw = d.textlength(tag, font=fc)
+        d.text(((SW - tw) / 2, y + 42), tag, font=fc,
+               fill=(235, 235, 240, 235), stroke_width=2,
+               stroke_fill=(0, 0, 0, 180))
+    if cta:                                        # end card: sound-page CTA
+        ft = art_mod._font(28)
+        tag = "use this sound 🎧 · @nixspeech"
+        tw = d.textlength(tag, font=ft)
+        d.text(((SW - tw) / 2, y + 118), tag, font=ft,
+               fill=(120, 230, 255, 235), stroke_width=2,
+               stroke_fill=(0, 0, 0, 180))
     card.save(out)
     return out
 
@@ -211,6 +239,14 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
     x, sr = read_wav(wav_path), 44100
     t0, L = pick_hook_window(x, sr, info["bpm"])
     seg = _slice_with_fades(x, sr, t0, L)
+    if os.environ.get("CHIME_OFF", "") != "1":       # 🔔 loop point = station
+        try:                                       #    chime — brand the loop
+            from src.composer import sonic_logo
+            lg = sonic_logo(sr)
+            m = min(len(lg), len(seg))
+            seg[:m] = np.clip(seg[:m] + lg * 0.55, -0.99, 0.99)
+        except Exception as e:
+            print(f"  (short chime skipped: {e})")
 
     if lines_override:
         lines = lines_override[:max(4, int(L // 5.2))]
@@ -220,8 +256,16 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
     if rng_py.random() < 0.6:                     # comment-bait closer card
         lines = list(lines) + [rng_py.choice(lyrics.BAITS)]
     lines = _chunk_lines(lines, L)                # ~2 s quick-cuts, not 5 s slabs
-    cards = [_lyric_card(ln, out_dir / f"ep{ep:03d}_card{i}.png")
+    n_real = len(lines)
+    cards = [_lyric_card(ln, out_dir / f"ep{ep:03d}_card{i}.png",
+                         credit=(i == 0), cta=(i == n_real - 1))
              for i, ln in enumerate(lines)]
+    # 🔁 DESIGNED LOOP (v23): the first card repeats as the LAST frame — end
+    # melts into start, retention can spike past 100% (the algo's favorite).
+    # Pixel-exact echo of card 0; the 'use this sound' CTA rides the real
+    # final card just before it. Kill-switch: LOOP_OFF=1.
+    if os.environ.get("LOOP_OFF", "") != "1" and len(cards) >= 3:
+        cards.append(cards[0])
     base = _base_image(cover_path, meta, ep, out_dir / f"ep{ep:03d}_short_base.jpg")
 
     per = (L - 0.45) / len(cards)                 # beat of air before the loop
@@ -244,3 +288,39 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
                         [str(c) for c in v] if k == "cards" else v)
                     for k, v in pack.items()}, indent=2))
     return pack
+
+
+# ------------------------------------------------------------------ twins
+
+def slowed_twin_pack(pack: dict, out_dir: Path, ep: int,
+                     speed: float = 0.84) -> dict:
+    """💤 slowed + reverb TWIN of our own master (dial: SLOWED_EVERY in
+    main). The whole 'slowed & reverb' lane uploads OTHER people's masters —
+    copyright roulette. We slow OUR OWN composition: 100% safe, same
+    dreamy payoff. Pure-numpy asetrate + aecho twin (no ffmpeg needed here),
+    night-blue room tint, same lyric cards re-timed to the slower clock."""
+    from src.composer import write_wav
+    seg = read_wav(pack["wav"])
+    sr = 44100
+    n2 = max(1024, int(len(seg) / speed))          # asetrate: stretch + pitch
+    x2 = np.interp(np.linspace(0, len(seg) - 1, n2),
+                   np.arange(len(seg)), seg).astype(np.float32)
+    for d, a in ((0.23, 0.32), (0.41, 0.18)):      # aecho voices
+        k = int(d * sr)
+        x2[k:] += x2[:-k] * a
+    x2 = x2 / max(1e-6, float(np.max(np.abs(x2)))) * 0.95
+    wav2 = write_wav(out_dir / f"ep{ep:03d}_slowed.wav", x2)
+
+    base_src = Image.open(pack["base"]).convert("RGB")   # same room, night side
+    tint = Image.new("RGB", base_src.size, (18, 28, 64))
+    base2 = Image.blend(base_src, tint, 0.28)
+    base2_p = out_dir / f"ep{ep:03d}_slowed_base.jpg"
+    base2.save(base2_p, quality=92)
+
+    sc = 1.0 / speed
+    twin = dict(pack)
+    twin.update({"wav": wav2, "base": base2_p, "base_video": None,
+                 "card_times": [(a * sc, b * sc)
+                                for a, b in pack["card_times"]],
+                 "duration_s": pack["duration_s"] * sc})
+    return twin

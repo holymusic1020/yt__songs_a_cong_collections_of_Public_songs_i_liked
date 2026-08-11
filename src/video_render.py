@@ -3,10 +3,16 @@
 Requires ffmpeg (present on GitHub runners). Every builder tries the fancy
 variant first (xfade crossfades) and falls back to plain concat on error.
 Audio is mastered to YouTube specs: -14 LUFS integrated, -1 dBTP, AAC 320k.
+
+v23 THE UNIVERSE UPDATE 🌌 — every long video now ships as a TRANSMISSION:
+  · NYX the signal-cat (mascot webm loop, blinks on the beat)  [MASCOT_OFF=1 kills]
+  · broadcast HUD skin (scanlines + corner brackets overlay)   [SPECTRUM_OFF=1 kills]
+  · live showfreqs spectrum strip along the bottom             [SPECTRUM_OFF=1 kills]
+All three are pure overlays — if any input is absent the video still renders.
 """
 from __future__ import annotations
 
-import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -17,6 +23,10 @@ VERT = (1080, 1920)
 XFADE_S = 0.8
 FFMPEG = shutil.which("ffmpeg") or "ffmpeg"
 LOUDNORM = "alimiter=limit=0.4:level=false,loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=limit=0.6:level=false"
+
+
+def _env_off(name: str) -> bool:
+    return os.environ.get(name, "") == "1"
 
 
 def loudnorm_filter(wav: Path) -> str:
@@ -102,10 +112,83 @@ def lyric_chain(entries, w: int, h: int, dur: float) -> str:
     return ",".join(parts)
 
 
-def _vout(prev: str, chain: str) -> str:
-    """Final stage: karaoke chain (if any) → yuv420p, same [vout] label."""
-    return (f"[{prev}]{chain},format=yuv420p[vout]" if chain
-            else f"[{prev}]format=yuv420p[vout]")
+def credit_chain(w: int, h: int, secs: float = 4.5) -> str:
+    """'by Nix Speech' opening credit — the first screen finally names the
+    chef. Burns in for the first ~4.5 s, top-center; drawtext-gated like
+    karaoke so a drawtext-less ffmpeg simply skips it, never crashes."""
+    font = _lyric_font()
+    if not font or not _drawtext_ok():
+        return ""
+    size = max(22, int(h * 0.030))
+    return (f"drawtext=fontfile='{font}':"
+            f"text='{_dt_esc('by Nix Speech')}':fontsize={size}:"
+            f"fontcolor=white@0.92:borderw=2:bordercolor=black@0.85:"
+            f"x=(w-text_w)/2:y={int(h * 0.10)}:enable='between(t,0,{secs:.2f})'")
+
+
+# ---------------------------------------------------------------- universe
+# v23 broadcast dressing, applied over ANY base (xfade slideshow, concat
+# fallback or looped clip): chip → spectrum strip → NYX → HUD → karaoke.
+# Every piece optional, every piece env-killable, order is signal-safe.
+
+
+def _decorate(fc: list[str], cur: str, w: int, h: int, dur: float, *,
+              chip_idx=None, masc_idx=None, hud_idx=None, spec_label=None,
+              lyrics=None) -> None:
+    """Append the transmission stack to fc; consumes [cur], emits [vout]."""
+    n = [0]
+
+    def step(graph: str) -> None:
+        nonlocal cur
+        n[0] += 1
+        nxt = f"d{n[0]}"
+        fc.append(graph.replace("[SRC]", f"[{cur}]").replace("[OUT]", f"[{nxt}]"))
+        cur = nxt
+
+    if chip_idx is not None:
+        step(f"[SRC][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto[OUT]")
+
+    if spec_label is not None and not _env_off("SPECTRUM_OFF"):
+        sh = max(64, int(h * 0.11))
+        fc.append(f"[{spec_label}]showfreqs=s={w}x{sh}:mode=bar:fscale=log:"
+                  f"ascale=sqrt:win_func=hann:colors=0x39e6ff|0x7d5cff,"
+                  f"format=rgba,colorchannelmixer=aa=0.72[spc]")
+        step(f"[SRC][spc]overlay=0:{h - sh}:format=auto[OUT]")
+
+    if masc_idx is not None and not _env_off("MASCOT_OFF"):
+        sw = max(120, round(w * 0.14))
+        sh_m = int(round(sw * 120 / 176 / 2) * 2)   # sprite is 176x120
+        fc.append(f"[{masc_idx}:v]format=rgba,scale={sw}:{sh_m}[mc]")
+        step(f"[SRC][mc]overlay=30:{h - 30 - sh_m}:format=auto[OUT]")
+
+    if hud_idx is not None and not _env_off("SPECTRUM_OFF"):
+        step(f"[SRC][{hud_idx}:v]overlay=0:0:format=auto[OUT]")
+
+    lyr = lyric_chain(lyrics, w, h, dur)
+    signoff = _signoff_chain(w, h, dur)
+    parts = [c for c in (credit_chain(w, h), lyr, signoff) if c]
+    full = ",".join(parts)
+    fc.append(f"[{cur}]{full},format=yuv420p[vout]" if full
+              else f"[{cur}]format=yuv420p[vout]")
+
+
+def _signoff_chain(w: int, h: int, dur: float) -> str:
+    """End-beat sign-off — last 3.5 s of every transmission: channel name +
+    the promise. Free subscriber CTA, zero clicks. Kill-switch: SIGNOFF_OFF=1.
+    """
+    if _env_off("SIGNOFF_OFF") or dur < 12 or h > w:
+        return ""                     # long-form landscape only — a sign-off
+                                      # at a short's loop point kills the loop
+    font = _lyric_font()
+    if not font or not _drawtext_ok():
+        return ""
+    size = max(20, int(h * 0.032))
+    t0 = max(0.0, dur - 3.5)
+    txt = _dt_esc("— Nix Speech · new drops daily —")
+    return (f"drawtext=fontfile='{font}':text='{txt}':fontsize={size}:"
+            f"fontcolor=white@0.9:borderw=2:bordercolor=black@0.8:"
+            f"x=(w-text_w)/2:y={int(h * 0.44)}:"
+            f"enable='between(t,{t0:.2f},{dur:.2f})'")
 
 
 def _image_segments(images: list, per_s: float, w: int, h: int) -> list[str]:
@@ -121,21 +204,26 @@ def _image_segments(images: list, per_s: float, w: int, h: int) -> list[str]:
     return parts
 
 
-def _audio_branch(idx: int, fc: list[str], wav=None) -> None:
-    chain = loudnorm_filter(wav) if wav is not None else LOUDNORM
-    fc.append(f"[{idx}:a]{chain}[aout]")
+def _audio_branch(idx: int, fc: list[str], want_spec: bool) -> str | None:
+    """[aout] master chain; returns the 'as' label for the spectrum tap."""
+    if want_spec:
+        fc.append(f"[{idx}:a]asplit=2[am][as]")
+        fc.append(f"[am]{LOUDNORM}[aout]")
+        return "as"
+    fc.append(f"[{idx}:a]{LOUDNORM}[aout]")
+    return None
 
 
 def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
-              lyrics=None):
+              lyrics=None, masc_idx=None, hud_idx=None):
     has_audio = wav is not None
+    want_spec = has_audio and not _env_off("SPECTRUM_OFF")
     maps = (["-map", "[vout]", "-map", "[aout]"] if has_audio
             else ["-map", "[vout]"])
     tail = ["-t", f"{dur:.3f}", "-r", str(FPS)]
     if has_audio:
         tail += ["-c:a", "aac", "-b:a", "320k"]
     tail += ["-c:v", "libx264", "-preset", "medium", "-crf", "21", str(out)]
-    lyr = lyric_chain(lyrics, w, h, dur)
 
     # variant 1: xfade crossfades
     per = dur / n
@@ -147,80 +235,88 @@ def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
         fc.append(f"[{prev}][s{i}]xfade=transition=fade:duration={XFADE_S}:"
                   f"offset={off:.3f}[{lbl}]")
         prev = lbl
-    if chip is not None:
-        fc.append(f"[{prev}][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto"
-                  f"[vpre]")
-    else:
-        prev_lbl = prev
-    if chip is None:
-        fc.append(f"[{prev_lbl}]copy[vpre]")
-    fc.append(_vout("vpre", lyr))
-    if has_audio:
-        _audio_branch(audio_idx, fc, wav)
+    spec = _audio_branch(audio_idx, fc, want_spec) if has_audio else None
+    _decorate(fc, prev, w, h, dur, chip_idx=chip_idx, masc_idx=masc_idx,
+              hud_idx=hud_idx, spec_label=spec, lyrics=lyrics)
     cmd1 = ["-y"] + inputs + ["-filter_complex", ";".join(fc)] + maps + tail
 
     # variant 2: plain concat
     fc2 = list(segs)
     cat = "".join(f"[s{i}]" for i in range(n))
     fc2.append(f"{cat}concat=n={n}:v=1:a=0[cat]")
-    if chip is not None:
-        fc2.append(f"[cat][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto"
-                   f"[vpre2]")
-    else:
-        fc2.append("[cat]copy[vpre2]")
-    fc2.append(_vout("vpre2", lyr))
-    if has_audio:
-        _audio_branch(audio_idx, fc2, wav)
+    spec2 = _audio_branch(audio_idx, fc2, want_spec) if has_audio else None
+    _decorate(fc2, "cat", w, h, dur, chip_idx=chip_idx, masc_idx=masc_idx,
+              hud_idx=hud_idx, spec_label=spec2, lyrics=lyrics)
     cmd2 = ["-y"] + inputs + ["-filter_complex", ";".join(fc2)] + maps + tail
     return [cmd1, cmd2]
 
 
 def from_images(images: list[Path], dur: float, out_path: Path,
                 wav: Path | None = None, chip: Path | None = None,
-                size=LONG, lyrics=None) -> Path:
+                size=LONG, lyrics=None, mascot: Path | None = None,
+                hud: Path | None = None) -> Path:
     w, h = size
     n = len(images)
     per = dur / n
     inputs = []
     for img in images:
         inputs += ["-i", str(img)]
-    audio_idx = chip_idx = None
+    idx = len(images)
+    audio_idx = chip_idx = masc_idx = hud_idx = None
     if wav is not None:
         inputs += ["-i", str(wav)]
-        audio_idx = len(images)
+        audio_idx = idx
+        idx += 1
     if chip is not None:
         inputs += ["-loop", "1", "-i", str(chip)]
-        chip_idx = len(images) + (1 if wav else 0)
+        chip_idx = idx
+        idx += 1
+    if mascot is not None:
+        inputs += ["-stream_loop", "-1", "-i", str(mascot)]
+        masc_idx = idx
+        idx += 1
+    if hud is not None:
+        inputs += ["-loop", "1", "-i", str(hud)]
+        hud_idx = idx
+        idx += 1
     segs = _image_segments(images, per, w, h)
     cmds = _assemble(segs, inputs, wav, chip, out_path, dur, n, w, h,
-                     audio_idx, chip_idx, lyrics=lyrics)
+                     audio_idx, chip_idx, lyrics=lyrics,
+                     masc_idx=masc_idx, hud_idx=hud_idx)
     _run_variants("slideshow", cmds)
     return out_path
 
 
 def from_clip(clip: Path, dur: float, out_path: Path, wav: Path | None = None,
-              chip: Path | None = None, size=LONG, lyrics=None) -> Path:
+              chip: Path | None = None, size=LONG, lyrics=None,
+              mascot: Path | None = None, hud: Path | None = None) -> Path:
     """Loop a generated clip (e.g. Veo 8s) to any duration."""
     w, h = size
     inputs = ["-stream_loop", "-1", "-i", str(clip)]
-    audio_idx = chip_idx = None
+    idx = 1
+    audio_idx = chip_idx = masc_idx = hud_idx = None
     if wav is not None:
         inputs += ["-i", str(wav)]
-        audio_idx = 1
+        audio_idx = idx
+        idx += 1
     if chip is not None:
         inputs += ["-loop", "1", "-i", str(chip)]
-        chip_idx = 1 + (1 if wav else 0)
-    lyr = lyric_chain(lyrics, w, h, dur)
+        chip_idx = idx
+        idx += 1
+    if mascot is not None:
+        inputs += ["-stream_loop", "-1", "-i", str(mascot)]
+        masc_idx = idx
+        idx += 1
+    if hud is not None:
+        inputs += ["-loop", "1", "-i", str(hud)]
+        hud_idx = idx
+        idx += 1
+    want_spec = wav is not None and not _env_off("SPECTRUM_OFF")
     fc = [f"[0:v]scale={w}:{h}:force_original_aspect_ratio=increase,"
           f"crop={w}:{h},setsar=1,format=yuv420p[cv]"]
-    if chip is not None:
-        fc.append(f"[cv][{chip_idx}:v]overlay={w}-W-36:{h}-H-36:format=auto"
-                  f"[vpre]")
-    else:
-        fc.append("[cv]copy[vpre]")
-    fc.append(_vout("vpre", lyr))
-    if wav:
-        fc.append(f"[{audio_idx}:a]{loudnorm_filter(wav)}[aout]")
+    spec = _audio_branch(audio_idx, fc, want_spec) if wav else None
+    _decorate(fc, "cv", w, h, dur, chip_idx=chip_idx, masc_idx=masc_idx,
+              hud_idx=hud_idx, spec_label=spec, lyrics=lyrics)
     maps = ["-map", "[vout]"] + (["-map", "[aout]"] if wav else [])
     tail = ["-t", f"{dur:.3f}", "-r", str(FPS)]
     if wav:

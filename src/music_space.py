@@ -21,6 +21,7 @@ an optional FREE HF account token (env HF_TOKEN) raises it. No card needed.
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 import re
 import shutil
 from pathlib import Path
@@ -45,20 +46,58 @@ PROMPTS = {
     "disco_house":    ("french house disco, funky filtered bassline, "
                        "four on the floor, lush string stabs, feel-good groove, "
                        "{bpm} bpm"),
+    "skyline_anthem": ("anthemic folk-edm, progressive house festival lift, "
+                       "big piano stabs, euphoric crowd energy, {bpm} bpm"),
+    "villain_pop":    ("dark cinematic pop, villain aesthetic, music-box "
+                       "bells, heavy 808 sub, halftime drums, menacing "
+                       "elegance, {bpm} bpm"),
+    "orbit_trap":     ("melodic trap, confident rap-sung bounce, rolling "
+                       "hi-hats, sliding 808 bass, brass stabs, spacey "
+                       "pads, {bpm} bpm"),
 }
 
 # the HUMAN in the machine: per-genre vocal identity, so every drop sounds
 # like the same fictional artiste maturing, not a random karaoke night
 VOICE = {
-    "drift_phonk":   ("deep raspy male vocals, dark memphis rap energy, "
-                      "hushed menace in verses, melodic chorus, ad libs"),
-    "deep_pop":      ("soft airy female vocals, intimate and breathy, "
-                      "sad-pretty, big emotional chorus"),
-    "dark_ambient":  ("haunting whispered vocals, distant reverb, fragile"),
-    "lofi":          ("mellow hummed vocals, lazy smoky delivery, daydreamy"),
-    "baroque_waltz": ("chamber duet vocals, operetta charm, vintage tape warmth"),
-    "disco_house":   ("soulful diva vocals, celebratory, funky ad libs"),
+    "drift_phonk":   ["deep raspy male vocals, dark memphis rap energy, "
+                      "hushed menace in verses, melodic autotuned hook, "
+                      "distant ad libs",
+                      "smoky femme-fatale vocal chops, siren hooks over a "
+                      "dark memphis bounce",
+                      "stacked gang-vocal hook shouts, whispered verses, "
+                      "chopped vocal fills"],
+    "deep_pop":      ["soft airy female vocals, intimate and breathy, "
+                      "sad-pretty verses, big emotional chorus",
+                      "velvet male baritone, close-mic'd and minimal, "
+                      "falsetto lift on the hook"],
+    "dark_ambient":  ["haunting whispered vocals, distant reverb, fragile",
+                      "wordless ethereal choir, glass-like soprano fragments"],
+    "lofi":          ["mellow hummed vocals, lazy smoky delivery, daydreamy",
+                      "dusty old-radio croon, half-sung half-spoken"],
+    "baroque_waltz": ["chamber duet vocals, operetta charm, vintage tape warmth",
+                      "playful baroque tenor, ornamented music-hall sparkle"],
+    "disco_house":   ["soulful diva vocals, celebratory, funky ad libs",
+                      "silky male disco falsetto, talkbox echoes, glitter"],
+    "skyline_anthem": ["euphoric male tenor, crowd-ready chants, hands-up "
+                       "whoa-ohs",
+                       "bright female anthem lead, gang harmonies on the hook"],
+    "villain_pop":   ["silken dangerous female lead, playful menace, "
+                      "whispered taunts, big villain chorus",
+                      "smooth male croon with a smirk, theatrical shadows"],
+    "orbit_trap":    ["laid-back male melodic-rap flow, confident pockets, "
+                      "airy autotuned ad libs",
+                      "cold minimal female flow, spaced-out melodic hook"],
 }
+
+
+def _voice_for(genre_key: str) -> str:
+    """Pick the day's singer — the same genre never wears the same voice
+    two days in a row (rotates daily, zero extra state)."""
+    bank = VOICE.get(genre_key) or ["expressive vocals"]
+    if isinstance(bank, str):
+        return bank
+    day = int(datetime.now(timezone.utc).strftime("%j"))
+    return bank[day % len(bank)]
 
 # language words for prompts → plus v1.5's native vocal-language codes
 LANG_TOKEN = {"en": "english", "pt-BR": "portuguese", "es": "spanish",
@@ -67,13 +106,26 @@ LANG_CODE = {"en": "en", "pt-BR": "pt", "es": "es", "fr": "fr",
              "tr": "tr", "ja": "ja", "ko": "ko"}
 
 GENRE_BPM = {"drift_phonk": 130, "deep_pop": 96, "dark_ambient": 60,
-             "lofi": 78, "baroque_waltz": 172, "disco_house": 118}
+             "lofi": 78, "baroque_waltz": 172, "disco_house": 118,
+             "skyline_anthem": 128, "villain_pop": 142, "orbit_trap": 148}
 
 
 def _client(space: str):
+    """Version-proof dial: gradio renamed the auth kwarg between releases
+    (token= -> hf_token=). The 2026-08-10 run died on exactly this BEFORE
+    it could spend a single quota second — try both, then anonymous."""
     from gradio_client import Client
     token = os.environ.get("HF_TOKEN", "").strip() or None
-    return Client(space, token=token, verbose=False)
+    attempts = ({"token": token}, {"hf_token": token}, {}) if token else ({},)
+    last = None
+    for kw in attempts:
+        kw = {k: v for k, v in kw.items() if v}
+        try:
+            return Client(space, verbose=False, **kw)
+        except TypeError as e:                 # wrong kwarg name -> next style
+            last = e
+            continue
+    raise RuntimeError(f"gradio_client refused every auth style: {last}")
 
 
 def build_prompt(genre_key: str, lang: str = "en", vocals: bool = True) -> str:
@@ -81,7 +133,7 @@ def build_prompt(genre_key: str, lang: str = "en", vocals: bool = True) -> str:
         bpm=GENRE_BPM.get(genre_key, 100))
     if not vocals:
         return base + ", instrumental"
-    voice = VOICE.get(genre_key, "expressive vocals")
+    voice = _voice_for(genre_key)
     lang_tok = LANG_TOKEN.get(lang, "english")
     return f"{base}, {voice}, {lang_tok} lyrics, {lang_tok} song"
 

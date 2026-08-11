@@ -43,6 +43,20 @@ NAME_BANKS = {
          "parquet gospel", "satin footwork", "torsion boogie", "apricot fever",
          "plimsoll strut", "verbena groove"),
     ],
+    "skyline_anthem": [
+        ("horizon kids club", "borrowed starlight", "rooftop july",
+         "mapglow", "wildfire valedictorian", "open window anthem",
+         "thirty-two sunsets"),
+    ],
+    "villain_pop": [
+        ("velvet misdemeanor", "halo practice", "sugar psalm no. 9",
+         "polite menace", "lipstick alibi", "courtroom lullaby",
+         "teacup felony"),
+    ],
+    "orbit_trap": [
+        ("launchpad lullaby", "pressure diamonds", "plain sight vanish",
+         "orbit receipt", "zero gravity alibi", "countdown romance"),
+    ],
 }
 
 DESCRIPTION_TMPL = """{name}
@@ -62,6 +76,9 @@ HASHTAGS = {
     "lofi": "#lofi #chillbeats #studymusic",
     "baroque_waltz": "#waltz #baroquepop #vintage",
     "disco_house": "#housemusic #disco #groove",
+    "skyline_anthem": "#edm #festivalvibes #anthem",
+    "villain_pop": "#darkpop #villainera #cinematicpop",
+    "orbit_trap": "#trap #melodicrap #spacemood",
 }
 
 TAGS = {
@@ -77,6 +94,12 @@ TAGS = {
                       "classical crossover", "instrumental"],
     "disco_house": ["house music", "disco house", "funky house", "dance music",
                     "groove", "club instrumental"],
+    "skyline_anthem": ["festival edm", "anthem house", "uplifting",
+                       "folk edm", "summer anthem", "type beat"],
+    "villain_pop": ["villain pop", "dark cinematic pop", "evil pop",
+                    "music box beat", "villain era", "dark pop type beat"],
+    "orbit_trap": ["melodic trap", "trap type beat", "confidence trap",
+                   "space trap", "rap beat", "night trap"],
 }
 
 
@@ -147,12 +170,52 @@ def build(genre_key: str, info: dict, ep: int, rng: random.Random,
     }
 
 
-def short_meta(meta: dict, hook_line: str) -> dict:
-    """Shorts packaging: hook line first (psych trigger), clean official copy."""
-    title = f'"{hook_line}" 🤍 {meta["name"]}'
+def add_chapters(meta: dict, lrc_entries, dur: float) -> int:
+    """⏱ YouTube chapters from the karaoke map (v23).
+
+    Rules of the platform: first stamp must be 0:00, need >= 3 chapters,
+    each >= 10 s apart — else YouTube silently ignores them. We take sung
+    lines >= 10 s apart as chapter names ('0:00 intro' leads). Returns the
+    chapter count written (0 = description untouched).
+    """
+    picks: list[tuple[float, str]] = [(0.0, "intro")]
+    for t, txt in (lrc_entries or []):
+        if t < 8 or t > dur - 8:
+            continue
+        if t - picks[-1][0] < 10:
+            continue
+        label = " ".join(str(txt).split()[:6])[:34].strip(" .,;:-")
+        if len(label) < 3 or label.lower() == picks[-1][1].lower():
+            continue
+        picks.append((float(t), label))
+        if len(picks) >= 10:
+            break
+    if len(picks) < 3:
+        return 0
+    block = "\n\n⏱ chapters\n" + "\n".join(
+        f"{int(t // 60)}:{int(t % 60):02d} {label}" for t, label in picks)
+    desc = meta["description"].rstrip()
+    head, sep, tail = desc.rpartition("\n")
+    if sep and tail.lstrip().startswith("#"):     # hashtags always ride last
+        meta["description"] = head + block + "\n" + tail
+    else:
+        meta["description"] = desc + block
+    return len(picks)
+
+
+def short_meta(meta: dict, hook_line: str, slowed: bool = False) -> dict:
+    """Shorts packaging: hook line first (psych trigger), clean official copy.
+    v23: every short carries the 'use this sound' CTA (original-sound pages
+    compound), and the slowed+reverb twin gets honest, searchable packaging."""
+    if slowed:
+        title = f'"{hook_line}" 💤 {meta["name"]} (slowed + reverb)'
+    else:
+        title = f'"{hook_line}" 🤍 {meta["name"]}'
     desc = (f"{meta['name']} — full version on the channel.\n"
             f"by Nix Speech\n"
+            f"🎧 use this sound — tap the audio below\n"
             f"{HASHTAGS[meta['genre_key']]}"
-            f"{LANG_HASHTAG.get(meta.get('lang', 'en'), '')} #shorts")
+            f"{LANG_HASHTAG.get(meta.get('lang', 'en'), '')} #shorts"
+            f"{' #slowedandreverb' if slowed else ''}")
     return {"title": title[:100], "description": desc,
             "tags": TAGS[meta["genre_key"]] + ["shorts"]}

@@ -90,6 +90,30 @@ SCENE_VARIANTS = {
         "1990s retro anime film still: retro disco hall aglow, mirror ball "
         "sparkles, cel-shaded, no dancers",
     ],
+    "skyline_anthem": [
+        "rooftop crowd silhouettes against a giant pink-orange sunrise, "
+        "raised hands, lens flare, euphoric festival film still",
+        "open highway at golden hour from inside a moving car, hands "
+        "out the window, wide cinematic composition, warm film grain",
+        "small town rooftops under a sky full of summer fireworks, "
+        "seen from a hill, cinematic wide shot, hopeful mood",
+    ],
+    "villain_pop": [
+        "empty baroque theatre lit by a single red spotlight, velvet "
+        "curtain, dust motes in the beam, cinematic villain still",
+        "rainy mansion window at night, candlelight inside, silhouette "
+        "with a wine glass, gothic pop mood, film noir palette",
+        "antique music box open on a black marble table, smoke curling, "
+        "dramatic low-key lighting, cinematic macro",
+    ],
+    "orbit_trap": [
+        "low-orbit view of city lights at night from a capsule window, "
+        "stars and neon below, cinematic sci-fi still, no people",
+        "empty launchpad at 4am, floodlights and fog, countdown clock "
+        "glowing, cinematic wide shot",
+        "mirror-tiled space helmet visor reflecting neon city lights, "
+        "macro cinematic photo, no face visible",
+    ],
 }
 
 

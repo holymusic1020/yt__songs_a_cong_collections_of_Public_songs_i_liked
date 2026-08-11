@@ -88,6 +88,32 @@ LINES = {
         "the bassline holds your hand",
         "midnight's open 'til we say so",
     ],
+    "skyline_anthem": [
+        "small town, sky-wide plans",
+        "we were born for the bright side",
+        "hands out the window, heart wide open",
+        "turn the horizon up louder",
+        "this is the summer they warned us about",
+        "every rooftop is a finish line",
+        "we run on borrowed starlight",
+    ],
+    "villain_pop": [
+        "polite smile, poison halo",
+        "guess who taught the devil manners",
+        "saint on the surface only",
+        "halo's just target practice",
+        "sweetest voice in the courtroom",
+        "I wear my warnings like perfume",
+        "say your prayers with lipstick on",
+    ],
+    "orbit_trap": [
+        "pressure makes my kind of diamonds",
+        "left my doubts on the launchpad",
+        "gravity never got my number",
+        "orbit high, worries grounded",
+        "they watched me vanish in plain sight",
+        "countdown's running, I already left",
+    ],
 }
 
 LOOP_BRIDGES = [

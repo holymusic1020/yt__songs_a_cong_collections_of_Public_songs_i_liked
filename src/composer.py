@@ -14,6 +14,7 @@ import numpy as np
 SR = 44100
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 MINOR_PENT = [0, 3, 5, 7, 10]
+MAJOR_PENT = [0, 2, 4, 7, 9]      # anthem bright side
 
 # ------------------------------------------------------------------ helpers
 
@@ -190,6 +191,40 @@ def _build_map(hook, intro_b):
     return build_open, build_last
 
 
+def bell(note, dur=0.8, sr=SR):
+    """Music-box bell — sine + inharmonic partials, fast decay. Villain candy."""
+    n = max(64, int(dur * sr))
+    tt = np.arange(n, dtype=np.float32) / sr
+    f = midi(note)
+    sig = (np.sin(2 * np.pi * f * tt)
+           + 0.45 * np.sin(2 * np.pi * f * 2.99 * tt)
+           + 0.18 * np.sin(2 * np.pi * f * 4.92 * tt))
+    env = np.minimum(1.0, tt / 0.003) * np.exp(-tt * 3.2)
+    return (sig * env * 0.8).astype(np.float32)
+
+
+def stab(notes, dur=0.28, sr=SR):
+    """Detuned saw stack hit — brass-ish hook punctuation."""
+    n = max(64, int(dur * sr))
+    out = np.zeros(n, dtype=np.float32)
+    for note in notes:
+        f = midi(note)
+        for det in (-0.9, 0.7):
+            out += osc("saw", f * (1 + det / 100), n)
+    out = out * adsr(n, 0.004, 0.06, 0.4, 0.10)
+    return (out * 0.22).astype(np.float32)
+
+
+def clap(rng, sr=SR):
+    """Three tight noise bursts read as one handclap."""
+    n = int(0.09 * sr)
+    tt = np.arange(n, dtype=np.float32) / sr
+    e = (np.exp(-tt * 60)
+         + 0.7 * np.exp(-np.clip(tt - 0.012, 0, None) * 60) * (tt > 0.012)
+         + 0.7 * np.exp(-np.clip(tt - 0.024, 0, None) * 40) * (tt > 0.024))
+    return (noise(n, rng) * e).astype(np.float32)
+
+
 def kick(rng, sr=SR):
     n = int(0.24 * sr)
     t = np.arange(n, dtype=np.float32) / sr
@@ -283,6 +318,46 @@ class Mix:
         self.buf[at:end] += (sig[src0: src0 + end - at] * gain).astype(np.float32)
 
 
+def sonic_logo(sr=SR):
+    """🔔 The Nix Speech station chime — 0.75 s, descending bell motif + sub
+    tick. Played over the head of EVERY master (engine & queue alike) and at
+    every short's loop point. Deterministic: same notes, same gain, every
+    episode — that's what makes it a logo. Kill-switch: CHIME_OFF=1."""
+    n = int(0.75 * sr)
+    seg = np.zeros(n, dtype=np.float32)
+    for note, at, amp in ((93, 0.00, 0.30), (88, 0.14, 0.26),
+                          (81, 0.30, 0.22), (76, 0.46, 0.18)):
+        b = bell(note, 0.40, sr) * amp
+        s = int(at * sr)
+        m = min(len(b), n - s)
+        seg[s:s + m] += b[:m]
+    th = bell(52, 0.18, sr) * 0.16                 # sub 'thup' under the head
+    seg[:min(len(th), n)] += th[:n]
+    return np.clip(seg, -0.9, 0.9)
+
+
+def mix_logo(path: Path, sr=SR):
+    """Stamp the station chime onto an EXISTING master (queue songs skip
+    master(); the chime still has to open them)."""
+    import os as _os
+    if _os.environ.get("CHIME_OFF", "") == "1":
+        return path
+    with wave.open(str(path), "rb") as w:
+        n, sw, fs = w.getnframes(), w.getsampwidth(), w.getframerate()
+        raw = w.readframes(n)
+    if sw != 2:
+        return path
+    x = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
+    if fs != sr:                                   # queue wavs arrive 44.1k
+        m = max(sr, int(len(x) * sr / fs))
+        x = np.interp(np.linspace(0, len(x) - 1, m),
+                      np.arange(len(x)), x).astype(np.float32)
+    logo = sonic_logo(sr)
+    m = min(len(logo), len(x))
+    x[:m] = np.clip(x[:m] + logo, -0.99, 0.99)
+    return write_wav(path, x, sr)
+
+
 def master(bus, fade_s=3.0, sr=SR):
     x = np.tanh(bus * 1.15).astype(np.float32)
     peak = max(1e-6, float(np.max(np.abs(x))))
@@ -291,6 +366,11 @@ def master(bus, fade_s=3.0, sr=SR):
     if len(x) > 2 * f:
         x[:f] *= np.linspace(0, 1, f, dtype=np.float32)
         x[-f:] *= np.linspace(1, 0, f, dtype=np.float32)
+    import os as _os
+    if _os.environ.get("CHIME_OFF", "") != "1":
+        logo = sonic_logo(sr)
+        m = min(len(logo), len(x))
+        x[:m] = np.clip(x[:m] + logo, -0.99, 0.99)
     return x
 
 
@@ -724,9 +804,264 @@ def disco_house(rng, target_s):
                  "events": events}
 
 
+def skyline_anthem(rng, target_s):
+    """Bright-side anthem — folk-EDM lift, festival build, hands-up hook."""
+    bpm = int(rng.integers(126, 132))
+    root = int(rng.choice([45, 47, 48, 50, 52]))
+    bars = _bars_for_target(target_s, bpm)
+    bar_s = 4 * 60.0 / bpm
+    bar_n = int(bar_s * SR)
+    step = bar_n // 16
+    total = bars * bar_n
+    intro_b = max(2, bars // 8)
+    hook = _hook_map(bars, intro_b, max(2, bars // 10))
+    build_open, build_last = _build_map(hook, intro_b)
+    prog = [0, 7, 9, 5]                          # I V vi IV — the anthem road
+    hook_mel = walk(rng, MAJOR_PENT, 18, span=6)
+    arp = [0, 4, 7, 12, 7, 4]
+
+    drums, music, lead, vox, fx = (Mix(total) for _ in range(5))
+    kicks, events = [], {"risers": 0, "rolls": 0, "crashes": 0}
+    for b in range(bars):
+        base = b * bar_n
+        croot = root + prog[(b // 2) % 4]
+        breath = build_last[b]
+        music.add(pad([croot + i for i in (0, 4, 7, 14)], 4 * 60 / bpm,
+                      swell=0.5), base, gain=0.4)
+        for s in range(16):
+            at = base + s * step
+            jd = jit(rng)
+            if b >= intro_b and s % 4 == 0 and not (breath and s >= 12):
+                drums.add(kick(rng), at + jd, gain=human(rng, 0.9, 0.08))
+                kicks.append(at)
+            if b >= intro_b and s in (4, 12) and not breath:
+                drums.add(clap(rng), at + jd, gain=human(rng, 0.5, 0.15))
+            if s % 4 == 2 and not breath:
+                drums.add(hat(rng, open_=True), at + jd,
+                          gain=human(rng, 0.14, 0.2))
+            elif s % 2 == 0 and not breath:
+                drums.add(hat(rng), at + jd,
+                          gain=human(rng, 0.10 if s % 4 == 0 else 0.05, 0.25))
+            if s in (0, 8) and b >= intro_b and not (breath and s == 8):
+                music.add(sub808(croot - 12 + (7 if s == 8 else 0),
+                                 1.4 * 60 / bpm), at + jit(rng, ms=4),
+                          gain=human(rng, 0.7, 0.1))
+            if hook[b] and s in (0, 6, 10, 12):      # piano anthem stabs
+                for iv in (0, 4, 7, 12):
+                    lead.add(piano(croot + 12 + iv), at + jit(rng, ms=5),
+                             gain=human(rng, 0.30, 0.15))
+            elif b >= intro_b and s % 2 == 1:        # folk arp tickles verses
+                lead.add(pluck(croot + 12 + arp[(s % 6)]), at + jit(rng, ms=5),
+                         gain=human(rng, 0.13, 0.2))
+        if hook[b]:                                  # the whoa-oh squad
+            if b % 2 == 0:
+                for k, s in enumerate((0, 8)):
+                    note = root + 12 + hook_mel[(b * 4 + s) % len(hook_mel)]
+                    vox.add(vox_chop(rng, note, 0.9 * 60 / bpm,
+                                     vowel=("o", "a") if k == 0 else ("a", "o")),
+                            base + s * step, gain=0.5)
+            else:
+                note = root + 12 + hook_mel[(b * 4 + 3) % len(hook_mel)]
+                vox.add(vox_chop(rng, note, 1.4 * 60 / bpm, vowel=("o",)),
+                        base + 2 * step, gain=0.4)
+        if build_open[b]:
+            fx.add(riser(rng, 2 * bar_s), base, gain=0.8)
+            events["risers"] += 1
+        if build_last[b]:
+            fx.add(snare_roll(rng, bar_s), base, gain=1.0)
+            events["rolls"] += 1
+        if b > 0 and hook[b] and not hook[b - 1]:
+            fx.add(crash(rng), base, gain=0.6)
+            events["crashes"] += 1
+
+    lead.buf = chorus(lead.buf)
+    t_bars = np.arange(len(lead.buf), dtype=np.float32) / SR / bar_s
+    cut = 2000.0 * (7500.0 / 2000.0) ** (0.5 - 0.5 *
+                                         np.cos(2 * np.pi * t_bars / 8.0))
+    lead.buf = sweep_filter(lead.buf, SR, cut)
+    lead.buf = echo(lead.buf, 0.375 * 60 / bpm * 2, gains=(0.35, 0.18))
+    vox.buf = echo(vox.buf, 0.5 * 60 / bpm, gains=(0.28, 0.12))
+    music.buf = sidechain(music.buf, kicks, SR, depth=0.5)
+    lead.buf = sidechain(lead.buf, kicks, SR, depth=0.3, release=0.16)
+    vox.buf = sidechain(vox.buf, kicks, SR, depth=0.3, release=0.16)
+    out = master(drums.buf * 0.95 + music.buf + lead.buf + vox.buf * 0.85
+                 + fx.buf)
+    return out, {"genre": "skyline anthem", "bpm": bpm,
+                 "key": f"{NOTE_NAMES[root % 12]} major",
+                 "duration_s": total / SR, "events": events}
+
+
+def villain_pop(rng, target_s):
+    """Villain pop — music-box menace over halftime 808s. Smiles, with teeth."""
+    bpm = int(rng.integers(140, 150))
+    root = int(rng.choice([38, 40, 41, 43, 44]))
+    bars = _bars_for_target(target_s, bpm)
+    bar_s = 4 * 60.0 / bpm
+    bar_n = int(bar_s * SR)
+    step = bar_n // 16
+    total = bars * bar_n
+    intro_b = max(2, bars // 9)
+    hook = _hook_map(bars, intro_b, max(2, bars // 10))
+    build_open, build_last = _build_map(hook, intro_b)
+    prog = [0, -4, -2, -6]
+    riff = walk(rng, MINOR_PENT, 18, span=6)
+
+    drums, music, lead, vox, fx = (Mix(total) for _ in range(5))
+    kicks, events = [], {"risers": 0, "rolls": 0, "crashes": 0}
+    for b in range(bars):
+        base = b * bar_n
+        croot = root + prog[(b // 2) % 4]
+        breath = build_last[b]
+        # slow tense pad, barely breathing
+        music.add(pad([croot + 12 + i for i in (0, 3, 7, 10)], 4 * 60 / bpm,
+                      swell=1.0), base, gain=0.32)
+        for s in range(16):
+            at = base + s * step
+            jd = jit(rng)
+            if b >= intro_b and s in (0, 10) and not (breath and s == 10):
+                drums.add(lowpass(kick(rng), 901), at + jd,
+                          gain=human(rng, 0.9, 0.08))
+                kicks.append(at)
+            if b >= intro_b and s == 8 and not breath:
+                drums.add(snare(rng), at + jd, gain=human(rng, 0.55, 0.15))
+            if not breath and (
+                    s % 2 == 0 or (s % 4 == 3 and rng.random() < 0.7)):
+                g = 0.085 if s % 4 == 0 else 0.05
+                drums.add(hat(rng, open_=(s == 14)), at + jd,
+                          gain=human(rng, g, 0.25))
+            if s % 4 == 3 and rng.random() < 0.35:   # triplet flurry
+                for k in range(3):
+                    drums.add(hat(rng), at + int(k * step / 3),
+                              gain=0.028 + 0.01 * k)
+            if s == 0 and b >= intro_b and not breath:
+                music.add(sub808(croot - 12, 2.2 * 60 / bpm), at,
+                          gain=human(rng, 0.8, 0.08))
+            if s == 10 and b >= intro_b and not breath:
+                music.add(sub808(croot - 12 + (5 if rng.random() < 0.5 else 7),
+                                 1.1 * 60 / bpm), at, gain=human(rng, 0.65, 0.1))
+            if hook[b] and s in (0, 3, 6, 8, 11, 14):   # the music box confesses
+                note = root + 24 + riff[(b * 5 + s) % len(riff)]
+                lead.add(bell(note), at + jit(rng, ms=5),
+                         gain=human(rng, 0.34, 0.18))
+            elif not hook[b] and b >= intro_b and b % 2 == 0 and s in (6, 14):
+                lead.add(bell(croot + 24), at, gain=human(rng, 0.2, 0.2))
+        if hook[b] and b % 2 == 1:                   # villain's sighs
+            vox.add(vox_chop(rng, root + 12 + riff[(b * 5) % len(riff)],
+                             1.2 * 60 / bpm, vowel=("o", "a")),
+                    base + 12 * step, gain=0.42)
+            vox.add(vox_chop(rng, root + 12, 0.5 * 60 / bpm, vowel=("u",)),
+                    base + 15 * step, gain=0.3)
+        if build_open[b]:
+            fx.add(riser(rng, 2 * bar_s), base, gain=0.7)
+            events["risers"] += 1
+        if build_last[b]:
+            fx.add(snare_roll(rng, bar_s), base, gain=0.85)
+            events["rolls"] += 1
+        if b > 0 and hook[b] and not hook[b - 1]:
+            fx.add(crash(rng), base, gain=0.5)
+            events["crashes"] += 1
+
+    lead.buf = chorus(lead.buf, mix=0.3)
+    lead.buf = echo(lead.buf, 0.75 * 60 / bpm, gains=(0.3, 0.15))
+    vox.buf = echo(vox.buf, 0.5 * 60 / bpm, gains=(0.25, 0.1))
+    music.buf = sidechain(music.buf, kicks, SR, depth=0.5)
+    lead.buf = sidechain(lead.buf, kicks, SR, depth=0.3, release=0.16)
+    vox.buf = sidechain(vox.buf, kicks, SR, depth=0.3, release=0.16)
+    out = master(drums.buf * 0.9 + music.buf + lead.buf * 0.9 + vox.buf * 0.8
+                 + fx.buf)
+    return out, {"genre": "villain pop", "bpm": bpm,
+                 "key": f"{NOTE_NAMES[root % 12]} minor",
+                 "duration_s": total / SR, "events": events}
+
+
+def orbit_trap(rng, target_s):
+    """Orbit trap — confident bounce, sliding 808s, brass in zero gravity."""
+    bpm = int(rng.integers(146, 153))
+    root = int(rng.choice([41, 43, 44, 46]))
+    bars = _bars_for_target(target_s, bpm)
+    bar_s = 4 * 60.0 / bpm
+    bar_n = int(bar_s * SR)
+    step = bar_n // 16
+    total = bars * bar_n
+    intro_b = max(2, bars // 9)
+    hook = _hook_map(bars, intro_b, max(2, bars // 10))
+    build_open, build_last = _build_map(hook, intro_b)
+    prog = [0, -2, -4, -7]
+    riff = walk(rng, MINOR_PENT, 18, span=6)
+
+    drums, music, lead, vox, fx = (Mix(total) for _ in range(5))
+    kicks, events = [], {"risers": 0, "rolls": 0, "crashes": 0}
+    for b in range(bars):
+        base = b * bar_n
+        croot = root + prog[(b // 2) % 4]
+        breath = build_last[b]
+        music.add(pad([croot + 12 + i for i in (0, 3, 7, 10)], 4 * 60 / bpm,
+                      swell=0.8), base, gain=0.3)
+        for s in range(16):
+            at = base + s * step
+            jd = jit(rng)
+            if b >= intro_b and s in (0, 7, 10) and not (breath and s >= 10):
+                drums.add(kick(rng), at + jd, gain=human(rng, 0.95, 0.08))
+                kicks.append(at)
+            if b >= intro_b and s == 8 and not breath:
+                drums.add(snare(rng), at + jd, gain=human(rng, 0.55, 0.15))
+            if s % 2 == 0 and not breath:            # rolling hats
+                g = 0.075 if s % 4 == 0 else 0.045
+                drums.add(hat(rng, open_=(s == 14)), at + jd,
+                          gain=human(rng, g, 0.25))
+            if s == 14 and b >= intro_b and b % 2 == 1 and not breath:
+                for k in range(4):                   # 32nd flick into the bar
+                    drums.add(hat(rng), at + int(k * step / 4),
+                              gain=0.03 + 0.012 * k)
+            if s == 0 and b >= intro_b and not breath:
+                music.add(sub808(croot - 12, 2.4 * 60 / bpm), at,
+                          gain=human(rng, 0.8, 0.08))
+            if s == 10 and b >= intro_b and not breath:
+                music.add(sub808(croot - 12 + (7 if rng.random() < 0.5 else 3),
+                                 0.9 * 60 / bpm), at, gain=human(rng, 0.7, 0.1))
+            if hook[b] and s in (0, 6, 12):          # brass enters orbit
+                tones = [0, 3, 7, 12]
+                chord = [croot + 12 + tones[(s // 6 + i) % 4] for i in range(3)]
+                lead.add(stab(chord, 0.3), at + jit(rng, ms=4),
+                         gain=human(rng, 0.5, 0.15))
+            elif not hook[b] and s == 12 and b >= intro_b and rng.random() < 0.6:
+                note = root + 24 + riff[(b * 3 + s) % len(riff)]
+                lead.add(bell(note, 0.5), at, gain=human(rng, 0.16, 0.2))
+        if hook[b] and b % 2 == 0:                   # cool guy call-answers
+            vox.add(vox_chop(rng, root + 12 + riff[(b * 5) % len(riff)],
+                             0.6 * 60 / bpm, vowel=("a", "o")),
+                    base + 4 * step, gain=0.45)
+            vox.add(vox_chop(rng, root + 12 + 7, 0.5 * 60 / bpm, vowel=("a",)),
+                    base + 13 * step, gain=0.32)
+        if build_open[b]:
+            fx.add(riser(rng, 2 * bar_s), base, gain=0.6)
+            events["risers"] += 1
+        if build_last[b]:
+            fx.add(snare_roll(rng, bar_s), base, gain=0.8)
+            events["rolls"] += 1
+        if b > 0 and hook[b] and not hook[b - 1]:
+            fx.add(crash(rng), base, gain=0.45)
+            events["crashes"] += 1
+
+    lead.buf = chorus(lead.buf, mix=0.3)
+    lead.buf = echo(lead.buf, 0.375 * 60 / bpm, gains=(0.3, 0.14))
+    vox.buf = echo(vox.buf, 0.5 * 60 / bpm, gains=(0.22, 0.09))
+    music.buf = sidechain(music.buf, kicks, SR, depth=0.5)
+    lead.buf = sidechain(lead.buf, kicks, SR, depth=0.3, release=0.16)
+    vox.buf = sidechain(vox.buf, kicks, SR, depth=0.3, release=0.16)
+    out = master(drums.buf * 0.92 + music.buf + lead.buf + vox.buf * 0.8
+                 + fx.buf)
+    return out, {"genre": "orbit trap", "bpm": bpm,
+                 "key": f"{NOTE_NAMES[root % 12]} minor",
+                 "duration_s": total / SR, "events": events}
+
+
 GENRES = {"drift_phonk": drift_phonk, "deep_pop": deep_pop,
           "dark_ambient": dark_ambient, "lofi": lofi,
-          "baroque_waltz": baroque_waltz, "disco_house": disco_house}
+          "baroque_waltz": baroque_waltz, "disco_house": disco_house,
+          "skyline_anthem": skyline_anthem, "villain_pop": villain_pop,
+          "orbit_trap": orbit_trap}
+
 
 
 def compose(genre: str, rng: np.random.Generator, target_s: float):

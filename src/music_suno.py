@@ -39,11 +39,19 @@ STYLES = {
                       "amber ballroom, old tape warmth"),
     "disco_house":   ("disco house, funky four-on-the-floor, grooving bassline, "
                       "offbeat chord stabs, celebratory club energy"),
+    "skyline_anthem": ("anthemic folk-EDM, festival progressive house, big "
+                       "piano stabs, euphoric crowd chant energy"),
+    "villain_pop":   ("dark cinematic villain pop, music-box bells, heavy "
+                      "808 sub, playful menace, theatrical tension"),
+    "orbit_trap":    ("melodic trap, confident rap-sung bounce, rolling "
+                      "hi-hats, sliding 808 bass, brass stabs, spacey pads"),
 }
-GENRE_BPM = {"drift_phonk": 134, "deep_pop": 105, "dark_ambient": 76,
-             "lofi": 80, "baroque_waltz": 180, "disco_house": 121}
+GENRE_BPM = {"drift_phonk": 130, "deep_pop": 96, "dark_ambient": 60,
+             "lofi": 78, "baroque_waltz": 172, "disco_house": 118,
+             "skyline_anthem": 128, "villain_pop": 142, "orbit_trap": 148}
 VOCAL_GENDER = {"drift_phonk": "m", "deep_pop": "f", "dark_ambient": "f",
-                "lofi": "m", "baroque_waltz": "f", "disco_house": "f"}
+                "lofi": "m", "baroque_waltz": "f", "disco_house": "f",
+                "skyline_anthem": "m", "villain_pop": "f", "orbit_trap": "m"}
 LANG_HINT = {"en": "", "pt-BR": "sung in brazilian portuguese",
              "es": "sung in spanish", "fr": "sung in french",
              "tr": "sung in turkish", "ja": "sung in japanese",

@@ -28,8 +28,9 @@ from src import art, composer, lyrics, metadata, state
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out"
-GENRE_ROTATION = ["deep_pop", "drift_phonk", "baroque_waltz",
-                  "dark_ambient", "disco_house", "lofi"]
+GENRE_ROTATION = ["deep_pop", "drift_phonk", "skyline_anthem",
+                  "baroque_waltz", "villain_pop", "disco_house",
+                  "dark_ambient", "orbit_trap", "lofi"]
 
 VIDEO_WINDOW_S = (0, 5 * 3600)
 SHORT_WINDOW_S = (3600, 3 * 3600)
@@ -87,7 +88,7 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
         try:
             from src import art_gemini
             if variant is None:
-                variant = rng.choice(art_gemini.SCENE_VARIANTS[meta["genre_key"]])
+                variant = rng.choice(art_gemini.SCENE_VARIANTS.get(meta["genre_key"]) or art_gemini.SCENE_VARIANTS["drift_phonk"])
             print("  🖼  painting 4 matching scenes with Gemini…")
             print(f"     style: {variant[:72]}…")
             scenes = art_gemini.generate_scenes(meta, n=4, scene_text=variant)
@@ -111,6 +112,21 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
     if have_ff and want_long:
         from src import video_render
         chip = art.chip_png(OUT / "chip.png")
+        # 🌌 v23 UNIVERSE: NYX blinks on the kick · HUD skin · live spectrum strip
+        mascot = hud = None
+        try:
+            from src import mascot as _mx
+            beat = 60.0 / float(meta.get("bpm") or 120)
+            w_l, h_l = video_render.LONG
+            if os.environ.get("MASCOT_OFF", "") != "1":
+                mascot = _mx.blink_webm(OUT / f"ep{ep:03d}_nyx.webm", beat)
+                if mascot:
+                    print("  😼 NYX the signal-cat is on deck (blinks on the kick)")
+            if os.environ.get("SPECTRUM_OFF", "") != "1":
+                hud = _mx.hud_png(w_l, h_l, OUT / "hud_overlay.png")
+                print("  📡 HUD skin on: scanlines + live spectrum strip")
+        except Exception as e:
+            print(f"  (universe dressing skipped: {e})")
         if lrc_entries:
             print(f"  🎤⏱ burning {len(lrc_entries)} synced lyric lines "
                   f"into the video (karaoke!)")
@@ -118,13 +134,14 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
             print("  🎞  looping clip to song length…")
             long_mp4 = video_render.from_clip(clip, dur, OUT / f"ep{ep:03d}.mp4",
                                               wav=wav, chip=chip,
-                                              lyrics=lrc_entries)
+                                              lyrics=lrc_entries,
+                                              mascot=mascot, hud=hud)
         elif scenes:
             print("  🎞  Ken Burns slideshow (xfades)…")
             long_mp4 = video_render.from_images(
                 [OUT / f"ep{ep:03d}_scene{i}.png" for i in range(len(scenes))],
                 dur, OUT / f"ep{ep:03d}.mp4", wav=wav, chip=chip,
-                lyrics=lrc_entries)
+                lyrics=lrc_entries, mascot=mascot, hud=hud)
     return long_mp4, clip, scenes
 
 
@@ -258,7 +275,9 @@ def main() -> None:
     # ---------- song source (boss's queue): human drop > prefetched space song > engine ----------
     GENRE_LABEL = {"drift_phonk": "drift phonk", "deep_pop": "deep pop",
                    "dark_ambient": "dark ambient", "lofi": "lofi",
-                   "baroque_waltz": "baroque waltz", "disco_house": "disco house"}
+                   "baroque_waltz": "baroque waltz", "disco_house": "disco house",
+                   "skyline_anthem": "skyline anthem",
+                   "villain_pop": "villain pop", "orbit_trap": "orbit trap"}
     ext_wav = ext_src = ext_name = ext_genre = None
     ext_lang, ext_lyc, ext_lrc = "en", None, None
     if video_today:
@@ -322,6 +341,14 @@ def main() -> None:
     meta = metadata.build(genre_key, info, ep, rng_py,
                           used_names=used_names, name=name,
                           lang=ext_lang, vocal=bool(lyr_today))
+    nch = 0
+    if lrc_entries and video_today:            # ⏱ v23: chapters in description
+        try:
+            nch = metadata.add_chapters(meta, lrc_entries, dur)
+            if nch:
+                print(f"  ⏱ {nch} chapters burned into the description")
+        except Exception as e:
+            print(f"  (chapters skipped: {e})")
 
     copy = None
     try:
@@ -334,6 +361,12 @@ def main() -> None:
 
     print("  rendering audio + cover…")
     wav = ext_wav if ext_wav else composer.write_wav(OUT / f"ep{ep:03d}.wav", song)
+    if ext_wav and os.environ.get("CHIME_OFF", "") != "1":
+        try:                                 # 🔔 queue masters skip master();
+            composer.mix_logo(wav)           #    the chime still opens them
+            print("  🔔 sonic logo stamped on the queue master")
+        except Exception as e:
+            print(f"  (sonic logo skipped: {e})")
 
     cover = None
     art_mode = args.art_mode
@@ -387,7 +420,7 @@ def main() -> None:
         long_mp4 = OUT / f"ep{ep:03d}.mp4"
 
     # ---------- short ----------
-    short_pack = short_mp4 = None
+    short_pack = short_mp4 = twin_mp4 = None
     if not args.no_shorts:
         from src import shorts, video_render
         print("  cutting lyric short…")
@@ -415,6 +448,14 @@ def main() -> None:
                     [OUT / f"ep{ep:03d}_scene{i}.png" for i in range(len(scenes))],
                     L, OUT / f"ep{ep:03d}_short_bg.mp4", size=video_render.VERT)
             short_mp4 = shorts.render_video(short_pack, OUT / f"ep{ep:03d}_short.mp4")
+            try:                             # 💤 v23: slowed+reverb twin short
+                every = int((os.environ.get("SLOWED_EVERY", "4") or "0").strip())
+            except ValueError:
+                every = 4
+            if every > 0 and ep % every == 0:
+                print(f"  💤 every-{every} drop → slowed + reverb twin short…")
+                twin = shorts.slowed_twin_pack(short_pack, OUT, ep)
+                twin_mp4 = shorts.render_video(twin, OUT / f"ep{ep:03d}_slowed.mp4")
 
     print("  📅 schedule:")
     if video_today:
@@ -428,6 +469,11 @@ def main() -> None:
                 "meta": meta, "schedule": sched, "video_today": video_today,
                 "ai_copy": copy, "lang": ext_lang, "vocals": bool(lyr_today),
                 "karaoke": len(lrc_entries),
+                "universe": {"chapters": nch,
+                             "mascot": (OUT / f"ep{ep:03d}_nyx.webm").exists(),
+                             "spectrum": os.environ.get("SPECTRUM_OFF", "") != "1",
+                             "loop_echo": os.environ.get("LOOP_OFF", "") != "1",
+                             "slowed_twin": twin_mp4 is not None},
                 "visuals": {"kind": "clip" if clip else "scenes" if scenes else "cover"},
                 "short_hook": short_pack["hook_line"] if short_pack else None,
                 "files": [str(f) for f in (wav, cover, long_mp4, short_mp4) if f]}
@@ -471,6 +517,16 @@ def main() -> None:
             except Exception as e:
                 errors.append(f"short upload failed: {e}")
                 print(f"  ❌ short upload failed: {e}")
+        if twin_mp4 and Path(twin_mp4).exists():      # bonus drop — failures
+            try:                                      # never fail the run
+                t_off = sched["short_offset_s"] + float(rng.uniform(600, 1500))
+                twin_at = _iso(now + timedelta(seconds=t_off))
+                smeta_t = metadata.short_meta(meta, short_pack["hook_line"],
+                                              slowed=True)
+                sid2 = uploader.upload(twin_mp4, smeta_t, publish_at=twin_at)
+                print(f"  ✅ twin (slowed+reverb): https://youtu.be/{sid2} · {twin_at}")
+            except Exception as e:
+                print(f"  (twin upload skipped: {e})")
         # ---------- persist state ONLY when something actually went up ----------
         # partial day (1 of 2 uploaded) → advance so we NEVER re-upload a duplicate;
         # total failure (nothing up) → keep EP so tomorrow retries the same episode.

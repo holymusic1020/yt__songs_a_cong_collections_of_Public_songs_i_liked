@@ -1,5 +1,11 @@
 # 🌙 yt-auto — Nix Speech
 
+> **v23 "THE UNIVERSE UPDATE"** — the channel becomes a broadcast station: **NYX the signal-cat** mascot (pixel-grid spec, blinks on the kick), broadcast HUD skin + live spectrum strip on every long video, shorts that loop end-into-start, description chapters from the karaoke map, a 0.75 s sonic-logo chime opening every master, slowed+reverb twin shorts every 4th drop, 'use this sound 🎧' CTA everywhere. Every piece has an env kill-switch. Receipts: `python tools/v23_receipt.py`.
+>
+> **v22 "NINE-VIBE UNIVERSE"** — 6 → 9 original vibes (skyline anthem / villain pop / orbit trap join the wheel), daily-rotating singer personas per genre, coverage-matrix guard so no genre ever ships half-wired. Receipts: `python tools/v22_receipt.py`. Version wall: `docs/VERSIONS.md`.
+>
+> **v21 "THE DIAL FIX"** — space cook never dialed on newer gradio (renamed auth kwarg): now version-proof (old/new/bare worlds proven), plus a 'by Nix Speech' opening credit burned into every video + short first-card. Receipts: `python tools/v21_receipt.py`.
+>
 > **v20 "SUNO STUDIO CHAIN"** — cook chain: SUNO studio (best vocals, optional key) → ACE-Step space (free, Apache-2.0) → offline engine. Karaoke LRC survives all the way. Receipts: `python tools/v20_receipt.py`.
 >
 > **v19 "SILK POCKET"** — the engine now *produces*: sidechain kick-pump (−6.9 dB pocket),
