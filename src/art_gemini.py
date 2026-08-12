@@ -15,10 +15,12 @@ import os
 from PIL import Image
 
 # Tried in order; first one that returns an image wins.
+# 2026-08 refresh: gemini-2.0-flash-preview-image-generation is dead;
+# gemini-2.5-flash-image(-preview) were shut down 2026-01-15 and the base
+# model retires 2026-10-02. GA replacement: gemini-3.1-flash-image.
 MODEL_CANDIDATES = [
-    "gemini-2.5-flash-image",                      # nano banana (fast, free-tier friendly)
-    "gemini-2.5-flash-image-preview",
-    "gemini-2.0-flash-preview-image-generation",
+    "gemini-3.1-flash-image",                      # GA 2026-05-28, no shutdown date
+    "gemini-2.5-flash-image",                      # still live (retires 2026-10-02)
 ]
 
 MOODS = {
@@ -129,6 +131,42 @@ def build_prompt(meta: dict) -> str:
     )
 
 
+def _image_from_model(client, model: str, prompt: str):
+    """One prompt → PIL Image via ANY supported style.
+
+    gemini image models accept generate_content (inline image part) — that
+    covered gemini-2.5-flash-image. The 2026 GA lineup (gemini-3.1-flash-
+    image, imagen-4.0*) is exposed via the newer generate_images API, so we
+    try both, whichever the model speaks. Returns Image or None.
+    """
+    # style 1: generate_content with inline image part
+    try:
+        resp = client.models.generate_content(model=model, contents=prompt)
+        for part in resp.candidates[0].content.parts:
+            blob = getattr(part, "inline_data", None)
+            if blob and str(blob.mime_type).startswith("image"):
+                return Image.open(io.BytesIO(blob.data)).convert("RGB")
+    except Exception:
+        pass
+    # style 2: generate_images (imagen / flash-image GA lineup)
+    try:
+        from google.genai import types
+        resp = client.models.generate_images(
+            model=model,
+            prompt=prompt,
+            config=types.GenerateImagesConfig(
+                number_of_images=1,
+                aspect_ratio="16:9",
+            ),
+        )
+        img = resp.generated_images[0].image
+        if img is not None:
+            return img.convert("RGB")
+    except Exception:
+        pass
+    return None
+
+
 def generate(meta: dict) -> Image.Image:
     """Return the base scene as a PIL Image. Raises if every model fails."""
     from google import genai                      # imported lazily (CI dep)
@@ -144,15 +182,10 @@ def generate(meta: dict) -> Image.Image:
     prompt = build_prompt(meta)
     errors = []
     for model in dict.fromkeys(models):           # dedupe, keep order
-        try:
-            resp = client.models.generate_content(model=model, contents=prompt)
-            for part in resp.candidates[0].content.parts:
-                blob = getattr(part, "inline_data", None)
-                if blob and str(blob.mime_type).startswith("image"):
-                    return Image.open(io.BytesIO(blob.data)).convert("RGB")
-            errors.append(f"{model}: no image in response")
-        except Exception as e:                    # quota / model missing / etc
-            errors.append(f"{model}: {e}")
+        img = _image_from_model(client, model, prompt)
+        if img is not None:
+            return img
+        errors.append(f"{model}: no image in response")
     raise RuntimeError(" | ".join(errors))
 
 
@@ -187,15 +220,7 @@ def generate_scenes(meta: dict, n: int = 4, scene_text: str | None = None) -> li
         )
         got = None
         for model in dict.fromkeys(models):
-            try:
-                resp = client.models.generate_content(model=model, contents=prompt)
-                for part in resp.candidates[0].content.parts:
-                    blob = getattr(part, "inline_data", None)
-                    if blob and str(blob.mime_type).startswith("image"):
-                        got = Image.open(io.BytesIO(blob.data)).convert("RGB")
-                        break
-            except Exception:
-                continue
+            got = _image_from_model(client, model, prompt)
             if got:
                 break
         if got:

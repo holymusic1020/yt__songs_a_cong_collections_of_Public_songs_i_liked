@@ -8,7 +8,10 @@ from __future__ import annotations
 import os
 import re
 
-CANDIDATES = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+# 2026-08 refresh: gemini-2.0-flash/-lite shut down 2026-06-01;
+# gemini-2.5-flash 404s for new API keys. GA replacements (no shutdown
+# dates announced as of 2026-08): gemini-3.5-flash, gemini-3.1-flash-lite.
+CANDIDATES = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash"]
 
 _TAG_NAMES = {"verse": "[verse]", "pre-chorus": "[pre-chorus]",
               "chorus": "[chorus]", "hook": "[chorus]",

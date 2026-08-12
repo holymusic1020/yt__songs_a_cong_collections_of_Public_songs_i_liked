@@ -181,47 +181,127 @@ def _pick_file(payload):
 
 
 def _cook_v15(client, genre_key, seconds, prompt, lyr, lang):
-    """Official v1.5 turbo: native BPM + vocal-language + fast 8-step DiT."""
+    """Official v1.5 turbo: native BPM + vocal-language + fast 8-step DiT.
+
+    Field order verified 2026-08-11 against the LIVE space (99 endpoints,
+    redesigned). The wrapper's args order (after the 4 simple-mode params):
+      captions(4) lyrics(5) bpm(6) key_scale(7) time_signature(8)
+      vocal_language(9) inference_steps(10) guidance_scale(11)
+      random_seed_checkbox(12) seed(13) reference_audio(14)
+      audio_duration(15) batch_size_input(16) src_audio(17)
+      text2music_audio_code_string(18) repainting_start(19)
+      repainting_end(20) instruction_display_gen(21) audio_cover_strength(22)
+      task_type(23) use_adg(24) cfg_interval_start(25) cfg_interval_end(26)
+      shift(27) infer_method(28) custom_timesteps(29) audio_format(30)
+      lm_temperature(31) think_checkbox(32) lm_cfg_scale(33) lm_top_k(34)
+      lm_top_p(35) lm_negative_prompt(36) use_cot_metas(37)
+      use_cot_caption(38) use_cot_language(39) constrained_decoding_debug(41)
+      allow_lm_batch(42) auto_score(43) auto_lrc(44) score_scale(45)
+      lm_batch_chunk_size(46) track_name(47) complete_track_classes(48)
+      autogen_checkbox(49)   (states at 40/50-53 are hidden by the client)
+    Returns (visible): 0-7 audio, 8 all-files, 9 details, 10 status, 11 seed,
+      12-19 scores, 20-27 codes, 28-35 lyrics-timestamps, 36 batch, 37 status.
+    """
     res = client.predict(
-        "acestep-v15-xl-turbo",        # selected_model
-        "custom",                      # generation_mode
-        None, "unknown",               # simple-mode fields (unused)
-        prompt, lyr,
-        float(GENRE_BPM.get(genre_key, 0)),  # BPM dial 🎚
-        "", "",                        # key / time signature (auto)
-        LANG_CODE.get(lang, "unknown"),      # vocal language dial 🌍
-        8.0,                           # DiT steps (turbo)
-        7.0, True, "-1",               # cfg-ish, random seed
-        None,                          # no reference audio
-        float(seconds),                # duration
-        1.0,                           # batch size = one perfect take
-        None, None, 0.0, -1.0,         # repaint/extend (unused)
-        "Fill the audio semantic mask based on the given conditions:",
-        1.0, "text2music", False, 0.0, 1.0, 3.0, "ode", "", "mp3",
-        0.85, False, 2.0, 0.0, 0.9, "NO USER INPUT",
-        True, True, True, False, True,
-        True, True,                    # get scores + LRC timestamps
-        0.5, 8.0, None, [], False,
+        "acestep-v15-xl-turbo",        # 0 selected_model
+        "custom",                      # 1 generation_mode
+        "",                            # 2 simple_query_input
+        LANG_CODE.get(lang, "en"),     # 3 simple_vocal_language
+        prompt,                        # 4 captions (LM style guide)
+        lyr,                           # 5 lyrics (tagged text or "[inst]")
+        float(GENRE_BPM.get(genre_key, 0)),  # 6 bpm
+        "",                            # 7 key_scale (auto)
+        "",                            # 8 time_signature (auto)
+        LANG_CODE.get(lang, "en"),     # 9 vocal_language dial 🌍
+        8.0,                           # 10 DiT steps (turbo)
+        7.0,                           # 11 guidance_scale
+        True,                          # 12 random_seed_checkbox
+        "-1",                          # 13 seed
+        None,                          # 14 reference_audio
+        float(seconds),                # 15 duration
+        1.0,                           # 16 batch size = one perfect take
+        None,                          # 17 src_audio
+        "",                            # 18 text2music_audio_code_string
+        0.0,                           # 19 repainting_start
+        -1.0,                          # 20 repainting_end
+        "",                            # 21 instruction_display_gen
+        1.0,                           # 22 audio_cover_strength
+        "text2music",                  # 23 task_type
+        False,                         # 24 use_adg
+        0.0,                           # 25 cfg_interval_start
+        1.0,                           # 26 cfg_interval_end
+        3.0,                           # 27 shift
+        "ode",                         # 28 infer_method
+        "",                            # 29 custom_timesteps
+        "mp3",                         # 30 audio_format
+        0.85,                          # 31 lm_temperature
+        True,                          # 32 think_checkbox (LM writes the music)
+        2.0,                           # 33 lm_cfg_scale
+        0.0,                           # 34 lm_top_k
+        0.9,                           # 35 lm_top_p
+        "",                            # 36 lm_negative_prompt
+        True,                          # 37 use_cot_metas
+        True,                          # 38 use_cot_caption
+        True,                          # 39 use_cot_language
+        False,                         # 40 constrained_decoding_debug
+        False,                         # 41 allow_lm_batch
+        False,                         # 42 auto_score (saves GPU quota)
+        True,                          # 43 auto_lrc → karaoke timestamps 🎤⏱
+        0.5,                           # 44 score_scale
+        8.0,                           # 45 lm_batch_chunk_size
+        None,                          # 46 track_name (hidden dropdown)
+        None,                          # 47 complete_track_classes (hidden)
+        False,                         # 48 autogen_checkbox
         api_name="/generation_wrapper",
     )
-    # returns: 8 samples, zip, details, status, seed, 8 scores, 8 lm codes,
-    # 8 lyric-timestamp strings, … → sample 1 timestamps sit at index 28
     audio = _pick_file(res[0])
     lrc = None
     try:
-        cand = res[28]
+        cand = res[28]                 # Lyrics Timestamps (Sample 1)
         cand = cand.get("value") if isinstance(cand, dict) else cand
         if isinstance(cand, str) and re.search(r"\d{1,2}:\d{2}", cand):
             lrc = cand
     except (IndexError, TypeError):
         lrc = None
+    if not audio:
+        # say WHY — quota-exhausted spaces are the usual culprit
+        try:
+            why = str(res[9]) or str(res[10])
+        except Exception:
+            why = ""
+        raise RuntimeError(f"space returned no audio" + (f" ({why[:120]})" if why else ""))
     return audio, lrc
 
 
 def _cook_v1(client, seconds, prompt, lyr, infer_step):
+    """Classic v1 space fallback — signature verified 2026-08-11 against the
+    LIVE space (the old 4-kwarg call died with TypeError: the space now
+    exposes the full 22-param /__call__)."""
     audio, _params = client.predict(
-        audio_duration=float(seconds), prompt=prompt, lyrics=lyr,
-        infer_step=float(infer_step), api_name="/__call__")
+        audio_duration=float(seconds),
+        prompt=prompt,
+        lyrics=lyr,
+        infer_step=float(infer_step),
+        guidance_scale=15.0,
+        scheduler_type="euler",
+        cfg_type="apg",
+        omega_scale=10.0,
+        manual_seeds="-1",
+        guidance_interval=0.5,
+        guidance_interval_decay=0.0,
+        min_guidance_scale=3.0,
+        use_erg_tag=True,
+        use_erg_lyric=True,
+        use_erg_diffusion=True,
+        oss_steps="",
+        guidance_scale_text=0.0,
+        guidance_scale_lyric=0.0,
+        audio2audio_enable=False,
+        ref_audio_strength=0.5,
+        ref_audio_input=None,
+        lora_name_or_path="none",
+        api_name="/__call__",
+    )
     return audio, None
 
 
@@ -272,7 +352,13 @@ def generate(genre_key: str, seconds: float, out_path: Path,
                 return out_path
             except Exception as e:
                 last = e
-                print(f"  ⚠ {space.split('/')[-1]} attempt {attempt}/{tries} "
-                      f"failed: {str(e)[:140]}")
+                msg = str(e)
+                if "quota" in msg.lower() or "ZeroGPU" in msg:
+                    print(f"  ⚠ {space.split('/')[-1]} attempt {attempt}/{tries} "
+                          f"failed: ZEROGPU QUOTA exhausted — free-vocal lane "
+                          f"sleeping (HF_TOKEN raises it; engine takes over today)")
+                else:
+                    print(f"  ⚠ {space.split('/')[-1]} attempt {attempt}/{tries} "
+                          f"failed: {msg[:140]}")
     print(f"  ⚠ all spaces unreachable today ({last}) — engine takes over, no harm")
     return None

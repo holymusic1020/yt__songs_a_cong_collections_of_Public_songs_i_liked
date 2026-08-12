@@ -22,4 +22,5 @@ def save(state: dict) -> None:
 def record(state: dict, entry: dict) -> None:
     entry = dict(entry)
     entry["at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    state["history"].append(entry)
+    state.setdefault("history", []).append(entry)   # harden: old state.json
+                                                    # without history → no crash
