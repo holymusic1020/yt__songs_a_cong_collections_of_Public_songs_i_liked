@@ -22,6 +22,10 @@ PALETTES = {
     "lofi":         {"top": (20, 12, 8),   "bottom": (62, 40, 26),  "glow": (255, 170, 90)},
     "baroque_waltz": {"top": (18, 10, 6),  "bottom": (80, 52, 14),  "glow": (255, 190, 80)},
     "disco_house":  {"top": (12, 6, 20),   "bottom": (70, 18, 90),  "glow": (255, 90, 220)},
+    # v22 three-genre expansion — procedural art must never KeyError on these
+    "skyline_anthem": {"top": (8, 6, 22),  "bottom": (40, 16, 70),  "glow": (255, 150, 60)},
+    "villain_pop":  {"top": (6, 4, 14),    "bottom": (46, 8, 52),   "glow": (255, 40, 80)},
+    "orbit_trap":   {"top": (4, 6, 18),    "bottom": (10, 30, 70),  "glow": (120, 200, 255)},
 }
 
 FONT_CANDIDATES = [
@@ -126,8 +130,13 @@ def overlay(meta: dict, ep: int, rng: np.random.Generator,
 
 
 def render(meta: dict, ep: int, rng: np.random.Generator, out_path: Path) -> Path:
-    """Fully procedural cover — the never-fails fallback."""
-    img = _procedural_base(PALETTES[meta["genre_key"]], rng)
+    """Fully procedural cover — the never-fails fallback.
+
+    .get() with a safe default: an unknown genre_key can never KeyError the
+    nightly run (2026-08-12 incident: v22 genres hit PALETTES[missing] and
+    the whole EP.004 run died before upload)."""
+    img = _procedural_base(
+        PALETTES.get(meta["genre_key"], PALETTES["dark_ambient"]), rng)
     img = _grain_vignette(img, rng)
     _draw_branding(img, meta, ep)
     return _save(img, out_path)

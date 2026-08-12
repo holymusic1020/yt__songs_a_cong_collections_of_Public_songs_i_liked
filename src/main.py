@@ -603,34 +603,16 @@ def main() -> None:
                           f"{lyrics.LANGS[nxt_lang]['label']}")
                 inc.mkdir(exist_ok=True)
                 stem = f"next_song--{nxt_genre}--{nxt_lang}"
-                # cook chain v20: SUNO studio (best) → ACE-Step space (free)
-                # → nobody (offline engine composes live tomorrow). $0 forever.
-                cooked, cooked_by = None, None
-                if music_suno.available():
-                    bal = music_suno.credits()
-                    if bal is None or bal > 0:
-                        print(f"  🔮 cooking tomorrow's {nxt_genre} "
-                              f"({nxt_lang} vocals 🎤) in the SUNO studio"
-                              f"… ({bal if bal is not None else '?'} credits left)")
-                        cooked = music_suno.generate(
-                            nxt_genre, max(150, dur), inc / f"{stem}.mp3",
-                            lyrics=nxt_lyc, lang=nxt_lang,
-                            lrc_out=inc / f"{stem}.lrc.txt")
-                        cooked_by = "suno" if cooked else None
-                    else:
-                        print("  ☠ suno wallet empty (0 credits) — "
-                              "free space takes the mic 🎤")
-                if not cooked:
-                    print(f"  🔮 cooking tomorrow's {nxt_genre} "
-                          f"({nxt_lang} vocals 🎤) on the free space…")
-                    cooked = music_space.generate(
-                        nxt_genre, max(150, dur), inc / f"{stem}.mp3",
-                        lyrics=nxt_lyc, lang=nxt_lang,
-                        lrc_out=inc / f"{stem}.lrc.txt")   # 🎤⏱ karaoke rides too
-                    cooked_by = "ace-step" if cooked else None
+                # ⚡ cook chain v23.4 THE POWER GRID: suno → lyria → ace-v1.5
+                # → ace-v1, each retried (LANE_RETRIES), then offline engine.
+                from src import music_chain
+                cooked, cooked_by = music_chain.cook(
+                    nxt_genre, max(150, dur), inc / f"{stem}.mp3",
+                    lyrics=nxt_lyc, lang=nxt_lang,
+                    lrc_out=inc / f"{stem}.lrc.txt")   # 🎤⏱ karaoke rides too
                 if cooked:
                     print(f"  🎧 tomorrow cooked by: {cooked_by} "
-                          f"(chain: suno → ace-step → offline engine)")
+                          f"(chain: suno → lyria → ace-v1.5 → ace-v1 → engine)")
                 if cooked and nxt_lyc:      # the words ride with the mp3
                     (inc / f"{stem}.lyrics.txt").write_text(
                         nxt_lyc, encoding="utf-8")

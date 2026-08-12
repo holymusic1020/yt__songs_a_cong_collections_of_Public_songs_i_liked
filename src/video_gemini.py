@@ -47,6 +47,15 @@ SCENES = {
                       "of warm light over marble"),
     "disco_house": ("an empty mirror-ball dance floor at night, light fields "
                     "slowly sweeping polished floors, magenta haze drifting"),
+    "skyline_anthem": ("a rooftop crowd silhouette against a giant pink-orange "
+                       "sunrise, slow push-in, raised hands, lens flare, "
+                       "confetti drifting in warm wind"),
+    "villain_pop": ("an empty baroque theatre lit by one red spotlight, slow "
+                    "dolly toward the stage, velvet curtains, dust motes in "
+                    "the beam, gothic shadow play"),
+    "orbit_trap": ("a capsule window view of city lights at night, slow drift "
+                   "over the neon grid, stars above, engine hum, cinematic "
+                   "sci-fi calm"),
 }
 
 

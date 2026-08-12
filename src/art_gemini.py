@@ -38,6 +38,12 @@ MOODS = {
                      "vintage film photo",
     "disco_house": "empty roller-disco at night, mirror ball scattering light "
                    "over a polished floor, magenta haze, glossy reflections",
+    "skyline_anthem": "rooftop crowd silhouettes against a giant pink-orange "
+                      "sunrise, raised hands, lens flare, euphoric festival air",
+    "villain_pop": "empty baroque theatre lit by a single red spotlight, "
+                   "velvet curtains, dust motes in the beam, gothic menace",
+    "orbit_trap": "low-orbit view of city lights at night through a capsule "
+                  "window, stars and neon below, cinematic sci-fi calm",
 }
 
 # "Edit-aesthetic" variants — the anime/car edit look, but ORIGINAL art
@@ -137,21 +143,25 @@ def _image_from_model(client, model: str, prompt: str):
     gemini image models accept generate_content (inline image part) — that
     covered gemini-2.5-flash-image. The 2026 GA lineup (gemini-3.1-flash-
     image, imagen-4.0*) is exposed via the newer generate_images API, so we
-    try both, whichever the model speaks. Returns Image or None.
+    try both, whichever the model speaks. Returns (Image|None, error_hint).
     """
+    hint = ""
     # style 1: generate_content with inline image part
     try:
         resp = client.models.generate_content(model=model, contents=prompt)
-        for part in resp.candidates[0].content.parts:
+        parts = resp.candidates[0].content.parts if resp.candidates else []
+        for part in parts:
             blob = getattr(part, "inline_data", None)
             if blob and str(blob.mime_type).startswith("image"):
-                return Image.open(io.BytesIO(blob.data)).convert("RGB")
-    except Exception:
-        pass
+                return Image.open(io.BytesIO(blob.data)).convert("RGB"), None
+        if not parts:
+            hint = "generate_content ok but empty candidates/parts"
+    except Exception as e:
+        hint = f"generate_content: {type(e).__name__}: {str(e)[:120]}"
     # style 2: generate_images (imagen / flash-image GA lineup)
     try:
         from google.genai import types
-        resp = client.models.generate_images(
+        gres = client.models.generate_images(
             model=model,
             prompt=prompt,
             config=types.GenerateImagesConfig(
@@ -159,12 +169,13 @@ def _image_from_model(client, model: str, prompt: str):
                 aspect_ratio="16:9",
             ),
         )
-        img = resp.generated_images[0].image
+        img = gres.generated_images[0].image if gres.generated_images else None
         if img is not None:
-            return img.convert("RGB")
-    except Exception:
-        pass
-    return None
+            return img.convert("RGB"), None
+        hint += "; generate_images returned no image"
+    except Exception as e2:
+        hint += f"; generate_images: {type(e2).__name__}: {str(e2)[:120]}"
+    return None, hint
 
 
 def generate(meta: dict) -> Image.Image:
@@ -182,10 +193,10 @@ def generate(meta: dict) -> Image.Image:
     prompt = build_prompt(meta)
     errors = []
     for model in dict.fromkeys(models):           # dedupe, keep order
-        img = _image_from_model(client, model, prompt)
+        img, hint = _image_from_model(client, model, prompt)
         if img is not None:
             return img
-        errors.append(f"{model}: no image in response")
+        errors.append(f"{model}: {hint or 'no image in response'}")
     raise RuntimeError(" | ".join(errors))
 
 
@@ -220,7 +231,7 @@ def generate_scenes(meta: dict, n: int = 4, scene_text: str | None = None) -> li
         )
         got = None
         for model in dict.fromkeys(models):
-            got = _image_from_model(client, model, prompt)
+            got, _hint = _image_from_model(client, model, prompt)
             if got:
                 break
         if got:

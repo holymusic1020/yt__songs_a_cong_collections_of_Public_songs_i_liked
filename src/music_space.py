@@ -308,21 +308,26 @@ def _cook_v1(client, seconds, prompt, lyr, infer_step):
 def generate(genre_key: str, seconds: float, out_path: Path,
              retries: int = 2, infer_step: int = 32,
              lyrics: str | None = None, lang: str = "en",
-             lrc_out: Path | None = None) -> Path | None:
+             lrc_out: Path | None = None,
+             spaces: list[str] | None = None) -> Path | None:
     """Cook one song. Returns the file on success, else None.
 
     lyrics=None → instrumental ('[inst]'). lyrics=tagged text → SUNG track
     in `lang`. lrc_out: when the v1.5 space returns lyric timestamps
     (karaoke map 🎤⏱), they're written there for video_render's overlay.
     Same failure contract as always: None means 'engine, take over'.
+
+    `spaces`: optional subset of SPACES to try (v23.4 POWER GRID uses this
+    so the grid can treat v1.5 and v1 as two separate retryable lanes).
     """
     vocals = bool(lyrics and lyrics.strip())
     prompt = build_prompt(genre_key, lang, vocals)
     lyr = lyrics if vocals else "[inst]"
     seconds = float(max(45, min(int(seconds), 240)))
     last = None
+    active = spaces if spaces else SPACES
 
-    for si, space in enumerate(SPACES):
+    for si, space in enumerate(active):
         tries = retries if si == 0 else 1
         for attempt in range(1, tries + 1):
             try:
