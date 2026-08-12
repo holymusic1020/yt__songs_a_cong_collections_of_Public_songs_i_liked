@@ -1,57 +1,72 @@
 {
-  "episode": 3,
-  "genre": "baroque waltz",
-  "seed": 23980,
-  "bpm": 182,
-  "key": "B minor",
-  "duration_s": 112.74367346938776,
+  "episode": 4,
+  "genre": "villain pop",
+  "seed": 31900,
+  "bpm": 149,
+  "key": "D minor",
+  "duration_s": 111.14006802721089,
+  "events": {
+    "risers": 3,
+    "rolls": 3,
+    "crashes": 3
+  },
   "meta": {
     "channel": "Nix Speech",
-    "name": "harlequin interlude",
-    "title": "harlequin interlude \u2014 Nix Speech (official audio)",
-    "description": "harlequin interlude\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.003 \u00b7 baroque waltz \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#waltz #baroquepop #vintage\n",
+    "name": "mercury parlor",
+    "title": "mercury parlor \u2014 Nix Speech (official audio)",
+    "description": "mercury parlor\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.004 \u00b7 villain pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #villainera #cinematicpop\n",
     "tags": [
-      "harlequin interlude",
-      "baroque pop",
+      "mercury parlor",
+      "aesthetic",
+      "evil pop",
+      "chill",
       "night drive music",
-      "instrumental",
-      "official audio",
-      "waltz"
+      "dark cinematic pop"
     ],
-    "genre": "baroque waltz",
-    "genre_key": "baroque_waltz",
+    "genre": "villain pop",
+    "genre_key": "villain_pop",
     "lang": "en",
-    "bpm": 182,
-    "key": "B minor",
-    "style_variant": "antique harpsichord detail in a candle-lit parlour, brass and dark wood, baroque still life, film grain (free engine)"
+    "bpm": 149,
+    "key": "D minor",
+    "style_variant": "Moonlight filters through wet glass into a dark parlor pooled with glowing liquid mercury (free engine)"
   },
   "schedule": {
-    "video_offset_s": 0,
-    "video_publish_at": null,
-    "short_offset_s": 4299,
-    "short_publish_at": "2026-08-11T13:08:49Z"
+    "video_offset_s": 3417,
+    "video_publish_at": "2026-08-13T00:45:40Z",
+    "short_offset_s": 7130,
+    "short_publish_at": "2026-08-13T01:47:33Z"
   },
-  "video_today": false,
-  "ai_copy": null,
+  "video_today": true,
+  "ai_copy": {
+    "hook": "no one talks about the silver fever",
+    "lines": [
+      "velvet shadows on wet asphalt",
+      "drinking poison from crystal glasses",
+      "cold mercury behind your teeth",
+      "neon bleeding through the fog",
+      "racing heartbeats in a dark lobby"
+    ]
+  },
   "lang": "en",
   "vocals": false,
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": false,
+    "mascot": true,
     "spectrum": true,
     "loop_echo": true,
-    "slowed_twin": false
+    "slowed_twin": true
   },
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "if this played",
+  "short_hook": "no one talks",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep003.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep003.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep003_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep004.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep004.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep004.mp4",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep004_short.mp4"
   ],
-  "video_id": null,
-  "short_id": "6frB4bAS7mE"
+  "video_id": "hg94-SQm1qw",
+  "short_id": "ute4-__6Ac0"
 }

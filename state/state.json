@@ -1,5 +1,5 @@
 {
-  "episode": 3,
+  "episode": 4,
   "history": [
     {
       "episode": 1,
@@ -39,6 +39,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-11T13:08:49Z",
       "at": "2026-08-11T11:58:12+00:00"
+    },
+    {
+      "episode": 4,
+      "kind": "full",
+      "youtube_id": "hg94-SQm1qw",
+      "video_id": "hg94-SQm1qw",
+      "short_id": "ute4-__6Ac0",
+      "title": "mercury parlor \u2014 Nix Speech (official audio)",
+      "name": "mercury parlor",
+      "genre": "villain_pop",
+      "publish_at": "2026-08-13T00:45:40Z",
+      "short_publish_at": "2026-08-13T01:47:33Z",
+      "at": "2026-08-12T23:49:56+00:00"
     }
   ]
 }
