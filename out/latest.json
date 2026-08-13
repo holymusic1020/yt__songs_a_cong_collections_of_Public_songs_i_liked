@@ -1,10 +1,10 @@
 {
-  "episode": 4,
-  "genre": "villain pop",
-  "seed": 31900,
-  "bpm": 149,
-  "key": "D minor",
-  "duration_s": 111.14006802721089,
+  "episode": 5,
+  "genre": "disco house",
+  "seed": 39820,
+  "bpm": 118,
+  "key": "G minor",
+  "duration_s": 115.93102040816326,
   "events": {
     "risers": 3,
     "rolls": 3,
@@ -12,39 +12,39 @@
   },
   "meta": {
     "channel": "Nix Speech",
-    "name": "mercury parlor",
-    "title": "mercury parlor \u2014 Nix Speech (official audio)",
-    "description": "mercury parlor\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.004 \u00b7 villain pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #villainera #cinematicpop\n",
+    "name": "plimsoll strut",
+    "title": "plimsoll strut \u2014 Nix Speech (official audio)",
+    "description": "plimsoll strut\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.005 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
     "tags": [
-      "mercury parlor",
+      "plimsoll strut",
+      "type beat",
       "aesthetic",
-      "evil pop",
-      "chill",
-      "night drive music",
-      "dark cinematic pop"
+      "official audio",
+      "club instrumental",
+      "dance music"
     ],
-    "genre": "villain pop",
-    "genre_key": "villain_pop",
+    "genre": "disco house",
+    "genre_key": "disco_house",
     "lang": "en",
-    "bpm": 149,
-    "key": "D minor",
-    "style_variant": "Moonlight filters through wet glass into a dark parlor pooled with glowing liquid mercury (free engine)"
+    "bpm": 118,
+    "key": "G minor",
+    "style_variant": "Neon-lit city streets glisten with rain, reflecting vibrant pink puddles on damp asphalt at midnight (free engine)"
   },
   "schedule": {
-    "video_offset_s": 3417,
-    "video_publish_at": "2026-08-13T00:45:40Z",
-    "short_offset_s": 7130,
-    "short_publish_at": "2026-08-13T01:47:33Z"
+    "video_offset_s": 0,
+    "video_publish_at": null,
+    "short_offset_s": 4096,
+    "short_publish_at": "2026-08-13T13:12:39Z"
   },
-  "video_today": true,
+  "video_today": false,
   "ai_copy": {
-    "hook": "no one talks about the silver fever",
+    "hook": "you only walk like this alone",
     "lines": [
-      "velvet shadows on wet asphalt",
-      "drinking poison from crystal glasses",
-      "cold mercury behind your teeth",
-      "neon bleeding through the fog",
-      "racing heartbeats in a dark lobby"
+      "wet canvas on cold asphalt",
+      "underneath the buzzing amber grid",
+      "pacing the silent storefront glass",
+      "steam rising from the grates",
+      "no hurry in your stride"
     ]
   },
   "lang": "en",
@@ -52,21 +52,20 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": true,
+    "mascot": false,
     "spectrum": true,
     "loop_echo": true,
-    "slowed_twin": true
+    "slowed_twin": false
   },
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "no one talks",
+  "short_hook": "you only walk",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep004.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep004.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep004.mp4",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep004_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005_short.mp4"
   ],
-  "video_id": "hg94-SQm1qw",
-  "short_id": "ute4-__6Ac0"
+  "video_id": null,
+  "short_id": "ewqSuahP_2o"
 }

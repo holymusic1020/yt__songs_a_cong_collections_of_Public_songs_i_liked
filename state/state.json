@@ -1,5 +1,5 @@
 {
-  "episode": 4,
+  "episode": 5,
   "history": [
     {
       "episode": 1,
@@ -52,6 +52,19 @@
       "publish_at": "2026-08-13T00:45:40Z",
       "short_publish_at": "2026-08-13T01:47:33Z",
       "at": "2026-08-12T23:49:56+00:00"
+    },
+    {
+      "episode": 5,
+      "kind": "short",
+      "youtube_id": "ewqSuahP_2o",
+      "video_id": null,
+      "short_id": "ewqSuahP_2o",
+      "title": "plimsoll strut \u2014 Nix Speech (official audio)",
+      "name": "plimsoll strut",
+      "genre": "disco_house",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-13T13:12:39Z",
+      "at": "2026-08-13T12:05:23+00:00"
     }
   ]
 }
