@@ -213,13 +213,17 @@ def _cook_v15(client, genre_key, seconds, prompt, lyr, lang):
         "",                            # 7 key_scale (auto)
         "",                            # 8 time_signature (auto)
         LANG_CODE.get(lang, "en"),     # 9 vocal_language dial 🌍
-        8.0,                           # 10 DiT steps (turbo)
+        8,                             # 10 DiT steps (turbo) — INT (space does range())
         7.0,                           # 11 guidance_scale
         True,                          # 12 random_seed_checkbox
         "-1",                          # 13 seed
         None,                          # 14 reference_audio
         float(seconds),                # 15 duration
-        1.0,                           # 16 batch size = one perfect take
+        1,                             # 16 batch size — INT, not 1.0! the
+                                       #    space's handler does range(batch_size)
+                                       #    → float crashes it with
+                                       #    "'float' object cannot be interpreted
+                                       #    as an integer" (the silent 'no audio')
         None,                          # 17 src_audio
         "",                            # 18 text2music_audio_code_string
         0.0,                           # 19 repainting_start
@@ -248,9 +252,9 @@ def _cook_v15(client, genre_key, seconds, prompt, lyr, lang):
         False,                         # 42 auto_score (saves GPU quota)
         True,                          # 43 auto_lrc → karaoke timestamps 🎤⏱
         0.5,                           # 44 score_scale
-        8.0,                           # 45 lm_batch_chunk_size
+        8,                             # 45 lm_batch_chunk_size — INT (chunking)
         None,                          # 46 track_name (hidden dropdown)
-        None,                          # 47 complete_track_classes (hidden)
+        [],                            # 47 complete_track_classes (hidden)
         False,                         # 48 autogen_checkbox
         api_name="/generation_wrapper",
     )
@@ -326,6 +330,19 @@ def generate(genre_key: str, seconds: float, out_path: Path,
     seconds = float(max(45, min(int(seconds), 240)))
     last = None
     active = spaces if spaces else SPACES
+
+    # 🔑 diagnostic: is the space reaching the GPU quota at all? The single
+    # biggest free-vocal blocker is ZeroGPU anonymous quota (180s/day vs one
+    # generation requesting 180s). A real HF_TOKEN raises it — log which world
+    # we're in so the run tells the boss what to fix.
+    tok = os.environ.get("HF_TOKEN", "").strip()
+    if not tok:
+        print("  🔑 ace-step: ANONYMOUS — ZeroGPU quota is ~180s/day and one "
+              "generation requests 180s, so the free vocal lane likely sleeps. "
+              "Set HF_TOKEN (free HF account token) in repo Secrets for real quota.")
+    else:
+        print(f"  🔑 ace-step: HF token present ({tok[:4]}…{tok[-4:]}) — "
+              f"authenticated quota in play")
 
     for si, space in enumerate(active):
         tries = retries if si == 0 else 1

@@ -378,7 +378,23 @@ def main() -> None:
             base = art_gemini.generate(meta)
             cover = art.overlay(meta, ep, rng, base, OUT / f"ep{ep:03d}.png")
         except Exception as e:
-            print(f"  ⚠ cover gen failed ({e}) — procedural")
+            print(f"  ⚠ cover gen failed ({e}) — fallback scene cover")
+    if cover is None:
+        # v23.5: when Gemini art is down, cover the track with a FREE-engine
+        # scene (Pollinations flux) instead of a plain gradient — thumbnails
+        # stay presentable even on quota-fail days. Pure procedural is the
+        # last resort.
+        try:
+            from src import art_free
+            from src import art_gemini as _ag
+            variant = (_ag.MOODS.get(meta["genre_key"]) or
+                       "empty neon city street in night rain")
+            scene = art_free.generate_scenes(variant, n=1, seed0=ep * 101)[0]
+            cover = art.overlay(meta, ep, rng, scene,
+                                OUT / f"ep{ep:03d}.png")
+            print("  🖼  free-engine scene cover (Gemini quota down)")
+        except Exception as e2:
+            print(f"  (scene cover failed: {e2}) — procedural")
     if cover is None:
         cover = art.render(meta, ep, rng, OUT / f"ep{ep:03d}.png")
 

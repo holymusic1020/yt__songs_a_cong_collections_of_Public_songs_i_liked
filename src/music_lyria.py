@@ -57,7 +57,13 @@ def generate(genre_key: str, seconds: float, out_path: Path,
     try:
         resp = client.models.generate_content(model=model, contents=prompt)
     except Exception as e:
-        print(f"  ⚠ lyria failed: {type(e).__name__}: {str(e)[:140]}")
+        msg = str(e)
+        if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
+            print("  ⚠ lyria (music) blocked: this model is NOT in the Gemini "
+                  "free tier — enable billing on GEMINI_API_KEY to unlock "
+                  "vocals (~$0.08/song). Engine takes over today (no harm).")
+        else:
+            print(f"  ⚠ lyria failed: {type(e).__name__}: {msg[:140]}")
         return None
 
     audio: bytes | None = None

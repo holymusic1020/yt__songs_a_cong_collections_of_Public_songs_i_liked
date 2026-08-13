@@ -3,11 +3,12 @@
 Boss's spec: "2-4 fallbacks; if one fails once, retry 1-2x, then fallback."
 
 LANES, in order (every lane makes a FULL A-Z song, up to ~4 min):
-  1. SUNO studio    (premium; needs SUNO_API_KEY + credits > 0)
-  2. Lyria 3        (Google Gemini API; needs GEMINI_API_KEY — always-on,
-                     no GPU quota; SUNG VOCALS + lyrics)
-  3. ACE-Step v1.5  (HF space; free but ZeroGPU quota-gated ~180s/day)
-  4. ACE-Step v1    (HF space; stale deploy — best effort)
+  1. SUNO studio      (premium; needs SUNO_API_KEY + credits > 0)
+  2. Lyria 3          (Google Gemini API; needs billing — SUNG VOCALS)
+  3. ACE-Step v1.5    (HF space; free but ZeroGPU quota-gated ~180s/day)
+  4. ACE-Step v1      (HF space; stale deploy — best effort)
+  5. MusicGen LOCAL   (Meta open model on the runner's CPU — no API, no
+                       key, no quota, no cost. Instrumentals, RELIABLE.)
   → engine (offline composer, always works) — NOT a lane, the guarantee.
 
 Rules:
@@ -18,7 +19,8 @@ Rules:
     wallet) — no pointless retries
   · the run can NEVER die here; None just means "engine, take over"
 
-Kill-switches (repo variables): SUNO_OFF, LYRA_OFF, ACE_OFF, LANE_RETRIES.
+Kill-switches (repo variables): SUNO_OFF, LYRA_OFF, ACE_OFF, MUSICGEN_OFF,
+LANE_RETRIES.
 """
 from __future__ import annotations
 
@@ -65,6 +67,14 @@ def _lane_space(space: str, genre_key, seconds, out_path, lyrics, lang,
                                 spaces=[space], retries=1)
 
 
+def _lane_local(genre_key, seconds, out_path, lyrics, lang, lrc_out):
+    """🎹 MusicGen on the runner's own CPU — no API, no quota, no key.
+    The RELIABLE lane: always available, so the channel never misses."""
+    from src import music_local
+    return music_local.generate(genre_key, seconds, out_path,
+                                lyrics=lyrics, lang=lang, lrc_out=lrc_out)
+
+
 def _retries() -> int:
     try:
         return max(1, int(os.environ.get("LANE_RETRIES", "2") or "2"))
@@ -93,6 +103,8 @@ def cook(genre_key: str, seconds: float, out_path: Path,
         ("ace-step-v1",   lambda: _lane_space("ACE-Step/ACE-Step",
                                               genre_key, seconds, out_path,
                                               lyrics, lang, lrc_out)),
+        ("musicgen-local", lambda: _lane_local(genre_key, seconds, out_path,
+                                               lyrics, lang, lrc_out)),
     ]
     tried: list[str] = []
     for name, fn in lanes:
