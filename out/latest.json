@@ -1,50 +1,45 @@
 {
-  "episode": 5,
-  "genre": "disco house",
-  "seed": 39820,
-  "bpm": 118,
-  "key": "G minor",
-  "duration_s": 115.93102040816326,
-  "events": {
-    "risers": 3,
-    "rolls": 3,
-    "crashes": 3
-  },
+  "episode": 6,
+  "genre": "dark ambient",
+  "seed": 47740,
+  "bpm": 72,
+  "key": "E minor",
+  "duration_s": 93.33333333333333,
   "meta": {
     "channel": "Nix Speech",
-    "name": "plimsoll strut",
-    "title": "plimsoll strut \u2014 Nix Speech (official audio)",
-    "description": "plimsoll strut\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.005 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
+    "name": "four am radiator",
+    "title": "four am radiator \u2014 Nix Speech (official audio)",
+    "description": "four am radiator\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.006 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
     "tags": [
-      "plimsoll strut",
+      "four am radiator",
+      "ambient",
+      "rain sounds",
+      "night drive music",
       "type beat",
-      "aesthetic",
-      "official audio",
-      "club instrumental",
-      "dance music"
+      "official audio"
     ],
-    "genre": "disco house",
-    "genre_key": "disco_house",
+    "genre": "dark ambient",
+    "genre_key": "dark_ambient",
     "lang": "en",
-    "bpm": 118,
-    "key": "G minor",
-    "style_variant": "Neon-lit city streets glisten with rain, reflecting vibrant pink puddles on damp asphalt at midnight (free engine)"
+    "bpm": 72,
+    "key": "E minor",
+    "style_variant": "Cold rain streaks a dark window above a humming radiator glowing with faint amber light (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 4096,
-    "short_publish_at": "2026-08-13T13:12:39Z"
+    "short_offset_s": 6307,
+    "short_publish_at": "2026-08-14T05:13:02Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "you only walk like this alone",
+    "hook": "the city forgot we were awake",
     "lines": [
-      "wet canvas on cold asphalt",
-      "underneath the buzzing amber grid",
-      "pacing the silent storefront glass",
-      "steam rising from the grates",
-      "no hurry in your stride"
+      "iron pipes hiss in the dark",
+      "yellow streetlights paint the ceiling",
+      "condensation drips down the glass",
+      "shadows stretch across the floorboards",
+      "blue light bleeds through blinds"
     ]
   },
   "lang": "en",
@@ -60,12 +55,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "you only walk",
+  "short_hook": "the city forgot",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep005_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep006.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep006.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep006_short.mp4"
   ],
   "video_id": null,
-  "short_id": "ewqSuahP_2o"
+  "short_id": "mHmq6ezPUZw"
 }
