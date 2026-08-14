@@ -1,5 +1,5 @@
 {
-  "episode": 6,
+  "episode": 7,
   "history": [
     {
       "episode": 1,
@@ -78,6 +78,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-14T05:13:02Z",
       "at": "2026-08-14T03:28:57+00:00"
+    },
+    {
+      "episode": 7,
+      "kind": "full",
+      "youtube_id": "CAuatFyPagA",
+      "video_id": "CAuatFyPagA",
+      "short_id": "UMWb8_egWHU",
+      "title": "halogen pavement \u2014 Nix Speech (official audio)",
+      "name": "halogen pavement",
+      "genre": "orbit_trap",
+      "publish_at": "2026-08-14T15:38:34Z",
+      "short_publish_at": "2026-08-14T13:58:02Z",
+      "at": "2026-08-14T12:02:55+00:00"
     }
   ]
 }
