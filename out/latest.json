@@ -1,50 +1,45 @@
 {
-  "episode": 7,
-  "genre": "orbit trap",
-  "seed": 55659,
-  "bpm": 146,
-  "key": "G# minor",
-  "duration_s": 162.73938775510203,
-  "events": {
-    "risers": 5,
-    "rolls": 5,
-    "crashes": 5
-  },
+  "episode": 8,
+  "genre": "lo-fi",
+  "seed": 63579,
+  "bpm": 84,
+  "key": "B minor",
+  "duration_s": 171.42857142857142,
   "meta": {
     "channel": "Nix Speech",
-    "name": "halogen pavement",
-    "title": "halogen pavement \u2014 Nix Speech (official audio)",
-    "description": "halogen pavement\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.007 \u00b7 orbit trap \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#trap #melodicrap #spacemood\n",
+    "name": "kitchen clock hum",
+    "title": "kitchen clock hum \u2014 Nix Speech (official audio)",
+    "description": "kitchen clock hum\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.008 \u00b7 lo-fi \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#lofi #chillbeats #studymusic\n",
     "tags": [
-      "halogen pavement",
+      "kitchen clock hum",
       "official audio",
-      "night trap",
+      "aesthetic",
       "night drive music",
-      "trap type beat",
-      "new music"
+      "lofi",
+      "relaxing beats"
     ],
-    "genre": "orbit trap",
-    "genre_key": "orbit_trap",
+    "genre": "lo-fi",
+    "genre_key": "lofi",
     "lang": "en",
-    "bpm": 146,
-    "key": "G# minor",
-    "style_variant": "Wet asphalt streets reflect the stark, humming glow of yellow halogen lights beneath foggy night skies (free engine)"
+    "bpm": 84,
+    "key": "B minor",
+    "style_variant": "Moonlight filters through the kitchen window, illuminating a ticking wall clock above a silent counter (free engine)"
   },
   "schedule": {
-    "video_offset_s": 13001,
-    "video_publish_at": "2026-08-14T15:38:34Z",
-    "short_offset_s": 6969,
-    "short_publish_at": "2026-08-14T13:58:02Z"
+    "video_offset_s": 0,
+    "video_publish_at": null,
+    "short_offset_s": 8368,
+    "short_publish_at": "2026-08-15T12:22:29Z"
   },
-  "video_today": true,
+  "video_today": false,
   "ai_copy": {
-    "hook": "nobody talks about this midnight ache",
+    "hook": "no one warns you about the quiet",
     "lines": [
-      "yellow glare on damp asphalt",
-      "headlights cutting through the mist",
-      "the city breathes in slow static",
-      "cold air through cracked glass",
-      "shadows stretch across the overpass"
+      "linoleum floors cold underfoot",
+      "yellow streetlights bleed through glass",
+      "staring at a half-empty mug",
+      "the refrigerator hums a steady tune",
+      "ten million sleepless windows glow"
     ]
   },
   "lang": "en",
@@ -52,21 +47,20 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": true,
+    "mascot": false,
     "spectrum": true,
     "loop_echo": true,
-    "slowed_twin": false
+    "slowed_twin": true
   },
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "nobody talks about",
+  "short_hook": "no one warns",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep007.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep007.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep007.mp4",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep007_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep008.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep008.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep008_short.mp4"
   ],
-  "video_id": "CAuatFyPagA",
-  "short_id": "UMWb8_egWHU"
+  "video_id": null,
+  "short_id": "SOZjmL_0WjM"
 }

@@ -1,5 +1,5 @@
 {
-  "episode": 7,
+  "episode": 8,
   "history": [
     {
       "episode": 1,
@@ -91,6 +91,19 @@
       "publish_at": "2026-08-14T15:38:34Z",
       "short_publish_at": "2026-08-14T13:58:02Z",
       "at": "2026-08-14T12:02:55+00:00"
+    },
+    {
+      "episode": 8,
+      "kind": "short",
+      "youtube_id": "SOZjmL_0WjM",
+      "video_id": null,
+      "short_id": "SOZjmL_0WjM",
+      "title": "kitchen clock hum \u2014 Nix Speech (official audio)",
+      "name": "kitchen clock hum",
+      "genre": "lofi",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-15T12:22:29Z",
+      "at": "2026-08-15T10:04:26+00:00"
     }
   ]
 }
