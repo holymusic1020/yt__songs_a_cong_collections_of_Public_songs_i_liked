@@ -1,0 +1,14 @@
+{
+  "id": "nixspeech/nix-speech-vocal-cook",
+  "title": "Nix Speech Vocal Cook",
+  "code_file": "nix_speech_cook.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "competition_sources": [],
+  "dataset_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

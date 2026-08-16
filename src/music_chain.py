@@ -75,6 +75,14 @@ def _lane_local(genre_key, seconds, out_path, lyrics, lang, lrc_out):
                                 lyrics=lyrics, lang=lang, lrc_out=lrc_out)
 
 
+def _lane_kaggle(genre_key, seconds, out_path, lyrics, lang, lrc_out):
+    """🎵 DiffRhythm on Kaggle's FREE GPU (30h/wk, no credit card) — the
+    no-card VOCAL lane: full songs WITH SUNG VOCALS."""
+    from src import music_kaggle
+    return music_kaggle.generate(genre_key, seconds, out_path,
+                                 lyrics=lyrics, lang=lang, lrc_out=lrc_out)
+
+
 def _retries() -> int:
     try:
         return max(1, int(os.environ.get("LANE_RETRIES", "2") or "2"))
@@ -103,6 +111,8 @@ def cook(genre_key: str, seconds: float, out_path: Path,
         ("ace-step-v1",   lambda: _lane_space("ACE-Step/ACE-Step",
                                               genre_key, seconds, out_path,
                                               lyrics, lang, lrc_out)),
+        ("kaggle-gpu",    lambda: _lane_kaggle(genre_key, seconds, out_path,
+                                               lyrics, lang, lrc_out)),
         ("musicgen-local", lambda: _lane_local(genre_key, seconds, out_path,
                                                lyrics, lang, lrc_out)),
     ]
