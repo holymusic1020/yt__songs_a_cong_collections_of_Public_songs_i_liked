@@ -1,5 +1,5 @@
 {
-  "episode": 10,
+  "episode": 11,
   "history": [
     {
       "episode": 1,
@@ -130,6 +130,19 @@
       "publish_at": "2026-08-16T15:03:24Z",
       "short_publish_at": "2026-08-16T12:50:00Z",
       "at": "2026-08-16T10:06:31+00:00"
+    },
+    {
+      "episode": 11,
+      "kind": "short",
+      "youtube_id": "QP5xfVElbRE",
+      "video_id": null,
+      "short_id": "QP5xfVElbRE",
+      "title": "sodium balconies \u2014 Nix Speech (official audio)",
+      "name": "sodium balconies",
+      "genre": "skyline_anthem",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-16T13:54:42Z",
+      "at": "2026-08-16T11:52:48+00:00"
     }
   ]
 }

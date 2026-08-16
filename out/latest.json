@@ -1,10 +1,10 @@
 {
-  "episode": 10,
-  "genre": "drift phonk",
-  "seed": 79418,
-  "bpm": 127,
-  "key": "G minor",
-  "duration_s": 154.95954648526077,
+  "episode": 11,
+  "genre": "skyline anthem",
+  "seed": 87337,
+  "bpm": 129,
+  "key": "A major",
+  "duration_s": 150.69673469387754,
   "events": {
     "risers": 4,
     "rolls": 4,
@@ -12,39 +12,39 @@
   },
   "meta": {
     "channel": "Nix Speech",
-    "name": "humid underpass",
-    "title": "humid underpass \u2014 Nix Speech (official audio)",
-    "description": "humid underpass\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.010 \u00b7 drift phonk \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#phonk #driftphonk #nightdrive\n",
+    "name": "sodium balconies",
+    "title": "sodium balconies \u2014 Nix Speech (official audio)",
+    "description": "sodium balconies\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.011 \u00b7 skyline anthem \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#edm #festivalvibes #anthem\n",
     "tags": [
-      "humid underpass",
-      "instrumental",
-      "chill",
+      "sodium balconies",
+      "anthem house",
+      "folk edm",
       "official audio",
-      "drift phonk",
-      "type beat"
+      "night drive music",
+      "chill"
     ],
-    "genre": "drift phonk",
-    "genre_key": "drift_phonk",
+    "genre": "skyline anthem",
+    "genre_key": "skyline_anthem",
     "lang": "en",
-    "bpm": 127,
-    "key": "G minor",
-    "style_variant": "Thick vapor rises from glowing purple puddles beneath a dark, dripping concrete highway underpass (free engine)"
+    "bpm": 129,
+    "key": "A major",
+    "style_variant": "Amber sodium light spills across wet concrete balconies overlooking a vast, glowing night skyline (free engine)"
   },
   "schedule": {
-    "video_offset_s": 17873,
-    "video_publish_at": "2026-08-16T15:03:24Z",
-    "short_offset_s": 9869,
-    "short_publish_at": "2026-08-16T12:50:00Z"
+    "video_offset_s": 0,
+    "video_publish_at": null,
+    "short_offset_s": 7380,
+    "short_publish_at": "2026-08-16T13:54:42Z"
   },
-  "video_today": true,
+  "video_today": false,
   "ai_copy": {
-    "hook": "why the heavy air feels safer",
+    "hook": "that specific orange at three am",
     "lines": [
-      "yellow sodium glows through steam",
-      "reverb echoing off wet tile",
-      "thick mist in the headlights",
-      "tires spinning on wet paint",
-      "condensation on cold metal"
+      "wet concrete beneath bare feet",
+      "neon bleeding through the fog",
+      "traffic hums a distant chorus",
+      "forty stories above the steam",
+      "your silhouette against the grid"
     ]
   },
   "lang": "en",
@@ -52,7 +52,7 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": true,
+    "mascot": false,
     "spectrum": true,
     "loop_echo": true,
     "slowed_twin": false
@@ -60,13 +60,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "why the heavy",
+  "short_hook": "that specific",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep010.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep010.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep010.mp4",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep010_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep011.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep011.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep011_short.mp4"
   ],
-  "video_id": "n0H1EJqcz7w",
-  "short_id": "_p7d9XrUiAA"
+  "video_id": null,
+  "short_id": "QP5xfVElbRE"
 }
