@@ -96,7 +96,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}               # free-space vocal GPU quota ⭐
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}   # 🎵 free-GPU vocal lane (no card)
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}             # kaggle.com → Settings → API token
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }} # NEW kaggle token (settings → API)
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}             # legacy kaggle.json key (optional)
           SUNO_API_KEY: ${{ secrets.SUNO_API_KEY }}       # premium studio slot 🍳 (optional)
           SUNO_MODEL: ${{ vars.SUNO_MODEL }}              # default V4_5ALL
           SUNO_OFF: ${{ vars.SUNO_OFF }}                  # 1 = skip suno slot
