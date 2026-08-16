@@ -18,16 +18,25 @@ Optional: GEMINI_API_KEY secret inside the KAGGLE notebook (Add-ons →
 Secrets) so lyrics are fresh per song; else the notebook's bank lyrics.
 
 Kill-switch: KAGGLE_OFF=1. Any failure → None → next lane / engine.
+
+v23.7.1 fixes:
+  · kernel-metadata.json is built DYNAMICALLY with the real KAGGLE_USERNAME
+    (the hardcoded 'nixspeech/...' id made `kaggle kernels push` fail with
+    an auth/validation error for any other account).
+  · push failures now print BOTH stdout and stderr (the 'empty error' was
+    the CLI writing the reason to stdout).
+  · KAGGLE_CONFIG_DIR is set so the CLI always finds kaggle.json.
 """
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
 import time
 from pathlib import Path
 
-KERNEL_ID = os.environ.get("KAGGLE_KERNEL_ID", "nixspeech/nix-speech-vocal-cook")
+KERNEL_SLUG = os.environ.get("KAGGLE_KERNEL_SLUG", "nix-speech-vocal-cook")
 NOTEBOOK_DIR = Path(__file__).resolve().parents[1] / "kaggle_cook"
 POLL_S = int(os.environ.get("KAGGLE_POLL_S", "15") or "15")
 MAX_WAIT_S = int(os.environ.get("KAGGLE_MAX_WAIT_S", "1200") or "1200")  # 20 min
@@ -39,90 +48,118 @@ def _run(cmd: list[str], timeout: int = 120, check: bool = True):
                           timeout=timeout, check=check)
 
 
-def _available() -> bool:
+def _setup_creds() -> Path | None:
+    """Write Kaggle creds + return the config dir. None = skip.
+
+    2026 auth reality: Kaggle moved to an API-TOKEN model.
+      · KAGGLE_API_TOKEN (new)     → ~/.kaggle/access_token  (settings → API)
+      · KAGGLE_USERNAME+KAGGLE_KEY (legacy) → ~/.kaggle/kaggle.json
+    Both are accepted; we write whichever secrets are present.
+    """
     if os.environ.get("KAGGLE_OFF", "") == "1":
-        return False
-    if not (os.environ.get("KAGGLE_USERNAME", "") or "").strip():
-        return False
-    if not (os.environ.get("KAGGLE_KEY", "") or "").strip():
-        return False
+        return None
+    user = os.environ.get("KAGGLE_USERNAME", "").strip()
+    token = os.environ.get("KAGGLE_API_TOKEN", "").strip()
+    key = os.environ.get("KAGGLE_KEY", "").strip()
+    if not user or not (token or key):
+        print("  (kaggle skipped: need KAGGLE_USERNAME + (KAGGLE_API_TOKEN "
+              "or KAGGLE_KEY))")
+        return None
     if not shutil.which("kaggle"):
         try:
             _run(["pip", "install", "--quiet", "kaggle"], timeout=300)
         except Exception:
-            return False
-    return shutil.which("kaggle") is not None
+            return None
+        if not shutil.which("kaggle"):
+            return None
+    cfg = Path.home() / ".kaggle"
+    cfg.mkdir(exist_ok=True)
+    if token:
+        (cfg / "access_token").write_text(token)
+        (cfg / "access_token").chmod(0o600)
+        print("  [kaggle] using API-token auth (access_token)", flush=True)
+    else:
+        (cfg / "kaggle.json").write_text(
+            json.dumps({"username": user, "key": key}))
+        (cfg / "kaggle.json").chmod(0o600)
+        print("  [kaggle] using legacy kaggle.json auth", flush=True)
+    return cfg
+
+
+def _push(notebook_dir: Path, cfg: Path) -> tuple[int, str]:
+    """Push (create/update) the notebook. Returns (returncode, output)."""
+    # dynamic metadata: real username → valid Kaggle kernel id
+    user = os.environ.get("KAGGLE_USERNAME", "").strip()
+    meta = notebook_dir / "kernel-metadata.json"
+    if meta.exists():
+        m = json.loads(meta.read_text())
+        m["id"] = f"{user}/{KERNEL_SLUG}"
+        meta.write_text(json.dumps(m, indent=2))
+    env = dict(os.environ)
+    env["KAGGLE_CONFIG_DIR"] = str(cfg)
+    r = subprocess.run(
+        [shutil.which("kaggle"), "kernels", "push", "-p", str(notebook_dir)],
+        capture_output=True, text=True, timeout=180, env=env)
+    return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
 def generate(genre_key: str, seconds: float, out_path: Path,
              lyrics: str | None = None, lang: str = "en",
              lrc_out: Path | None = None) -> Path | None:
     """Trigger a Kaggle GPU vocal cook, poll, download. None = next lane."""
-    if not _available():
+    cfg = _setup_creds()
+    if cfg is None:
         print("  (kaggle lane skipped: no KAGGLE creds or KAGGLE_OFF=1)")
         return None
     kaggle = shutil.which("kaggle")
 
-    # write creds for the CLI (ephemeral, like HF_TOKEN handling)
-    cfg = Path.home() / ".kaggle"
-    cfg.mkdir(exist_ok=True)
-    (cfg / "kaggle.json").write_text(
-        '{"username":"%s","key":"%s"}' % (
-            os.environ["KAGGLE_USERNAME"].strip(),
-            os.environ["KAGGLE_KEY"].strip()))
-    (cfg / "kaggle.json").chmod(0o600)
-
-    try:
-        # 1) push the notebook (this also starts it)
-        print("  🎵 kaggle: pushing vocal cook to free GPU…", flush=True)
-        r = _run([kaggle, "kernels", "push", "-p", str(NOTEBOOK_DIR)],
-                 timeout=180, check=False)
-        if r.returncode != 0:
-            print(f"  ⚠ kaggle push failed: {r.stderr[-300:]} — next lane")
-            return None
-
-        # 2) poll until complete
-        t0 = time.time()
-        while time.time() - t0 < MAX_WAIT_S:
-            time.sleep(POLL_S)
-            r = _run([kaggle, "kernels", "status", KERNEL_ID],
-                     timeout=60, check=False)
-            out = (r.stdout or "") + (r.stderr or "")
-            if "complete" in out.lower():
-                break
-            if "error" in out.lower() or "failed" in out.lower():
-                print(f"  ⚠ kaggle kernel errored: {out[-200:]} — next lane")
-                return None
-            print(f"  [kaggle] cooking… {int(time.time()-t0)}s", flush=True)
-        else:
-            print("  ⚠ kaggle timed out — next lane")
-            return None
-
-        # 3) download output
-        out_dir = out_path.parent / "kaggle_out"
-        out_dir.mkdir(exist_ok=True)
-        _run([kaggle, "kernels", "output", KERNEL_ID, "-p", str(out_dir)],
-             timeout=180, check=False)
-        mp3s = sorted(out_dir.glob("next_song--*.mp3"))
-        if not mp3s:
-            print("  ⚠ kaggle output has no next_song mp3 — next lane")
-            return None
-        src = mp3s[0]
-        import shutil as _s
-        _s.copy(src, out_path)
-        if out_path.stat().st_size < 80_000:
-            print(f"  ⚠ kaggle mp3 suspiciously small — next lane")
-            return None
-        # sidecars
-        stem = src.stem
-        for suf, dest in ((".lrc.txt", lrc_out), (".lyrics.txt", None)):
-            side = src.with_name(stem + suf)
-            if dest is not None and side.exists():
-                dest.write_bytes(side.read_bytes())
-        mode = f"{lang} vocals 🎤" if lyrics else "instrumental"
-        print(f"  🎁 kaggle-GPU cooked {genre_key} ({mode}, "
-              f"{out_path.stat().st_size//1024} KB)")
-        return out_path
-    except Exception as e:
-        print(f"  ⚠ kaggle lane failed: {type(e).__name__}: {str(e)[:140]}")
+    # 1) push the notebook (this also starts it)
+    print("  🎵 kaggle: pushing vocal cook to free GPU…", flush=True)
+    rc, out = _push(NOTEBOOK_DIR, cfg)
+    if rc != 0:
+        print(f"  ⚠ kaggle push failed (rc={rc}): {out[-400:]} — next lane")
         return None
+    print(f"  [kaggle] push ok: {out.strip()[-200:]}", flush=True)
+
+    # 2) poll until complete
+    kernel_id = f"{os.environ.get('KAGGLE_USERNAME','').strip()}/{KERNEL_SLUG}"
+    t0 = time.time()
+    while time.time() - t0 < MAX_WAIT_S:
+        time.sleep(POLL_S)
+        r = _run([kaggle, "kernels", "status", kernel_id], timeout=60,
+                 check=False)
+        out = (r.stdout or "") + (r.stderr or "")
+        low = out.lower()
+        if "complete" in low:
+            break
+        if "error" in low or "failed" in low:
+            print(f"  ⚠ kaggle kernel errored: {out[-300:]} — next lane")
+            return None
+        print(f"  [kaggle] cooking… {int(time.time()-t0)}s", flush=True)
+    else:
+        print("  ⚠ kaggle timed out — next lane")
+        return None
+
+    # 3) download output
+    out_dir = out_path.parent / "kaggle_out"
+    out_dir.mkdir(exist_ok=True)
+    _run([kaggle, "kernels", "output", kernel_id, "-p", str(out_dir)],
+         timeout=180, check=False)
+    mp3s = sorted(out_dir.glob("next_song--*.mp3"))
+    if not mp3s:
+        print("  ⚠ kaggle output has no next_song mp3 — next lane")
+        return None
+    src = mp3s[0]
+    shutil.copy(src, out_path)
+    if out_path.stat().st_size < 80_000:
+        print(f"  ⚠ kaggle mp3 suspiciously small — next lane")
+        return None
+    # sidecars
+    stem = src.stem
+    side = src.with_name(stem + ".lrc.txt")
+    if lrc_out is not None and side.exists():
+        lrc_out.write_bytes(side.read_bytes())
+    mode = f"{lang} vocals 🎤" if lyrics else "instrumental"
+    print(f"  🎁 kaggle-GPU cooked {genre_key} ({mode}, "
+          f"{out_path.stat().st_size//1024} KB)")
+    return out_path
