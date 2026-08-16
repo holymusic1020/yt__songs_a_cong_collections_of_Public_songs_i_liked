@@ -1,5 +1,5 @@
 {
-  "episode": 8,
+  "episode": 9,
   "history": [
     {
       "episode": 1,
@@ -104,6 +104,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-15T12:22:29Z",
       "at": "2026-08-15T10:04:26+00:00"
+    },
+    {
+      "episode": 9,
+      "kind": "short",
+      "youtube_id": "sGvMloL4fEo",
+      "video_id": null,
+      "short_id": "sGvMloL4fEo",
+      "title": "four am concrete \u2014 Nix Speech (official audio)",
+      "name": "four am concrete",
+      "genre": "deep_pop",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-16T04:48:17Z",
+      "at": "2026-08-16T02:15:30+00:00"
     }
   ]
 }

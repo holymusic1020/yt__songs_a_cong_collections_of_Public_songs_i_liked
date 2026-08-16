@@ -1,45 +1,45 @@
 {
-  "episode": 8,
-  "genre": "lo-fi",
-  "seed": 63579,
-  "bpm": 84,
+  "episode": 9,
+  "genre": "deep dark-pop",
+  "seed": 71499,
+  "bpm": 104,
   "key": "B minor",
-  "duration_s": 171.42857142857142,
+  "duration_s": 149.99965986394557,
   "meta": {
     "channel": "Nix Speech",
-    "name": "kitchen clock hum",
-    "title": "kitchen clock hum \u2014 Nix Speech (official audio)",
-    "description": "kitchen clock hum\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.008 \u00b7 lo-fi \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#lofi #chillbeats #studymusic\n",
+    "name": "four am concrete",
+    "title": "four am concrete \u2014 Nix Speech (official audio)",
+    "description": "four am concrete\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.009 \u00b7 deep dark-pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #nightvibes #moody\n",
     "tags": [
-      "kitchen clock hum",
-      "official audio",
-      "aesthetic",
-      "night drive music",
-      "lofi",
-      "relaxing beats"
+      "four am concrete",
+      "new music",
+      "moody beats",
+      "type beat",
+      "dark pop",
+      "chill"
     ],
-    "genre": "lo-fi",
-    "genre_key": "lofi",
+    "genre": "deep dark-pop",
+    "genre_key": "deep_pop",
     "lang": "en",
-    "bpm": 84,
+    "bpm": 104,
     "key": "B minor",
-    "style_variant": "Moonlight filters through the kitchen window, illuminating a ticking wall clock above a silent counter (free engine)"
+    "style_variant": "Puddles on cracked concrete reflect flickering emerald streetlights under a heavy haze of purple smog (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 8368,
-    "short_publish_at": "2026-08-15T12:22:29Z"
+    "short_offset_s": 9226,
+    "short_publish_at": "2026-08-16T04:48:17Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "no one warns you about the quiet",
+    "hook": "nobody walks this path by accident",
     "lines": [
-      "linoleum floors cold underfoot",
-      "yellow streetlights bleed through glass",
-      "staring at a half-empty mug",
-      "the refrigerator hums a steady tune",
-      "ten million sleepless windows glow"
+      "yellow fog bleeds through the cracks",
+      "damp asphalt under worn-out soles",
+      "heavy bass shakes the quiet glass",
+      "tracing cracks in the dark pavement",
+      "even the shadows look tired tonight"
     ]
   },
   "lang": "en",
@@ -50,17 +50,17 @@
     "mascot": false,
     "spectrum": true,
     "loop_echo": true,
-    "slowed_twin": true
+    "slowed_twin": false
   },
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "no one warns",
+  "short_hook": "nobody walks this",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep008.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep008.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep008_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep009.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep009.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep009_short.mp4"
   ],
   "video_id": null,
-  "short_id": "SOZjmL_0WjM"
+  "short_id": "sGvMloL4fEo"
 }
