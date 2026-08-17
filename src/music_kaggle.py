@@ -145,6 +145,13 @@ def generate(genre_key: str, seconds: float, out_path: Path,
     out_dir.mkdir(exist_ok=True)
     _run([kaggle, "kernels", "output", kernel_id, "-p", str(out_dir)],
          timeout=180, check=False)
+    # the notebook writes error.txt on failure (never crashes the kernel) —
+    # surface the REAL reason instead of "KernelWorkerStatus.ERROR"
+    errs = list(out_dir.rglob("error.txt"))
+    if errs:
+        why = errs[0].read_text(encoding="utf-8", errors="replace")[-500:]
+        print(f"  ⚠ kaggle notebook reported: {why.strip()} — next lane")
+        return None
     mp3s = sorted(out_dir.glob("next_song--*.mp3"))
     if not mp3s:
         print("  ⚠ kaggle output has no next_song mp3 — next lane")

@@ -40,7 +40,7 @@ def _ensure_deps(timeout: int = 900) -> bool:
             [sys.executable, "-m", "pip", "install", "--quiet",
              "--index-url", "https://download.pytorch.org/whl/cpu",
              "--extra-index-url", "https://pypi.org/simple",
-             "torch", "transformers"],
+             "torch", "transformers<5"],
             timeout=timeout, check=True)
         return True
     except Exception as e:

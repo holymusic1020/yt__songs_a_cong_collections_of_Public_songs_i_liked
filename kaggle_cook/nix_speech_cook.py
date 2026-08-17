@@ -1,17 +1,19 @@
 # ⚡ NIX SPEECH VOCAL COOKER — runs on KAGGLE free T4/P100 GPU (no card)
-# Installed by the GitHub workflow via `kaggle kernels push` when the queue
-# is empty. Uses DiffRhythm (Apache-2.0) the CORRECT way: clone the repo +
-# run infer/infer.py CLI (NOT the pip package — that was the kernel error).
-# Outputs next_song--<genre>--en.mp3 + .lrc.txt + .lyrics.txt to
-# /kaggle/working for GitHub to download.
+# v3: NEVER crashes the kernel. Every failure is caught, written to
+# error.txt, and the script exits 0 — so GitHub's `kaggle kernels output`
+# downloads error.txt and prints the REAL reason in the run log.
+# (A KernelWorkerStatus.ERROR gives us nothing — this fixes that.)
+#
+# DiffRhythm usage (correct): clone repo + run infer/infer.py CLI.
 
 import datetime
 import os
-import random
 import subprocess
 import sys
+import traceback
 from pathlib import Path
 
+WORK = Path("/kaggle/working")
 GENRES = ["drift_phonk", "deep_pop", "dark_ambient", "lofi", "baroque_waltz",
           "disco_house", "skyline_anthem", "villain_pop", "orbit_trap"]
 
@@ -37,7 +39,13 @@ LYRIC_LINES = [
     "the station hums a quiet song",
     "and we keep driving on",
 ]
-LYRIC_TAGS = ["[verse]", "[chorus]", "[verse]", "[chorus]", "[bridge]", "[chorus]", "[outro]"]
+
+
+def fail(msg: str) -> None:
+    """Record the failure so GitHub can read it, then exit 0."""
+    print("❌ " + msg, flush=True)
+    (WORK / "error.txt").write_text(msg + "\n", encoding="utf-8")
+    sys.exit(0)
 
 
 def pick_genre() -> str:
@@ -46,10 +54,7 @@ def pick_genre() -> str:
     return GENRES[day % len(GENRES)]
 
 
-def build_lrc(genre: str, dur: int = 95) -> str:
-    """Build an LRC file with timestamps — DiffRhythm needs LRC format.
-    Plain [mm:ss] + lyric text (no inline [verse] tags — the LRC parser
-    chokes on them)."""
+def build_lrc() -> str:
     lines = []
     t = 30.0
     for txt in LYRIC_LINES:
@@ -63,68 +68,73 @@ def main():
     genre = pick_genre()
     print(f"🎹 genre: {genre}", flush=True)
 
-    # 1) clone DiffRhythm
     print("📦 cloning DiffRhythm…", flush=True)
-    os.system("rm -rf DiffRhythm && git clone --depth 1 "
-              "https://github.com/ASLP-lab/DiffRhythm.git")
-    if not Path("DiffRhythm/infer/infer.py").exists():
-        print("❌ clone failed", flush=True)
-        sys.exit(1)
+    r = os.system("rm -rf DiffRhythm && git clone --depth 1 "
+                  "https://github.com/ASLP-lab/DiffRhythm.git "
+                  "> /tmp/clone.log 2>&1")
+    if r != 0 or not Path("DiffRhythm/infer/infer.py").exists():
+        log = Path("/tmp/clone.log").read_text()[-800:] if Path("/tmp/clone.log").exists() else ""
+        fail(f"DiffRhythm clone failed (rc={r}): {log}")
 
-    # 2) install deps (Kaggle has torch preinstalled; DiffRhythm needs the rest)
     print("📦 installing DiffRhythm deps…", flush=True)
-    os.system("pip -q install -r DiffRhythm/requirements.txt")
+    r = os.system("pip -q install -r DiffRhythm/requirements.txt "
+                  "> /tmp/pip.log 2>&1")
+    if r != 0:
+        log = Path("/tmp/pip.log").read_text()[-800:] if Path("/tmp/pip.log").exists() else ""
+        fail(f"pip install failed (rc={r}): {log}")
     os.system("pip -q install mutagen")
 
-    # 3) write LRC lyrics
-    lrc = build_lrc(genre)
-    lrc_path = Path("/kaggle/working/song.lrc")
+    # write LRC
+    lrc = build_lrc()
+    lrc_path = WORK / "song.lrc"
     lrc_path.write_text(lrc, encoding="utf-8")
-    print(f"✍️ lyrics: {len(LYRIC_LINES)} lines → {lrc_path}", flush=True)
+    print(f"✍️ lyrics: {len(LYRIC_LINES)} lines", flush=True)
 
-    # 4) run inference (95s is the min supported length)
     style = STYLE.get(genre, "pop")
+    out_dir = WORK / "out"
+    out_dir.mkdir(exist_ok=True)
     cmd = [
-        "python", "DiffRhythm/infer/infer.py",
+        "python", str(Path("DiffRhythm/infer/infer.py").resolve()),
         "--lrc-path", str(lrc_path),
         "--ref-prompt", style,
         "--audio-length", "95",
-        "--output-dir", "/kaggle/working/out",
+        "--output-dir", str(out_dir),
     ]
-    print(f"🎤 cooking {genre} WITH VOCALS on GPU…\n{' '.join(cmd)}", flush=True)
-    r = subprocess.run(cmd, cwd="/kaggle/working", capture_output=True, text=True)
-    if r.returncode != 0:
-        print("❌ inference failed:", flush=True)
-        print((r.stdout or "")[-2000:], flush=True)
-        print((r.stderr or "")[-2000:], flush=True)
-        sys.exit(1)
-    print("✅ inference ok", flush=True)
+    print(f"🎤 cooking {genre} WITH VOCALS on GPU…", flush=True)
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+    except subprocess.TimeoutExpired:
+        fail("DiffRhythm inference timed out after 15 min")
+    if p.returncode != 0:
+        tail = ((p.stdout or "") + (p.stderr or ""))[-1200:]
+        fail(f"DiffRhythm inference failed (rc={p.returncode}): {tail}")
 
-    # 5) find output wav
-    out_dir = Path("/kaggle/working/out")
     wavs = list(out_dir.glob("*.wav")) + list(out_dir.glob("*.mp3"))
     if not wavs:
-        print("❌ no output audio found in", out_dir, flush=True)
-        sys.exit(1)
+        fail(f"no output audio in {out_dir}")
     wav = wavs[0]
-    print(f"🎵 output: {wav} ({wav.stat().st_size//1024} KB)", flush=True)
+    print(f"🎵 output: {wav.name} ({wav.stat().st_size//1024} KB)", flush=True)
 
-    # 6) convert + save as next_song
     stem = f"next_song--{genre}--en"
-    mp3 = Path("/kaggle/working") / f"{stem}.mp3"
-    os.system(f'ffmpeg -y -v error -i "{wav}" -codec:a libmp3lame -qscale:a 2 "{mp3}"')
-    if not mp3.exists() or mp3.stat().st_size < 80000:
-        print("❌ mp3 conversion failed", flush=True)
-        sys.exit(1)
-    # sidecars
-    (Path("/kaggle/working") / f"{stem}.lyrics.txt").write_text(
-        "\n".join(LYRIC_LINES), encoding="utf-8")
-    (Path("/kaggle/working") / f"{stem}.lrc.txt").write_text(lrc, encoding="utf-8")
-    print(f"✅ DONE: {mp3} ({mp3.stat().st_size//1024} KB) — vocals 🎤", flush=True)
-    print("FILES:", flush=True)
-    for f in Path("/kaggle/working").glob("next_song*"):
-        print(" ", f.name, flush=True)
+    mp3 = WORK / f"{stem}.mp3"
+    r = os.system(f'ffmpeg -y -v error -i "{wav}" '
+                  f'-codec:a libmp3lame -qscale:a 2 "{mp3}" '
+                  f'> /tmp/ff.log 2>&1')
+    if r != 0 or not mp3.exists() or mp3.stat().st_size < 80000:
+        log = Path("/tmp/ff.log").read_text()[-400:] if Path("/tmp/ff.log").exists() else ""
+        fail(f"ffmpeg convert failed (rc={r}): {log}")
+
+    (WORK / f"{stem}.lyrics.txt").write_text("\n".join(LYRIC_LINES), encoding="utf-8")
+    (WORK / f"{stem}.lrc.txt").write_text(lrc, encoding="utf-8")
+    # success marker
+    (WORK / "SUCCESS.txt").write_text(f"cooked {genre} via DiffRhythm\n", encoding="utf-8")
+    print(f"✅ DONE: {mp3.name} ({mp3.stat().st_size//1024} KB) — vocals 🎤", flush=True)
+    for f in WORK.glob("next_song*"):
+        print("  ", f.name, flush=True)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        fail("uncaught: " + traceback.format_exc()[-1500:])

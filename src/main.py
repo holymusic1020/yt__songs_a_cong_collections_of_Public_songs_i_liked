@@ -465,13 +465,18 @@ def main() -> None:
                     L, OUT / f"ep{ep:03d}_short_bg.mp4", size=video_render.VERT)
             short_mp4 = shorts.render_video(short_pack, OUT / f"ep{ep:03d}_short.mp4")
             try:                             # 💤 v23: slowed+reverb twin short
-                every = int((os.environ.get("SLOWED_EVERY", "4") or "0").strip())
+                every = int((os.environ.get("SLOWED_EVERY", "0") or "0").strip())
             except ValueError:
-                every = 4
+                every = 0
             if every > 0 and ep % every == 0:
                 print(f"  💤 every-{every} drop → slowed + reverb twin short…")
                 twin = shorts.slowed_twin_pack(short_pack, OUT, ep)
                 twin_mp4 = shorts.render_video(twin, OUT / f"ep{ep:03d}_slowed.mp4")
+                # 🚨 shadow-ban guard (2026-08-17): the twin must NEVER land
+                # near the main short — YouTube reads 2 same-time posts as spam.
+                # Default SLOWED_EVERY=0 (off). When enabled, schedule the twin
+                # +22h so it's a SEPARATE day's post, not a same-minute double.
+                t_off = 22 * 3600 + float(rng.uniform(600, 1800))
 
     print("  📅 schedule:")
     if video_today:
@@ -535,7 +540,9 @@ def main() -> None:
                 print(f"  ❌ short upload failed: {e}")
         if twin_mp4 and Path(twin_mp4).exists():      # bonus drop — failures
             try:                                      # never fail the run
-                t_off = sched["short_offset_s"] + float(rng.uniform(600, 1500))
+                # 🚨 shadow-ban guard: twin posts ~22h later = a SEPARATE
+                # day's drop, not a same-time double (YouTube spam signal).
+                t_off = 22 * 3600 + float(rng.uniform(600, 1800))
                 twin_at = _iso(now + timedelta(seconds=t_off))
                 smeta_t = metadata.short_meta(meta, short_pack["hook_line"],
                                               slowed=True)
