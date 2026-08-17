@@ -1,50 +1,45 @@
 {
-  "episode": 11,
-  "genre": "skyline anthem",
-  "seed": 87337,
-  "bpm": 129,
-  "key": "A major",
-  "duration_s": 150.69673469387754,
-  "events": {
-    "risers": 4,
-    "rolls": 4,
-    "crashes": 4
-  },
+  "episode": 12,
+  "genre": "baroque waltz",
+  "seed": 95257,
+  "bpm": 186,
+  "key": "B minor",
+  "duration_s": 118.0578231292517,
   "meta": {
     "channel": "Nix Speech",
-    "name": "sodium balconies",
-    "title": "sodium balconies \u2014 Nix Speech (official audio)",
-    "description": "sodium balconies\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.011 \u00b7 skyline anthem \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#edm #festivalvibes #anthem\n",
+    "name": "velvet midnight clock",
+    "title": "velvet midnight clock \u2014 Nix Speech (official audio)",
+    "description": "velvet midnight clock\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.012 \u00b7 baroque waltz \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#waltz #baroquepop #vintage\n",
     "tags": [
-      "sodium balconies",
-      "anthem house",
-      "folk edm",
+      "velvet midnight clock",
       "official audio",
-      "night drive music",
-      "chill"
+      "baroque pop",
+      "vintage waltz",
+      "instrumental",
+      "aesthetic"
     ],
-    "genre": "skyline anthem",
-    "genre_key": "skyline_anthem",
+    "genre": "baroque waltz",
+    "genre_key": "baroque_waltz",
     "lang": "en",
-    "bpm": 129,
-    "key": "A major",
-    "style_variant": "Amber sodium light spills across wet concrete balconies overlooking a vast, glowing night skyline (free engine)"
+    "bpm": 186,
+    "key": "B minor",
+    "style_variant": "Midnight moonlight streams through stained glass onto velvet drapes and spinning golden clockwork gears (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 7380,
-    "short_publish_at": "2026-08-16T13:54:42Z"
+    "short_offset_s": 9476,
+    "short_publish_at": "2026-08-17T03:40:58Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "that specific orange at three am",
+    "hook": "the hour where silence hums",
     "lines": [
-      "wet concrete beneath bare feet",
-      "neon bleeding through the fog",
-      "traffic hums a distant chorus",
-      "forty stories above the steam",
-      "your silhouette against the grid"
+      "streetlamps bleed on wet stone",
+      "ticking against the velvet dark",
+      "colder than the hollow moon",
+      "shadows dance in minor keys",
+      "turning gears of empty streets"
     ]
   },
   "lang": "en",
@@ -55,17 +50,17 @@
     "mascot": false,
     "spectrum": true,
     "loop_echo": true,
-    "slowed_twin": false
+    "slowed_twin": true
   },
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "that specific",
+  "short_hook": "the hour where",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep011.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep011.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep011_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep012.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep012.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep012_short.mp4"
   ],
   "video_id": null,
-  "short_id": "QP5xfVElbRE"
+  "short_id": "PihsUXvBBI0"
 }

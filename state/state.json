@@ -1,5 +1,5 @@
 {
-  "episode": 11,
+  "episode": 12,
   "history": [
     {
       "episode": 1,
@@ -143,6 +143,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-16T13:54:42Z",
       "at": "2026-08-16T11:52:48+00:00"
+    },
+    {
+      "episode": 12,
+      "kind": "short",
+      "youtube_id": "PihsUXvBBI0",
+      "video_id": null,
+      "short_id": "PihsUXvBBI0",
+      "title": "velvet midnight clock \u2014 Nix Speech (official audio)",
+      "name": "velvet midnight clock",
+      "genre": "baroque_waltz",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-17T03:40:58Z",
+      "at": "2026-08-17T01:04:35+00:00"
     }
   ]
 }
