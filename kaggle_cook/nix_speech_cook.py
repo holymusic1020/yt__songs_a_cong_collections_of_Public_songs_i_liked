@@ -1,14 +1,15 @@
 # ⚡ NIX SPEECH VOCAL COOKER — runs on KAGGLE free T4/P100 GPU (no card)
 # Installed by the GitHub workflow via `kaggle kernels push` when the queue
-# is empty. Self-contained: picks the genre by date (same wheel as main.py),
-# writes lyrics (Gemini secret if present, else the built-in bank), cooks a
-# FULL song WITH SUNG VOCALS using DiffRhythm (Apache-2.0), and saves
-# next_song--<genre>--en.mp3 + .lrc.txt + .lyrics.txt to /kaggle/working
-# for GitHub to download via `kaggle kernels output`.
+# is empty. Uses DiffRhythm (Apache-2.0) the CORRECT way: clone the repo +
+# run infer/infer.py CLI (NOT the pip package — that was the kernel error).
+# Outputs next_song--<genre>--en.mp3 + .lrc.txt + .lyrics.txt to
+# /kaggle/working for GitHub to download.
 
+import datetime
 import os
 import random
-from datetime import datetime, timezone
+import subprocess
+import sys
 from pathlib import Path
 
 GENRES = ["drift_phonk", "deep_pop", "dark_ambient", "lofi", "baroque_waltz",
@@ -26,84 +27,103 @@ STYLE = {
     "orbit_trap": "melodic trap, confident rap-sung bounce, rolling hi-hats, sliding 808 bass, spacey pads",
 }
 
-LYRIC_BANK = (
-    "[verse]\nmidnight city lights below\nwe ride the neon flow\n"
-    "[chorus]\nnix speech in the night\nwe're glowing, burning bright\n"
-    "[verse]\nheadlights cut the rain\nwe're chasing every lane\n"
-    "[chorus]\nnix speech in the night\nwe're glowing, burning bright\n"
-    "[outro]\nglow until the morning light"
-)
+LYRIC_LINES = [
+    "midnight city lights below",
+    "we ride the neon flow",
+    "the signal never dies tonight",
+    "we're glowing, burning bright",
+    "headlights cut the rain",
+    "we're chasing every lane",
+    "the station hums a quiet song",
+    "and we keep driving on",
+]
+LYRIC_TAGS = ["[verse]", "[chorus]", "[verse]", "[chorus]", "[bridge]", "[chorus]", "[outro]"]
 
 
 def pick_genre() -> str:
-    # same wheel as main.py: EP count from date (2026-08-01 = start)
-    day = (datetime.now(timezone.utc) - datetime(2026, 8, 1, tzinfo=timezone.utc)).days
+    day = (datetime.datetime.now(datetime.timezone.utc) -
+           datetime.datetime(2026, 8, 1, tzinfo=datetime.timezone.utc)).days
     return GENRES[day % len(GENRES)]
 
 
-def write_lyrics(genre: str) -> str:
-    key = os.environ.get("GEMINI_API_KEY", "").strip()
-    if key:
-        try:
-            from google import genai
-            client = genai.Client(api_key=key)
-            resp = client.models.generate_content(
-                model="gemini-3.5-flash",
-                contents=(
-                    f"Write tagged lyrics ([verse]/[chorus]/[bridge]/[outro]) for a "
-                    f"{genre} song, 60-90 words, night-city imagery, original, no famous "
-                    f"phrases. Return ONLY the tagged lyrics."
-                ))
-            if resp.text and len(resp.text) > 40:
-                return resp.text.strip()
-        except Exception:
-            pass
-    return LYRIC_BANK
+def build_lrc(genre: str, dur: int = 95) -> str:
+    """Build an LRC file with timestamps — DiffRhythm needs LRC format.
+    Plain [mm:ss] + lyric text (no inline [verse] tags — the LRC parser
+    chokes on them)."""
+    lines = []
+    t = 30.0
+    for txt in LYRIC_LINES:
+        mm, ss = int(t // 60), int(t % 60)
+        lines.append(f"[{mm:02d}:{ss:02d}]{txt}")
+        t += 8.0
+    return "\n".join(lines)
 
 
 def main():
     genre = pick_genre()
     print(f"🎹 genre: {genre}", flush=True)
-    lyrics = write_lyrics(genre)
-    print("✍️ lyrics ready", flush=True)
 
-    print("📦 installing DiffRhythm…", flush=True)
-    os.system("pip -q install git+https://github.com/ASLP-lab/DiffRhythm.git")
-    os.system("pip -q install demucs")
+    # 1) clone DiffRhythm
+    print("📦 cloning DiffRhythm…", flush=True)
+    os.system("rm -rf DiffRhythm && git clone --depth 1 "
+              "https://github.com/ASLP-lab/DiffRhythm.git")
+    if not Path("DiffRhythm/infer/infer.py").exists():
+        print("❌ clone failed", flush=True)
+        sys.exit(1)
 
-    from diffrhythm import DiffRhythm
-    print("🎼 loading model…", flush=True)
-    model = DiffRhythm()
-    model.load_model("ASLP/DiffRhythm-base")   # ~8GB VRAM → T4/P100 fits
+    # 2) install deps (Kaggle has torch preinstalled; DiffRhythm needs the rest)
+    print("📦 installing DiffRhythm deps…", flush=True)
+    os.system("pip -q install -r DiffRhythm/requirements.txt")
+    os.system("pip -q install mutagen")
 
-    seconds = 150  # 2:30 song
-    print(f"🎤 cooking {seconds}s {genre} WITH VOCALS on GPU…", flush=True)
-    model.inference(
-        lyrics=lyrics,
-        style=STYLE.get(genre, "pop"),
-        duration=seconds,
-        seed=random.randint(0, 2**31),
-        chunked=False,
-    )
-    # DiffRhythm saves to /kaggle/working/song.wav by default
-    wav = Path("/kaggle/working/song.wav")
-    if not wav.exists():
-        cands = list(Path("/kaggle/working").glob("*.wav"))
-        if not cands:
-            raise RuntimeError("no output wav produced")
-        wav = cands[0]
+    # 3) write LRC lyrics
+    lrc = build_lrc(genre)
+    lrc_path = Path("/kaggle/working/song.lrc")
+    lrc_path.write_text(lrc, encoding="utf-8")
+    print(f"✍️ lyrics: {len(LYRIC_LINES)} lines → {lrc_path}", flush=True)
 
+    # 4) run inference (95s is the min supported length)
+    style = STYLE.get(genre, "pop")
+    cmd = [
+        "python", "DiffRhythm/infer/infer.py",
+        "--lrc-path", str(lrc_path),
+        "--ref-prompt", style,
+        "--audio-length", "95",
+        "--output-dir", "/kaggle/working/out",
+    ]
+    print(f"🎤 cooking {genre} WITH VOCALS on GPU…\n{' '.join(cmd)}", flush=True)
+    r = subprocess.run(cmd, cwd="/kaggle/working", capture_output=True, text=True)
+    if r.returncode != 0:
+        print("❌ inference failed:", flush=True)
+        print((r.stdout or "")[-2000:], flush=True)
+        print((r.stderr or "")[-2000:], flush=True)
+        sys.exit(1)
+    print("✅ inference ok", flush=True)
+
+    # 5) find output wav
+    out_dir = Path("/kaggle/working/out")
+    wavs = list(out_dir.glob("*.wav")) + list(out_dir.glob("*.mp3"))
+    if not wavs:
+        print("❌ no output audio found in", out_dir, flush=True)
+        sys.exit(1)
+    wav = wavs[0]
+    print(f"🎵 output: {wav} ({wav.stat().st_size//1024} KB)", flush=True)
+
+    # 6) convert + save as next_song
     stem = f"next_song--{genre}--en"
     mp3 = Path("/kaggle/working") / f"{stem}.mp3"
     os.system(f'ffmpeg -y -v error -i "{wav}" -codec:a libmp3lame -qscale:a 2 "{mp3}"')
-    (Path("/kaggle/working") / f"{stem}.lyrics.txt").write_text(lyrics, encoding="utf-8")
-    # rough evenly-timed LRC so the karaoke video has words
-    lines = [l for l in lyrics.splitlines() if l.strip() and not l.strip().startswith("[")]
-    step = seconds / max(1, len(lines))
-    lrc = "\n".join(f"[{int(i*step//60)}:{int(i*step%60):02d}] {l}"
-                    for i, l in enumerate(lines))
+    if not mp3.exists() or mp3.stat().st_size < 80000:
+        print("❌ mp3 conversion failed", flush=True)
+        sys.exit(1)
+    # sidecars
+    (Path("/kaggle/working") / f"{stem}.lyrics.txt").write_text(
+        "\n".join(LYRIC_LINES), encoding="utf-8")
     (Path("/kaggle/working") / f"{stem}.lrc.txt").write_text(lrc, encoding="utf-8")
     print(f"✅ DONE: {mp3} ({mp3.stat().st_size//1024} KB) — vocals 🎤", flush=True)
+    print("FILES:", flush=True)
+    for f in Path("/kaggle/working").glob("next_song*"):
+        print(" ", f.name, flush=True)
 
 
 if __name__ == "__main__":
