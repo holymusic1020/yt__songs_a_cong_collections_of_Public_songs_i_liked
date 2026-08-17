@@ -1,45 +1,50 @@
 {
-  "episode": 12,
-  "genre": "baroque waltz",
-  "seed": 95257,
-  "bpm": 186,
-  "key": "B minor",
-  "duration_s": 118.0578231292517,
+  "episode": 13,
+  "genre": "villain pop",
+  "seed": 103176,
+  "bpm": 140,
+  "key": "D minor",
+  "duration_s": 121.71428571428571,
+  "events": {
+    "risers": 4,
+    "rolls": 4,
+    "crashes": 4
+  },
   "meta": {
     "channel": "Nix Speech",
-    "name": "velvet midnight clock",
-    "title": "velvet midnight clock \u2014 Nix Speech (official audio)",
-    "description": "velvet midnight clock\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.012 \u00b7 baroque waltz \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#waltz #baroquepop #vintage\n",
+    "name": "wet asphalt static",
+    "title": "wet asphalt static \u2014 Nix Speech (official audio)",
+    "description": "wet asphalt static\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.013 \u00b7 villain pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #villainera #cinematicpop\n",
     "tags": [
-      "velvet midnight clock",
-      "official audio",
-      "baroque pop",
-      "vintage waltz",
-      "instrumental",
-      "aesthetic"
+      "wet asphalt static",
+      "music box beat",
+      "aesthetic",
+      "evil pop",
+      "chill",
+      "villain pop"
     ],
-    "genre": "baroque waltz",
-    "genre_key": "baroque_waltz",
+    "genre": "villain pop",
+    "genre_key": "villain_pop",
     "lang": "en",
-    "bpm": 186,
-    "key": "B minor",
-    "style_variant": "Midnight moonlight streams through stained glass onto velvet drapes and spinning golden clockwork gears (free engine)"
+    "bpm": 140,
+    "key": "D minor",
+    "style_variant": "Rain slicked black streets reflect jagged neon glows beneath a humming, desolate power station (free engine)"
   },
   "schedule": {
-    "video_offset_s": 0,
-    "video_publish_at": null,
-    "short_offset_s": 9476,
-    "short_publish_at": "2026-08-17T03:40:58Z"
+    "video_offset_s": 1714,
+    "video_publish_at": "2026-08-17T11:29:46Z",
+    "short_offset_s": 3941,
+    "short_publish_at": "2026-08-17T12:06:54Z"
   },
-  "video_today": false,
+  "video_today": true,
   "ai_copy": {
-    "hook": "the hour where silence hums",
+    "hook": "the city only loves you ruined",
     "lines": [
-      "streetlamps bleed on wet stone",
-      "ticking against the velvet dark",
-      "colder than the hollow moon",
-      "shadows dance in minor keys",
-      "turning gears of empty streets"
+      "wet pavement reflects your coldest grin",
+      "neon bleeding through the dark mist",
+      "white noise hums inside your chest",
+      "high beams cutting through the steam",
+      "cold static on the radio dial"
     ]
   },
   "lang": "en",
@@ -47,20 +52,21 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": false,
+    "mascot": true,
     "spectrum": true,
     "loop_echo": true,
-    "slowed_twin": true
+    "slowed_twin": false
   },
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "the hour where",
+  "short_hook": "the city only",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep012.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep012.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep012_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep013.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep013.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep013.mp4",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep013_short.mp4"
   ],
-  "video_id": null,
-  "short_id": "PihsUXvBBI0"
+  "video_id": "nQwCFS0fo1U",
+  "short_id": "TQV2FK0-eqw"
 }

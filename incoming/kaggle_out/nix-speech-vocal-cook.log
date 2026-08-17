@@ -1,0 +1,12 @@
+[{"stream_name":"stdout","time":0.870734366,"data":"🎹 genre: villain_pop\n"}
+,{"stream_name":"stdout","time":0.870800546,"data":"📦 cloning DiffRhythm…\n"}
+,{"stream_name":"stdout","time":33.167454587,"data":"❌ DiffRhythm clone failed (rc=32768): Cloning into 'DiffRhythm'...\n"}
+,{"stream_name":"stdout","time":33.167486287,"data":"fatal: unable to access 'https://github.com/ASLP-lab/DiffRhythm.git/': Could not resolve host: github.com\n"}
+,{"stream_name":"stdout","time":33.167491938,"data":"\n"}
+,{"stream_name":"stderr","time":35.553149504,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":35.553191114,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":35.951713959,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":35.951750389,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":37.690666653,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":39.041283006,"data":"[NbConvertApp] Writing 300434 bytes to __results__.html\n"}
+]
