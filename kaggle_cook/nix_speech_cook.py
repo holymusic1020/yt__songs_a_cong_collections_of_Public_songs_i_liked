@@ -74,14 +74,30 @@ def main():
                   "> /tmp/clone.log 2>&1")
     if r != 0 or not Path("DiffRhythm/infer/infer.py").exists():
         log = Path("/tmp/clone.log").read_text()[-800:] if Path("/tmp/clone.log").exists() else ""
+        # clear guidance: github.com unresolvable = Internet is OFF in the
+        # notebook settings (Kaggle toggles it per-notebook)
+        if "Could not resolve host" in log or "Name or service not known" in log:
+            fail("INTERNET IS OFF in this Kaggle notebook — open it on "
+                 "kaggle.com, click the ⚙️ Settings, set Internet: ON, "
+                 "Save, then re-run. (clone log: " + log.strip()[-200:] + ")")
         fail(f"DiffRhythm clone failed (rc={r}): {log}")
 
     print("📦 installing DiffRhythm deps…", flush=True)
     r = os.system("pip -q install -r DiffRhythm/requirements.txt "
                   "> /tmp/pip.log 2>&1")
     if r != 0:
-        log = Path("/tmp/pip.log").read_text()[-800:] if Path("/tmp/pip.log").exists() else ""
-        fail(f"pip install failed (rc={r}): {log}")
+        # fallback: Kaggle ships its own torch — skip torch pins if the
+        # exact-pinned set conflicts, keep the rest (einops, librosa, etc.)
+        print("⚠ full requirements failed — retrying without torch pins…",
+              flush=True)
+        os.system("grep -vE '^(torch|torchaudio)' "
+                  "DiffRhythm/requirements.txt > /tmp/req_notorch.txt")
+        r = os.system("pip -q install -r /tmp/req_notorch.txt "
+                      "> /tmp/pip2.log 2>&1")
+        if r != 0:
+            log = (Path("/tmp/pip2.log").read_text()[-800:]
+                   if Path("/tmp/pip2.log").exists() else "")
+            fail(f"pip install failed (both ways): {log}")
     os.system("pip -q install mutagen")
 
     # write LRC
