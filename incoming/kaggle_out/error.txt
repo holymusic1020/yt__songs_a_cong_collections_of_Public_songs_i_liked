@@ -1,3 +1,8 @@
-DiffRhythm clone failed (rc=32768): Cloning into 'DiffRhythm'...
-fatal: unable to access 'https://github.com/ASLP-lab/DiffRhythm.git/': Could not resolve host: github.com
+DiffRhythm inference failed (rc=1): Current working directory: /kaggle/working
+Traceback (most recent call last):
+  File "/kaggle/working/DiffRhythm/infer/infer.py", line 28, in <module>
+    from infer_utils import (
+  File "/kaggle/working/DiffRhythm/infer/infer_utils.py", line 31, in <module>
+    from model import DiT, CFM
+ModuleNotFoundError: No module named 'model'
 

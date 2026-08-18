@@ -1,10 +1,10 @@
 {
-  "episode": 13,
-  "genre": "villain pop",
-  "seed": 103176,
-  "bpm": 140,
-  "key": "D minor",
-  "duration_s": 121.71428571428571,
+  "episode": 14,
+  "genre": "disco house",
+  "seed": 111096,
+  "bpm": 124,
+  "key": "G minor",
+  "duration_s": 150.96625850340135,
   "events": {
     "risers": 4,
     "rolls": 4,
@@ -12,39 +12,39 @@
   },
   "meta": {
     "channel": "Nix Speech",
-    "name": "wet asphalt static",
-    "title": "wet asphalt static \u2014 Nix Speech (official audio)",
-    "description": "wet asphalt static\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.013 \u00b7 villain pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #villainera #cinematicpop\n",
+    "name": "velvet foyer",
+    "title": "velvet foyer \u2014 Nix Speech (official audio)",
+    "description": "velvet foyer\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.014 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
     "tags": [
-      "wet asphalt static",
-      "music box beat",
-      "aesthetic",
-      "evil pop",
-      "chill",
-      "villain pop"
+      "velvet foyer",
+      "night drive music",
+      "disco house",
+      "new music",
+      "dance music",
+      "groove"
     ],
-    "genre": "villain pop",
-    "genre_key": "villain_pop",
+    "genre": "disco house",
+    "genre_key": "disco_house",
     "lang": "en",
-    "bpm": 140,
-    "key": "D minor",
-    "style_variant": "Rain slicked black streets reflect jagged neon glows beneath a humming, desolate power station (free engine)"
+    "bpm": 124,
+    "key": "G minor",
+    "style_variant": "Warm neon reflects off plush velvet chairs and wet glass windows inside a midnight foyer (free engine)"
   },
   "schedule": {
-    "video_offset_s": 1714,
-    "video_publish_at": "2026-08-17T11:29:46Z",
-    "short_offset_s": 3941,
-    "short_publish_at": "2026-08-17T12:06:54Z"
+    "video_offset_s": 0,
+    "video_publish_at": null,
+    "short_offset_s": 4484,
+    "short_publish_at": "2026-08-18T12:11:12Z"
   },
-  "video_today": true,
+  "video_today": false,
   "ai_copy": {
-    "hook": "the city only loves you ruined",
+    "hook": "we both pretend we live here",
     "lines": [
-      "wet pavement reflects your coldest grin",
-      "neon bleeding through the dark mist",
-      "white noise hums inside your chest",
-      "high beams cutting through the steam",
-      "cold static on the radio dial"
+      "damp wool on the brass rack",
+      "heels clicking on cold terrazzo",
+      "muffled bass through the floorboards",
+      "expensive perfume on worn velvet",
+      "warm exhaust in the driveway"
     ]
   },
   "lang": "en",
@@ -52,7 +52,7 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": true,
+    "mascot": false,
     "spectrum": true,
     "loop_echo": true,
     "slowed_twin": false
@@ -60,13 +60,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "the city only",
+  "short_hook": "we both",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep013.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep013.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep013.mp4",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep013_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep014.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep014.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep014_short.mp4"
   ],
-  "video_id": "nQwCFS0fo1U",
-  "short_id": "TQV2FK0-eqw"
+  "video_id": null,
+  "short_id": "09b2WjVVr3w"
 }

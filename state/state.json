@@ -1,5 +1,5 @@
 {
-  "episode": 13,
+  "episode": 14,
   "history": [
     {
       "episode": 1,
@@ -169,6 +169,19 @@
       "publish_at": "2026-08-17T11:29:46Z",
       "short_publish_at": "2026-08-17T12:06:54Z",
       "at": "2026-08-17T11:02:05+00:00"
+    },
+    {
+      "episode": 14,
+      "kind": "short",
+      "youtube_id": "09b2WjVVr3w",
+      "video_id": null,
+      "short_id": "09b2WjVVr3w",
+      "title": "velvet foyer \u2014 Nix Speech (official audio)",
+      "name": "velvet foyer",
+      "genre": "disco_house",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-18T12:11:12Z",
+      "at": "2026-08-18T10:57:29+00:00"
     }
   ]
 }
