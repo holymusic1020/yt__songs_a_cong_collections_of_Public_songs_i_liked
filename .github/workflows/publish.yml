@@ -8,7 +8,11 @@ on:
 # 🔒 one release at a time — kills the duplicate-EP race (manual spam-safe)
 concurrency:
   group: publish
-  cancel-in-progress: false
+  # 🚨 2026-08-19: was 'false' → 2 runs for the same EP.015 fired close
+  # together, both read stale state (episode=14) and BOTH uploaded a
+  # short = duplicate post (spam signal). Newer run now CANCELS the
+  # older one, so only ONE release per window ever happens.
+  cancel-in-progress: true
 
 permissions:
   contents: write               # state.json commit keeps the repo active
