@@ -83,6 +83,14 @@ def main():
         fail(f"DiffRhythm clone failed (rc={r}): {log}")
 
     print("📦 installing DiffRhythm deps…", flush=True)
+    # espeak-ng is REQUIRED by phonemizer for DiffRhythm's vocal G2P
+    # (2026-08-19 run died at EspeakBackend — binary was missing)
+    os.system("apt-get install -y -qq espeak-ng > /tmp/espeak.log 2>&1")
+    if not os.system("which espeak-ng") == 0:
+        tail = (Path("/tmp/espeak.log").read_text()[-400:]
+                if Path("/tmp/espeak.log").exists() else "")
+        fail(f"espeak-ng install failed: {tail}")
+    print("✅ espeak-ng installed (vocals G2P ready)", flush=True)
     r = os.system("pip -q install -r DiffRhythm/requirements.txt "
                   "> /tmp/pip.log 2>&1")
     if r != 0:
