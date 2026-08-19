@@ -1,8 +1,26 @@
-DiffRhythm inference failed (rc=1): Current working directory: /kaggle/working
+DiffRhythm inference failed (rc=1): xecutionProvider' is not in available provider names.Available providers: 'AzureExecutionProvider, CPUExecutionProvider'
+  warnings.warn(
+/kaggle/working/DiffRhythm/g2p/g2p/english.py:178: SyntaxWarning: invalid escape sequence '\|'
+  regex = regex.replace("|", "\|")
 Traceback (most recent call last):
-  File "/kaggle/working/DiffRhythm/infer/infer.py", line 28, in <module>
-    from infer_utils import (
-  File "/kaggle/working/DiffRhythm/infer/infer_utils.py", line 31, in <module>
-    from model import DiT, CFM
-ModuleNotFoundError: No module named 'model'
+  File "/kaggle/working/DiffRhythm/infer/infer.py", line 186, in <module>
+    cfm, tokenizer, muq, vae = prepare_model(max_frames, device)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/DiffRhythm/infer/infer_utils.py", line 237, in prepare_model
+    tokenizer = CNENTokenizer()
+                ^^^^^^^^^^^^^^^
+  File "/kaggle/working/DiffRhythm/infer/infer_utils.py", line 353, in __init__
+    from g2p.g2p_generation import chn_eng_g2p
+  File "/kaggle/working/DiffRhythm/g2p/g2p_generation.py", line 10, in <module>
+    from g2p.utils.g2p import phonemizer_g2p
+  File "/kaggle/working/DiffRhythm/g2p/utils/g2p.py", line 17, in <module>
+    phonemizer_zh = EspeakBackend(
+                    ^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/phonemizer/backend/espeak/espeak.py", line 45, in __init__
+    super().__init__(
+  File "/usr/local/lib/python3.12/dist-packages/phonemizer/backend/espeak/base.py", line 39, in __init__
+    super().__init__(
+  File "/usr/local/lib/python3.12/dist-packages/phonemizer/backend/base.py", line 77, in __init__
+    raise RuntimeError(  # pragma: nocover
+RuntimeError: espeak not installed on your system
 

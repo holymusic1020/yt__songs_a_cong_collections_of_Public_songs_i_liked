@@ -1,50 +1,45 @@
 {
-  "episode": 14,
-  "genre": "disco house",
-  "seed": 111096,
-  "bpm": 124,
+  "episode": 15,
+  "genre": "dark ambient",
+  "seed": 119016,
+  "bpm": 75,
   "key": "G minor",
-  "duration_s": 150.96625850340135,
-  "events": {
-    "risers": 4,
-    "rolls": 4,
-    "crashes": 4
-  },
+  "duration_s": 188.8,
   "meta": {
     "channel": "Nix Speech",
-    "name": "velvet foyer",
-    "title": "velvet foyer \u2014 Nix Speech (official audio)",
-    "description": "velvet foyer\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.014 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
+    "name": "basement window frost",
+    "title": "basement window frost \u2014 Nix Speech (official audio)",
+    "description": "basement window frost\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.015 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
     "tags": [
-      "velvet foyer",
+      "basement window frost",
+      "ambient",
       "night drive music",
-      "disco house",
       "new music",
-      "dance music",
-      "groove"
+      "dark ambient",
+      "rain sounds"
     ],
-    "genre": "disco house",
-    "genre_key": "disco_house",
+    "genre": "dark ambient",
+    "genre_key": "dark_ambient",
     "lang": "en",
-    "bpm": 124,
+    "bpm": 75,
     "key": "G minor",
-    "style_variant": "Warm neon reflects off plush velvet chairs and wet glass windows inside a midnight foyer (free engine)"
+    "style_variant": "Blue streetlamp light pierces a frosted basement window, casting intricate ice shadows on concrete (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 4484,
-    "short_publish_at": "2026-08-18T12:11:12Z"
+    "short_offset_s": 8811,
+    "short_publish_at": "2026-08-19T13:08:39Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "we both pretend we live here",
+    "hook": "nobody looks down here anymore",
     "lines": [
-      "damp wool on the brass rack",
-      "heels clicking on cold terrazzo",
-      "muffled bass through the floorboards",
-      "expensive perfume on worn velvet",
-      "warm exhaust in the driveway"
+      "streetlights freezing through the dirt",
+      "ice blooms on the rusted frame",
+      "watching your own breath turn grey",
+      "radiators hiss in the dark",
+      "cold glass against your forehead"
     ]
   },
   "lang": "en",
@@ -60,12 +55,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "we both",
+  "short_hook": "nobody looks down",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep014.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep014.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep014_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep015.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep015.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep015_short.mp4"
   ],
   "video_id": null,
-  "short_id": "09b2WjVVr3w"
+  "short_id": "Wra8890lD0A"
 }

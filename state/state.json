@@ -1,5 +1,5 @@
 {
-  "episode": 14,
+  "episode": 15,
   "history": [
     {
       "episode": 1,
@@ -182,6 +182,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-18T12:11:12Z",
       "at": "2026-08-18T10:57:29+00:00"
+    },
+    {
+      "episode": 15,
+      "kind": "short",
+      "youtube_id": "Wra8890lD0A",
+      "video_id": null,
+      "short_id": "Wra8890lD0A",
+      "title": "basement window frost \u2014 Nix Speech (official audio)",
+      "name": "basement window frost",
+      "genre": "dark_ambient",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-19T13:08:39Z",
+      "at": "2026-08-19T10:42:39+00:00"
     }
   ]
 }
