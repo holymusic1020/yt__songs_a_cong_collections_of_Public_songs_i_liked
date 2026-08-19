@@ -109,20 +109,26 @@ def main():
     style = STYLE.get(genre, "pop")
     out_dir = WORK / "out"
     out_dir.mkdir(exist_ok=True)
+    # run from the DiffRhythm ROOT so `model`, `g2p`, `infer_utils` all
+    # resolve (running from /kaggle/working gave "No module named 'model'")
+    dr_root = Path("DiffRhythm").resolve()
     cmd = [
-        "python", str(Path("DiffRhythm/infer/infer.py").resolve()),
+        sys.executable, "infer/infer.py",
         "--lrc-path", str(lrc_path),
         "--ref-prompt", style,
         "--audio-length", "95",
         "--output-dir", str(out_dir),
     ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = f"{dr_root}:{dr_root / 'infer'}"
     print(f"🎤 cooking {genre} WITH VOCALS on GPU…", flush=True)
     try:
-        p = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+        p = subprocess.run(cmd, cwd=str(dr_root), env=env,
+                           capture_output=True, text=True, timeout=1200)
     except subprocess.TimeoutExpired:
-        fail("DiffRhythm inference timed out after 15 min")
+        fail("DiffRhythm inference timed out after 20 min")
     if p.returncode != 0:
-        tail = ((p.stdout or "") + (p.stderr or ""))[-1200:]
+        tail = ((p.stdout or "") + (p.stderr or ""))[-1500:]
         fail(f"DiffRhythm inference failed (rc={p.returncode}): {tail}")
 
     wavs = list(out_dir.glob("*.wav")) + list(out_dir.glob("*.mp3"))
