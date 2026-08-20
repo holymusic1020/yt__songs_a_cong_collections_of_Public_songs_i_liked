@@ -1,5 +1,5 @@
 {
-  "episode": 16,
+  "episode": 17,
   "history": [
     {
       "episode": 1,
@@ -208,6 +208,19 @@
       "publish_at": "2026-08-20T09:46:30Z",
       "short_publish_at": "2026-08-20T10:17:31Z",
       "at": "2026-08-20T08:46:38+00:00"
+    },
+    {
+      "episode": 17,
+      "kind": "short",
+      "youtube_id": "sDYEpYmrOdg",
+      "video_id": null,
+      "short_id": "sDYEpYmrOdg",
+      "title": "wet fire escape \u2014 Nix Speech (official audio)",
+      "name": "wet fire escape",
+      "genre": "lofi",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-20T14:04:52Z",
+      "at": "2026-08-20T11:09:39+00:00"
     }
   ]
 }

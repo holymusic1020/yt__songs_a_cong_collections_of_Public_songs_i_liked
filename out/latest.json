@@ -1,50 +1,45 @@
 {
-  "episode": 16,
-  "genre": "orbit trap",
-  "seed": 126936,
-  "bpm": 151,
-  "key": "G# minor",
-  "duration_s": 125.56163265306122,
-  "events": {
-    "risers": 4,
-    "rolls": 4,
-    "crashes": 4
-  },
+  "episode": 17,
+  "genre": "lo-fi",
+  "seed": 134855,
+  "bpm": 80,
+  "key": "A minor",
+  "duration_s": 114.0,
   "meta": {
     "channel": "Nix Speech",
-    "name": "radar mist",
-    "title": "radar mist \u2014 Nix Speech (official audio)",
-    "description": "radar mist\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.016 \u00b7 orbit trap \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#trap #melodicrap #spacemood\n",
+    "name": "wet fire escape",
+    "title": "wet fire escape \u2014 Nix Speech (official audio)",
+    "description": "wet fire escape\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.017 \u00b7 lo-fi \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#lofi #chillbeats #studymusic\n",
     "tags": [
-      "radar mist",
+      "wet fire escape",
       "chill",
-      "night drive music",
-      "night trap",
+      "new music",
       "official audio",
-      "aesthetic"
+      "night drive music",
+      "type beat"
     ],
-    "genre": "orbit trap",
-    "genre_key": "orbit_trap",
+    "genre": "lo-fi",
+    "genre_key": "lofi",
     "lang": "en",
-    "bpm": 151,
-    "key": "G# minor",
-    "style_variant": "Glowing green radar dishes spin atop a wet, misty skyscraper rooftop under the midnight sky (free engine)"
+    "bpm": 80,
+    "key": "A minor",
+    "style_variant": "Raindrops drip from a wet metal fire escape, reflecting glowing neon streetlights in dark puddles (free engine)"
   },
   "schedule": {
-    "video_offset_s": 3643,
-    "video_publish_at": "2026-08-20T09:46:30Z",
-    "short_offset_s": 5504,
-    "short_publish_at": "2026-08-20T10:17:31Z"
+    "video_offset_s": 0,
+    "video_publish_at": null,
+    "short_offset_s": 10575,
+    "short_publish_at": "2026-08-20T14:04:52Z"
   },
-  "video_today": true,
+  "video_today": false,
   "ai_copy": {
-    "hook": "nobody talks about the 3am static",
+    "hook": "no one talks about this specific ache",
     "lines": [
-      "neon bleeding through the damp air",
-      "cold asphalt under bald tires",
-      "chasing ghosts on the radar screen",
-      "heavy condensation on the windshield",
-      "low frequencies shaking the dashboard"
+      "sitting where the rust meets rain",
+      "cold metal pressed against my spine",
+      "headlights blur through the heavy fog",
+      "drizzle painting the asphalt black",
+      "just another shadow on the landing"
     ]
   },
   "lang": "en",
@@ -52,7 +47,7 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": true,
+    "mascot": false,
     "spectrum": true,
     "loop_echo": true,
     "slowed_twin": false
@@ -60,13 +55,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "nobody talks about",
+  "short_hook": "no one talks about",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep016.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep016.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep016.mp4",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep016_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep017.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep017.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep017_short.mp4"
   ],
-  "video_id": "cNa8hb5OOMo",
-  "short_id": "zknS8VDLaqM"
+  "video_id": null,
+  "short_id": "sDYEpYmrOdg"
 }
