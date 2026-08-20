@@ -1,45 +1,50 @@
 {
-  "episode": 15,
-  "genre": "dark ambient",
-  "seed": 119016,
-  "bpm": 75,
-  "key": "G minor",
-  "duration_s": 188.8,
+  "episode": 16,
+  "genre": "orbit trap",
+  "seed": 126936,
+  "bpm": 151,
+  "key": "G# minor",
+  "duration_s": 125.56163265306122,
+  "events": {
+    "risers": 4,
+    "rolls": 4,
+    "crashes": 4
+  },
   "meta": {
     "channel": "Nix Speech",
-    "name": "basement window frost",
-    "title": "basement window frost \u2014 Nix Speech (official audio)",
-    "description": "basement window frost\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.015 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
+    "name": "radar mist",
+    "title": "radar mist \u2014 Nix Speech (official audio)",
+    "description": "radar mist\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.016 \u00b7 orbit trap \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#trap #melodicrap #spacemood\n",
     "tags": [
-      "basement window frost",
-      "ambient",
+      "radar mist",
+      "chill",
       "night drive music",
-      "new music",
-      "dark ambient",
-      "rain sounds"
+      "night trap",
+      "official audio",
+      "aesthetic"
     ],
-    "genre": "dark ambient",
-    "genre_key": "dark_ambient",
+    "genre": "orbit trap",
+    "genre_key": "orbit_trap",
     "lang": "en",
-    "bpm": 75,
-    "key": "G minor",
-    "style_variant": "Blue streetlamp light pierces a frosted basement window, casting intricate ice shadows on concrete (free engine)"
+    "bpm": 151,
+    "key": "G# minor",
+    "style_variant": "Glowing green radar dishes spin atop a wet, misty skyscraper rooftop under the midnight sky (free engine)"
   },
   "schedule": {
-    "video_offset_s": 0,
-    "video_publish_at": null,
-    "short_offset_s": 8811,
-    "short_publish_at": "2026-08-19T13:08:39Z"
+    "video_offset_s": 3643,
+    "video_publish_at": "2026-08-20T09:46:30Z",
+    "short_offset_s": 5504,
+    "short_publish_at": "2026-08-20T10:17:31Z"
   },
-  "video_today": false,
+  "video_today": true,
   "ai_copy": {
-    "hook": "nobody looks down here anymore",
+    "hook": "nobody talks about the 3am static",
     "lines": [
-      "streetlights freezing through the dirt",
-      "ice blooms on the rusted frame",
-      "watching your own breath turn grey",
-      "radiators hiss in the dark",
-      "cold glass against your forehead"
+      "neon bleeding through the damp air",
+      "cold asphalt under bald tires",
+      "chasing ghosts on the radar screen",
+      "heavy condensation on the windshield",
+      "low frequencies shaking the dashboard"
     ]
   },
   "lang": "en",
@@ -47,7 +52,7 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": false,
+    "mascot": true,
     "spectrum": true,
     "loop_echo": true,
     "slowed_twin": false
@@ -55,12 +60,13 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "nobody looks down",
+  "short_hook": "nobody talks about",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep015.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep015.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep015_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep016.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep016.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep016.mp4",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep016_short.mp4"
   ],
-  "video_id": null,
-  "short_id": "Wra8890lD0A"
+  "video_id": "cNa8hb5OOMo",
+  "short_id": "zknS8VDLaqM"
 }
