@@ -1,5 +1,5 @@
 {
-  "episode": 17,
+  "episode": 18,
   "history": [
     {
       "episode": 1,
@@ -221,6 +221,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-20T14:04:52Z",
       "at": "2026-08-20T11:09:39+00:00"
+    },
+    {
+      "episode": 18,
+      "kind": "short",
+      "youtube_id": "SCYKQAsC7n8",
+      "video_id": null,
+      "short_id": "SCYKQAsC7n8",
+      "title": "kodak bruise \u2014 Nix Speech (official audio)",
+      "name": "kodak bruise",
+      "genre": "deep_pop",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-21T13:10:10Z",
+      "at": "2026-08-21T11:02:47+00:00"
     }
   ]
 }

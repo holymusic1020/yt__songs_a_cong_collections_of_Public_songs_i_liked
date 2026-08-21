@@ -1,45 +1,45 @@
 {
-  "episode": 17,
-  "genre": "lo-fi",
-  "seed": 134855,
-  "bpm": 80,
-  "key": "A minor",
-  "duration_s": 114.0,
+  "episode": 18,
+  "genre": "deep dark-pop",
+  "seed": 142775,
+  "bpm": 101,
+  "key": "D minor",
+  "duration_s": 182.97015873015874,
   "meta": {
     "channel": "Nix Speech",
-    "name": "wet fire escape",
-    "title": "wet fire escape \u2014 Nix Speech (official audio)",
-    "description": "wet fire escape\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.017 \u00b7 lo-fi \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#lofi #chillbeats #studymusic\n",
+    "name": "kodak bruise",
+    "title": "kodak bruise \u2014 Nix Speech (official audio)",
+    "description": "kodak bruise\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.018 \u00b7 deep dark-pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #nightvibes #moody\n",
     "tags": [
-      "wet fire escape",
-      "chill",
-      "new music",
+      "kodak bruise",
+      "night vibes",
       "official audio",
-      "night drive music",
-      "type beat"
+      "aesthetic",
+      "type beat",
+      "chill"
     ],
-    "genre": "lo-fi",
-    "genre_key": "lofi",
+    "genre": "deep dark-pop",
+    "genre_key": "deep_pop",
     "lang": "en",
-    "bpm": 80,
-    "key": "A minor",
-    "style_variant": "Raindrops drip from a wet metal fire escape, reflecting glowing neon streetlights in dark puddles (free engine)"
+    "bpm": 101,
+    "key": "D minor",
+    "style_variant": "A quiet wet alley glows with bruised purple neon and a flickering amber streetlight (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 10575,
-    "short_publish_at": "2026-08-20T14:04:52Z"
+    "short_offset_s": 7707,
+    "short_publish_at": "2026-08-21T13:10:10Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "no one talks about this specific ache",
+    "hook": "some bruises take years to develop",
     "lines": [
-      "sitting where the rust meets rain",
-      "cold metal pressed against my spine",
-      "headlights blur through the heavy fog",
-      "drizzle painting the asphalt black",
-      "just another shadow on the landing"
+      "cold rain on a disposable lens",
+      "streetlights bleed a yellow hue",
+      "press the dark spot to remember",
+      "windshield wipers humming at midnight",
+      "slow shutter speed of your exit"
     ]
   },
   "lang": "en",
@@ -55,12 +55,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "no one talks about",
+  "short_hook": "some bruises",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep017.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep017.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep017_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep018.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep018.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep018_short.mp4"
   ],
   "video_id": null,
-  "short_id": "sDYEpYmrOdg"
+  "short_id": "SCYKQAsC7n8"
 }
