@@ -164,28 +164,30 @@ def generate(genre_key: str, seconds: float, out_path: Path,
     if not dl_ok:
         print("  ⚠ kaggle output download failed after retries — next lane")
         return None
-    # the notebook writes error.txt on failure (never crashes the kernel) —
-    # surface the REAL reason instead of "KernelWorkerStatus.ERROR"
+    # 3b) SUCCESS FIRST: a real cooked mp3 is what matters. Kaggle kernels
+    #     sometimes also carry a stale/leftover error.txt (e.g. a harmless
+    #     onnxruntime provider warning that got captured) — if the mp3 is
+    #     there and big, we take the song and IGNORE the error file.
+    #     (2026-08-22: the notebook cooked lofi 2.1MB + SUCCESS.txt yet the
+    #      error-first check threw away the finished song.)
+    mp3s = sorted(out_dir.glob("next_song--*.mp3"))
+    if mp3s:
+        src = mp3s[0]
+        if src.stat().st_size >= 80_000:
+            shutil.copy(src, out_path)
+            stem = src.stem
+            side = src.with_name(stem + ".lrc.txt")
+            if lrc_out is not None and side.exists():
+                lrc_out.write_bytes(side.read_bytes())
+            mode = f"{lang} vocals 🎤" if lyrics else "instrumental"
+            print(f"  🎁 kaggle-GPU cooked {genre_key} ({mode}, "
+                  f"{out_path.stat().st_size // 1024} KB)")
+            return out_path
+    # only now: no good mp3 → surface the notebook's reported error
     errs = list(out_dir.rglob("error.txt"))
     if errs:
         why = errs[0].read_text(encoding="utf-8", errors="replace")[-500:]
         print(f"  ⚠ kaggle notebook reported: {why.strip()} — next lane")
         return None
-    mp3s = sorted(out_dir.glob("next_song--*.mp3"))
-    if not mp3s:
-        print("  ⚠ kaggle output has no next_song mp3 — next lane")
-        return None
-    src = mp3s[0]
-    shutil.copy(src, out_path)
-    if out_path.stat().st_size < 80_000:
-        print(f"  ⚠ kaggle mp3 suspiciously small — next lane")
-        return None
-    # sidecars
-    stem = src.stem
-    side = src.with_name(stem + ".lrc.txt")
-    if lrc_out is not None and side.exists():
-        lrc_out.write_bytes(side.read_bytes())
-    mode = f"{lang} vocals 🎤" if lyrics else "instrumental"
-    print(f"  🎁 kaggle-GPU cooked {genre_key} ({mode}, "
-          f"{out_path.stat().st_size//1024} KB)")
-    return out_path
+    print("  ⚠ kaggle output has no usable song — next lane")
+    return None

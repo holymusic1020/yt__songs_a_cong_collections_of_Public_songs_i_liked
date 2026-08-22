@@ -174,8 +174,15 @@ def _take_external_song(ep: int, cur_genre: str):
     none7 = (None,) * 7
     if not inc.is_dir():
         return none7
-    files = sorted(p for p in inc.iterdir()
-                   if p.suffix.lower() in AUDIO_EXTS and p.is_file())
+    # scan BOTH the top level AND the kaggle_out/ subdir (the Kaggle lane
+    # drops cooked songs there; 2026-08-22 a real vocal mp3 sat in
+    # incoming/kaggle_out/ and was never picked up because we only looked
+    # one level deep)
+    files = []
+    for p in inc.rglob("*"):
+        if p.suffix.lower() in AUDIO_EXTS and p.is_file():
+            files.append(p)
+    files = sorted(files)
     if not files:
         return none7
     human = [p for p in files if not p.stem.startswith("next_song")]
