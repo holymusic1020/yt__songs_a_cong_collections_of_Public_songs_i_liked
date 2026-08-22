@@ -1,5 +1,5 @@
 {
-  "episode": 19,
+  "episode": 20,
   "history": [
     {
       "episode": 1,
@@ -247,6 +247,19 @@
       "publish_at": "2026-08-22T02:42:16Z",
       "short_publish_at": "2026-08-22T03:05:36Z",
       "at": "2026-08-22T00:54:30+00:00"
+    },
+    {
+      "episode": 20,
+      "kind": "short",
+      "youtube_id": "Tfi2zJOjXEA",
+      "video_id": null,
+      "short_id": "Tfi2zJOjXEA",
+      "title": "ozone balcony \u2014 Nix Speech (official audio)",
+      "name": "ozone balcony",
+      "genre": "skyline_anthem",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-22T11:20:15Z",
+      "at": "2026-08-22T10:07:45+00:00"
     }
   ]
 }

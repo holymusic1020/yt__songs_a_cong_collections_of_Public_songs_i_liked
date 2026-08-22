@@ -1,19 +1,19 @@
-[{"stream_name":"stdout","time":1.215934305,"data":"🎹 genre: lofi\n"}
-,{"stream_name":"stdout","time":1.215978536,"data":"📦 cloning DiffRhythm…\n"}
-,{"stream_name":"stdout","time":7.846682553,"data":"📦 installing DiffRhythm deps…\n"}
-,{"stream_name":"stdout","time":17.647085316,"data":"/usr/bin/espeak-ng\n"}
-,{"stream_name":"stdout","time":17.647417215,"data":"✅ espeak-ng installed (vocals G2P ready)\n"}
-,{"stream_name":"stdout","time":271.41626244,"data":"✍️ lyrics: 8 lines\n"}
-,{"stream_name":"stdout","time":271.416679365,"data":"🎤 cooking lofi WITH VOCALS on GPU…\n"}
-,{"stream_name":"stdout","time":433.361232228,"data":"🎵 output: output.wav (16384 KB)\n"}
-,{"stream_name":"stdout","time":435.438791531,"data":"✅ DONE: next_song--lofi--en.mp3 (2149 KB) — vocals 🎤\n"}
-,{"stream_name":"stdout","time":435.439194035,"data":"   next_song--lofi--en.lyrics.txt\n"}
-,{"stream_name":"stdout","time":435.43922311,"data":"   next_song--lofi--en.lrc.txt\n"}
-,{"stream_name":"stdout","time":435.439230938,"data":"   next_song--lofi--en.mp3\n"}
-,{"stream_name":"stderr","time":437.431202812,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
-,{"stream_name":"stderr","time":437.431240198,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
-,{"stream_name":"stderr","time":437.667245339,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
-,{"stream_name":"stderr","time":437.667294269,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
-,{"stream_name":"stderr","time":438.439297146,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
-,{"stream_name":"stderr","time":439.331029364,"data":"[NbConvertApp] Writing 306175 bytes to __results__.html\n"}
+[{"stream_name":"stdout","time":0.73464608,"data":"🎹 genre: lofi\n"}
+,{"stream_name":"stdout","time":0.734722867,"data":"📦 cloning DiffRhythm…\n"}
+,{"stream_name":"stdout","time":6.038879844,"data":"📦 installing DiffRhythm deps…\n"}
+,{"stream_name":"stdout","time":14.476971946,"data":"/usr/bin/espeak-ng\n"}
+,{"stream_name":"stdout","time":14.477231339,"data":"✅ espeak-ng installed (vocals G2P ready)\n"}
+,{"stream_name":"stdout","time":231.699357613,"data":"✍️ lyrics: 8 lines\n"}
+,{"stream_name":"stdout","time":231.699663089,"data":"🎤 cooking lofi WITH VOCALS on GPU…\n"}
+,{"stream_name":"stdout","time":391.554016494,"data":"🎵 output: output.wav (16384 KB)\n"}
+,{"stream_name":"stdout","time":393.41449467,"data":"✅ DONE: next_song--lofi--en.mp3 (2155 KB) — vocals 🎤\n"}
+,{"stream_name":"stdout","time":393.414827529,"data":"   next_song--lofi--en.lyrics.txt\n"}
+,{"stream_name":"stdout","time":393.414846004,"data":"   next_song--lofi--en.mp3\n"}
+,{"stream_name":"stdout","time":393.414851207,"data":"   next_song--lofi--en.lrc.txt\n"}
+,{"stream_name":"stderr","time":395.238858031,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":395.238929628,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":395.431709132,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":395.431738415,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":396.102709738,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":396.884637813,"data":"[NbConvertApp] Writing 306175 bytes to __results__.html\n"}
 ]

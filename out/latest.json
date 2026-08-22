@@ -1,50 +1,50 @@
 {
-  "episode": 19,
-  "genre": "drift phonk",
-  "seed": 150695,
-  "bpm": 128,
-  "key": "G minor",
-  "duration_s": 95.62442176870748,
+  "episode": 20,
+  "genre": "skyline anthem",
+  "seed": 158614,
+  "bpm": 126,
+  "key": "B major",
+  "duration_s": 152.38095238095238,
   "events": {
-    "risers": 2,
-    "rolls": 2,
-    "crashes": 2
+    "risers": 4,
+    "rolls": 4,
+    "crashes": 4
   },
   "meta": {
     "channel": "Nix Speech",
-    "name": "rearview frost",
-    "title": "rearview frost \u2014 Nix Speech (official audio)",
-    "description": "rearview frost\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.019 \u00b7 drift phonk \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#phonk #driftphonk #nightdrive\n",
+    "name": "ozone balcony",
+    "title": "ozone balcony \u2014 Nix Speech (official audio)",
+    "description": "ozone balcony\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.020 \u00b7 skyline anthem \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#edm #festivalvibes #anthem\n",
     "tags": [
-      "rearview frost",
-      "dark phonk",
-      "night drive music",
-      "phonk",
-      "instrumental",
-      "drift phonk"
+      "ozone balcony",
+      "summer anthem",
+      "folk edm",
+      "type beat",
+      "official audio",
+      "uplifting"
     ],
-    "genre": "drift phonk",
-    "genre_key": "drift_phonk",
+    "genre": "skyline anthem",
+    "genre_key": "skyline_anthem",
     "lang": "en",
-    "bpm": 128,
-    "key": "G minor",
-    "style_variant": "Glacial ice coats a winding mountain road under the neon blue haze of winter mist (free engine)"
+    "bpm": 126,
+    "key": "B major",
+    "style_variant": "Cool starlight illuminates a high-rise glass balcony overlooking a vast, glowing sapphire city skyline (free engine)"
   },
   "schedule": {
-    "video_offset_s": 6534,
-    "video_publish_at": "2026-08-22T02:42:16Z",
-    "short_offset_s": 7933,
-    "short_publish_at": "2026-08-22T03:05:36Z"
+    "video_offset_s": 0,
+    "video_publish_at": null,
+    "short_offset_s": 4403,
+    "short_publish_at": "2026-08-22T11:20:15Z"
   },
-  "video_today": true,
+  "video_today": false,
   "ai_copy": {
-    "hook": "nobody talks about this highway chill",
+    "hook": "why does 2am air taste like copper",
     "lines": [
-      "tail lights bleed through the mist",
-      "breathing fog onto the steering wheel",
-      "shifting gears to outrun the silence",
-      "exhaust smoke rises like a ghost",
-      "we left our warmth in the rearview"
+      "neon bleeding through the damp concrete",
+      "the ozone thickens on my tongue",
+      "headlights blur into a steady pulse",
+      "leaning over twenty floors of quiet",
+      "high enough to watch the clouds dissolve"
     ]
   },
   "lang": "en",
@@ -52,7 +52,7 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": true,
+    "mascot": false,
     "spectrum": true,
     "loop_echo": true,
     "slowed_twin": false
@@ -60,13 +60,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "nobody talks about",
+  "short_hook": "why does 2am air",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep019.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep019.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep019.mp4",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep019_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep020.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep020.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep020_short.mp4"
   ],
-  "video_id": "coGkjFDbL_U",
-  "short_id": "KWd-HjJQ92w"
+  "video_id": null,
+  "short_id": "Tfi2zJOjXEA"
 }
