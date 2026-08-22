@@ -1,38 +1,19 @@
-[{"stream_name":"stdout","time":1.1605965679999999,"data":"🎹 genre: drift_phonk\n"}
-,{"stream_name":"stdout","time":1.160693715,"data":"📦 cloning DiffRhythm…\n"}
-,{"stream_name":"stdout","time":8.698070629,"data":"📦 installing DiffRhythm deps…\n"}
-,{"stream_name":"stdout","time":260.992233236,"data":"✍️ lyrics: 8 lines\n"}
-,{"stream_name":"stdout","time":260.992599172,"data":"🎤 cooking drift_phonk WITH VOCALS on GPU…\n"}
-,{"stream_name":"stdout","time":326.397325006,"data":"❌ DiffRhythm inference failed (rc=1): xecutionProvider' is not in available provider names.Available providers: 'AzureExecutionProvider, CPUExecutionProvider'\n"}
-,{"stream_name":"stdout","time":326.397381408,"data":"  warnings.warn(\n"}
-,{"stream_name":"stdout","time":326.397390595,"data":"/kaggle/working/DiffRhythm/g2p/g2p/english.py:178: SyntaxWarning: invalid escape sequence '\\|'\n"}
-,{"stream_name":"stdout","time":326.397397585,"data":"  regex = regex.replace(\"|\", \"\\|\")\n"}
-,{"stream_name":"stdout","time":326.397404075,"data":"Traceback (most recent call last):\n"}
-,{"stream_name":"stdout","time":326.397409987,"data":"  File \"/kaggle/working/DiffRhythm/infer/infer.py\", line 186, in \u003cmodule\u003e\n"}
-,{"stream_name":"stdout","time":326.397416232,"data":"    cfm, tokenizer, muq, vae = prepare_model(max_frames, device)\n"}
-,{"stream_name":"stdout","time":326.397422322,"data":"                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
-,{"stream_name":"stdout","time":326.397428008,"data":"  File \"/kaggle/working/DiffRhythm/infer/infer_utils.py\", line 237, in prepare_model\n"}
-,{"stream_name":"stdout","time":326.397434098,"data":"    tokenizer = CNENTokenizer()\n"}
-,{"stream_name":"stdout","time":326.397439485,"data":"                ^^^^^^^^^^^^^^^\n"}
-,{"stream_name":"stdout","time":326.397445044,"data":"  File \"/kaggle/working/DiffRhythm/infer/infer_utils.py\", line 353, in __init__\n"}
-,{"stream_name":"stdout","time":326.397451027,"data":"    from g2p.g2p_generation import chn_eng_g2p\n"}
-,{"stream_name":"stdout","time":326.397456065,"data":"  File \"/kaggle/working/DiffRhythm/g2p/g2p_generation.py\", line 10, in \u003cmodule\u003e\n"}
-,{"stream_name":"stdout","time":326.397462095,"data":"    from g2p.utils.g2p import phonemizer_g2p\n"}
-,{"stream_name":"stdout","time":326.39746742,"data":"  File \"/kaggle/working/DiffRhythm/g2p/utils/g2p.py\", line 17, in \u003cmodule\u003e\n"}
-,{"stream_name":"stdout","time":326.397473012,"data":"    phonemizer_zh = EspeakBackend(\n"}
-,{"stream_name":"stdout","time":326.397478633,"data":"                    ^^^^^^^^^^^^^^\n"}
-,{"stream_name":"stdout","time":326.397484247,"data":"  File \"/usr/local/lib/python3.12/dist-packages/phonemizer/backend/espeak/espeak.py\", line 45, in __init__\n"}
-,{"stream_name":"stdout","time":326.397489694,"data":"    super().__init__(\n"}
-,{"stream_name":"stdout","time":326.397494539,"data":"  File \"/usr/local/lib/python3.12/dist-packages/phonemizer/backend/espeak/base.py\", line 39, in __init__\n"}
-,{"stream_name":"stdout","time":326.397500183,"data":"    super().__init__(\n"}
-,{"stream_name":"stdout","time":326.3975069,"data":"  File \"/usr/local/lib/python3.12/dist-packages/phonemizer/backend/base.py\", line 77, in __init__\n"}
-,{"stream_name":"stdout","time":326.397529792,"data":"    raise RuntimeError(  # pragma: nocover\n"}
-,{"stream_name":"stdout","time":326.397535375,"data":"RuntimeError: espeak not installed on your system\n"}
-,{"stream_name":"stdout","time":326.397540685,"data":"\n"}
-,{"stream_name":"stderr","time":328.505151511,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
-,{"stream_name":"stderr","time":328.505218682,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
-,{"stream_name":"stderr","time":328.75256534,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
-,{"stream_name":"stderr","time":328.75259598,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
-,{"stream_name":"stderr","time":329.57237719,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
-,{"stream_name":"stderr","time":330.534125121,"data":"[NbConvertApp] Writing 304203 bytes to __results__.html\n"}
+[{"stream_name":"stdout","time":1.215934305,"data":"🎹 genre: lofi\n"}
+,{"stream_name":"stdout","time":1.215978536,"data":"📦 cloning DiffRhythm…\n"}
+,{"stream_name":"stdout","time":7.846682553,"data":"📦 installing DiffRhythm deps…\n"}
+,{"stream_name":"stdout","time":17.647085316,"data":"/usr/bin/espeak-ng\n"}
+,{"stream_name":"stdout","time":17.647417215,"data":"✅ espeak-ng installed (vocals G2P ready)\n"}
+,{"stream_name":"stdout","time":271.41626244,"data":"✍️ lyrics: 8 lines\n"}
+,{"stream_name":"stdout","time":271.416679365,"data":"🎤 cooking lofi WITH VOCALS on GPU…\n"}
+,{"stream_name":"stdout","time":433.361232228,"data":"🎵 output: output.wav (16384 KB)\n"}
+,{"stream_name":"stdout","time":435.438791531,"data":"✅ DONE: next_song--lofi--en.mp3 (2149 KB) — vocals 🎤\n"}
+,{"stream_name":"stdout","time":435.439194035,"data":"   next_song--lofi--en.lyrics.txt\n"}
+,{"stream_name":"stdout","time":435.43922311,"data":"   next_song--lofi--en.lrc.txt\n"}
+,{"stream_name":"stdout","time":435.439230938,"data":"   next_song--lofi--en.mp3\n"}
+,{"stream_name":"stderr","time":437.431202812,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":437.431240198,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":437.667245339,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":437.667294269,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":438.439297146,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":439.331029364,"data":"[NbConvertApp] Writing 306175 bytes to __results__.html\n"}
 ]

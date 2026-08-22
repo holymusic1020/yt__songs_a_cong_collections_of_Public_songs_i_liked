@@ -1,45 +1,50 @@
 {
-  "episode": 18,
-  "genre": "deep dark-pop",
-  "seed": 142775,
-  "bpm": 101,
-  "key": "D minor",
-  "duration_s": 182.97015873015874,
+  "episode": 19,
+  "genre": "drift phonk",
+  "seed": 150695,
+  "bpm": 128,
+  "key": "G minor",
+  "duration_s": 95.62442176870748,
+  "events": {
+    "risers": 2,
+    "rolls": 2,
+    "crashes": 2
+  },
   "meta": {
     "channel": "Nix Speech",
-    "name": "kodak bruise",
-    "title": "kodak bruise \u2014 Nix Speech (official audio)",
-    "description": "kodak bruise\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.018 \u00b7 deep dark-pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #nightvibes #moody\n",
+    "name": "rearview frost",
+    "title": "rearview frost \u2014 Nix Speech (official audio)",
+    "description": "rearview frost\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.019 \u00b7 drift phonk \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#phonk #driftphonk #nightdrive\n",
     "tags": [
-      "kodak bruise",
-      "night vibes",
-      "official audio",
-      "aesthetic",
-      "type beat",
-      "chill"
+      "rearview frost",
+      "dark phonk",
+      "night drive music",
+      "phonk",
+      "instrumental",
+      "drift phonk"
     ],
-    "genre": "deep dark-pop",
-    "genre_key": "deep_pop",
+    "genre": "drift phonk",
+    "genre_key": "drift_phonk",
     "lang": "en",
-    "bpm": 101,
-    "key": "D minor",
-    "style_variant": "A quiet wet alley glows with bruised purple neon and a flickering amber streetlight (free engine)"
+    "bpm": 128,
+    "key": "G minor",
+    "style_variant": "Glacial ice coats a winding mountain road under the neon blue haze of winter mist (free engine)"
   },
   "schedule": {
-    "video_offset_s": 0,
-    "video_publish_at": null,
-    "short_offset_s": 7707,
-    "short_publish_at": "2026-08-21T13:10:10Z"
+    "video_offset_s": 6534,
+    "video_publish_at": "2026-08-22T02:42:16Z",
+    "short_offset_s": 7933,
+    "short_publish_at": "2026-08-22T03:05:36Z"
   },
-  "video_today": false,
+  "video_today": true,
   "ai_copy": {
-    "hook": "some bruises take years to develop",
+    "hook": "nobody talks about this highway chill",
     "lines": [
-      "cold rain on a disposable lens",
-      "streetlights bleed a yellow hue",
-      "press the dark spot to remember",
-      "windshield wipers humming at midnight",
-      "slow shutter speed of your exit"
+      "tail lights bleed through the mist",
+      "breathing fog onto the steering wheel",
+      "shifting gears to outrun the silence",
+      "exhaust smoke rises like a ghost",
+      "we left our warmth in the rearview"
     ]
   },
   "lang": "en",
@@ -47,7 +52,7 @@
   "karaoke": 0,
   "universe": {
     "chapters": 0,
-    "mascot": false,
+    "mascot": true,
     "spectrum": true,
     "loop_echo": true,
     "slowed_twin": false
@@ -55,12 +60,13 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "some bruises",
+  "short_hook": "nobody talks about",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep018.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep018.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep018_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep019.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep019.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep019.mp4",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep019_short.mp4"
   ],
-  "video_id": null,
-  "short_id": "SCYKQAsC7n8"
+  "video_id": "coGkjFDbL_U",
+  "short_id": "KWd-HjJQ92w"
 }
