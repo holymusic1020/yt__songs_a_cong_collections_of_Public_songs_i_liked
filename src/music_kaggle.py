@@ -39,7 +39,13 @@ from pathlib import Path
 KERNEL_SLUG = os.environ.get("KAGGLE_KERNEL_SLUG", "nix-speech-vocal-cook")
 NOTEBOOK_DIR = Path(__file__).resolve().parents[1] / "kaggle_cook"
 POLL_S = int(os.environ.get("KAGGLE_POLL_S", "15") or "15")
-MAX_WAIT_S = int(os.environ.get("KAGGLE_MAX_WAIT_S", "1200") or "1200")  # 20 min
+MAX_WAIT_S = int(os.environ.get("KAGGLE_MAX_WAIT_S", "1500") or "1500")  # 25 min
+# DiffRhythm on a T4 takes ~10-15 min; the OUTPUT download can also be slow
+# (kaggle kernels output pulls the whole /kaggle/working) — 600s so it never
+# times out mid-download (the 2026-08-20 runs cooked 10-13 min then the
+# 180s output timeout threw and we re-pushed a fresh kernel, wasting quota).
+OUTPUT_TIMEOUT_S = int(os.environ.get("KAGGLE_OUTPUT_TIMEOUT_S", "600") or "600")
+OUTPUT_TRIES = int(os.environ.get("KAGGLE_OUTPUT_TRIES", "3") or "3")
 
 
 def _run(cmd: list[str], timeout: int = 120, check: bool = True):
@@ -140,11 +146,24 @@ def generate(genre_key: str, seconds: float, out_path: Path,
         print("  ⚠ kaggle timed out — next lane")
         return None
 
-    # 3) download output
+    # 3) download output — the kernel is DONE; retry the download itself
+    #    (never re-push — that would re-cook from scratch and burn quota)
     out_dir = out_path.parent / "kaggle_out"
     out_dir.mkdir(exist_ok=True)
-    _run([kaggle, "kernels", "output", kernel_id, "-p", str(out_dir)],
-         timeout=180, check=False)
+    dl_ok = False
+    for dl_try in range(1, OUTPUT_TRIES + 1):
+        try:
+            _run([kaggle, "kernels", "output", kernel_id, "-p", str(out_dir)],
+                 timeout=OUTPUT_TIMEOUT_S, check=False)
+            dl_ok = True
+            break
+        except Exception as e:
+            print(f"  [kaggle] output dl try {dl_try}/{OUTPUT_TRIES} timed out "
+                  f"({str(e)[:80]}) — retrying download…", flush=True)
+            time.sleep(10)
+    if not dl_ok:
+        print("  ⚠ kaggle output download failed after retries — next lane")
+        return None
     # the notebook writes error.txt on failure (never crashes the kernel) —
     # surface the REAL reason instead of "KernelWorkerStatus.ERROR"
     errs = list(out_dir.rglob("error.txt"))
