@@ -1,50 +1,45 @@
 {
-  "episode": 20,
-  "genre": "skyline anthem",
-  "seed": 158614,
-  "bpm": 126,
-  "key": "B major",
-  "duration_s": 152.38095238095238,
-  "events": {
-    "risers": 4,
-    "rolls": 4,
-    "crashes": 4
-  },
+  "episode": 21,
+  "genre": "baroque waltz",
+  "seed": 166534,
+  "bpm": 181,
+  "key": "C minor",
+  "duration_s": 149.16326530612244,
   "meta": {
     "channel": "Nix Speech",
-    "name": "ozone balcony",
-    "title": "ozone balcony \u2014 Nix Speech (official audio)",
-    "description": "ozone balcony\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.020 \u00b7 skyline anthem \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#edm #festivalvibes #anthem\n",
+    "name": "parlor of frost",
+    "title": "parlor of frost \u2014 Nix Speech (official audio)",
+    "description": "parlor of frost\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.021 \u00b7 baroque waltz \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#waltz #baroquepop #vintage\n",
     "tags": [
-      "ozone balcony",
-      "summer anthem",
-      "folk edm",
-      "type beat",
+      "parlor of frost",
+      "night drive music",
+      "instrumental",
       "official audio",
-      "uplifting"
+      "new music",
+      "vintage waltz"
     ],
-    "genre": "skyline anthem",
-    "genre_key": "skyline_anthem",
+    "genre": "baroque waltz",
+    "genre_key": "baroque_waltz",
     "lang": "en",
-    "bpm": 126,
-    "key": "B major",
-    "style_variant": "Cool starlight illuminates a high-rise glass balcony overlooking a vast, glowing sapphire city skyline (free engine)"
+    "bpm": 181,
+    "key": "C minor",
+    "style_variant": "Silver moonlight floods a frozen baroque parlor, glittering on a crystal chandelier and piano (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 4403,
-    "short_publish_at": "2026-08-22T11:20:15Z"
+    "short_offset_s": 7372,
+    "short_publish_at": "2026-08-23T07:15:22Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "why does 2am air taste like copper",
+    "hook": "some winters happen indoors",
     "lines": [
-      "neon bleeding through the damp concrete",
-      "the ozone thickens on my tongue",
-      "headlights blur into a steady pulse",
-      "leaning over twenty floors of quiet",
-      "high enough to watch the clouds dissolve"
+      "velvet drapes and frozen glass",
+      "heels clicking on cold stone",
+      "the city hums in minor",
+      "breath rising like white lace",
+      "spinning faster than the clock"
     ]
   },
   "lang": "en",
@@ -60,12 +55,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "why does 2am air",
+  "short_hook": "some winters",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep020.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep020.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep020_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep021.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep021.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep021_short.mp4"
   ],
   "video_id": null,
-  "short_id": "Tfi2zJOjXEA"
+  "short_id": "kMCVC6nCRdc"
 }

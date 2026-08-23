@@ -1,5 +1,5 @@
 {
-  "episode": 20,
+  "episode": 21,
   "history": [
     {
       "episode": 1,
@@ -260,6 +260,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-22T11:20:15Z",
       "at": "2026-08-22T10:07:45+00:00"
+    },
+    {
+      "episode": 21,
+      "kind": "short",
+      "youtube_id": "kMCVC6nCRdc",
+      "video_id": null,
+      "short_id": "kMCVC6nCRdc",
+      "title": "parlor of frost \u2014 Nix Speech (official audio)",
+      "name": "parlor of frost",
+      "genre": "baroque_waltz",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-23T07:15:22Z",
+      "at": "2026-08-23T05:13:20+00:00"
     }
   ]
 }
