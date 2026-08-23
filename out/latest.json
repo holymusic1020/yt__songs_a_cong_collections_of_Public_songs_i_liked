@@ -1,53 +1,54 @@
 {
-  "episode": 21,
-  "genre": "baroque waltz",
-  "seed": 166534,
-  "bpm": 181,
-  "key": "C minor",
-  "duration_s": 149.16326530612244,
+  "episode": 22,
+  "genre": "lofi",
+  "seed": 174453,
+  "bpm": 78,
+  "key": "\u2014",
+  "duration_s": 95.10893424036281,
   "meta": {
     "channel": "Nix Speech",
-    "name": "parlor of frost",
-    "title": "parlor of frost \u2014 Nix Speech (official audio)",
-    "description": "parlor of frost\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.021 \u00b7 baroque waltz \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#waltz #baroquepop #vintage\n",
+    "name": "cold kitchen tile",
+    "title": "cold kitchen tile \u2014 Nix Speech (official audio)",
+    "description": "cold kitchen tile\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.022 \u00b7 lofi \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n\n\u23f1 chapters\n0:00 intro\n0:30 midnight city lights below\n0:46 the signal never dies tonight\n1:02 headlights cut the rain\n1:18 the station hums a quiet song\n#lofi #chillbeats #studymusic",
     "tags": [
-      "parlor of frost",
+      "cold kitchen tile",
+      "study music",
       "night drive music",
-      "instrumental",
-      "official audio",
-      "new music",
-      "vintage waltz"
+      "relaxing beats",
+      "aesthetic",
+      "type beat",
+      "singer"
     ],
-    "genre": "baroque waltz",
-    "genre_key": "baroque_waltz",
+    "genre": "lofi",
+    "genre_key": "lofi",
     "lang": "en",
-    "bpm": 181,
-    "key": "C minor",
-    "style_variant": "Silver moonlight floods a frozen baroque parlor, glittering on a crystal chandelier and piano (free engine)"
+    "bpm": 78,
+    "key": "\u2014",
+    "style_variant": "Pale blue moonlight spills through a wet window onto cold kitchen floor tiles (free engine)"
   },
   "schedule": {
-    "video_offset_s": 0,
-    "video_publish_at": null,
-    "short_offset_s": 7372,
-    "short_publish_at": "2026-08-23T07:15:22Z"
+    "video_offset_s": 4444,
+    "video_publish_at": "2026-08-23T11:20:51Z",
+    "short_offset_s": 5698,
+    "short_publish_at": "2026-08-23T11:41:46Z"
   },
-  "video_today": false,
+  "video_today": true,
   "ai_copy": {
-    "hook": "some winters happen indoors",
+    "hook": "nobody talks about this quiet",
     "lines": [
-      "velvet drapes and frozen glass",
-      "heels clicking on cold stone",
-      "the city hums in minor",
-      "breath rising like white lace",
-      "spinning faster than the clock"
+      "bare feet on frozen ceramic",
+      "the refrigerator hums in minor",
+      "sodium light through the blinds",
+      "tracing grout lines in the dark",
+      "rain taps the fire escape"
     ]
   },
   "lang": "en",
-  "vocals": false,
-  "karaoke": 0,
+  "vocals": true,
+  "karaoke": 8,
   "universe": {
-    "chapters": 0,
-    "mascot": false,
+    "chapters": 5,
+    "mascot": true,
     "spectrum": true,
     "loop_echo": true,
     "slowed_twin": false
@@ -55,12 +56,13 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "some winters",
+  "short_hook": "if this played",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep021.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep021.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep021_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep022.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep022.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep022.mp4",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep022_short.mp4"
   ],
-  "video_id": null,
-  "short_id": "kMCVC6nCRdc"
+  "video_id": "zmi-xVhMA4o",
+  "short_id": "lr5z907QORM"
 }

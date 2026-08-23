@@ -1,5 +1,5 @@
 {
-  "episode": 21,
+  "episode": 22,
   "history": [
     {
       "episode": 1,
@@ -273,6 +273,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-23T07:15:22Z",
       "at": "2026-08-23T05:13:20+00:00"
+    },
+    {
+      "episode": 22,
+      "kind": "full",
+      "youtube_id": "zmi-xVhMA4o",
+      "video_id": "zmi-xVhMA4o",
+      "short_id": "lr5z907QORM",
+      "title": "cold kitchen tile \u2014 Nix Speech (official audio)",
+      "name": "cold kitchen tile",
+      "genre": "lofi",
+      "publish_at": "2026-08-23T11:20:51Z",
+      "short_publish_at": "2026-08-23T11:41:46Z",
+      "at": "2026-08-23T10:07:53+00:00"
     }
   ]
 }
