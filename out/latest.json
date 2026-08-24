@@ -1,54 +1,58 @@
 {
-  "episode": 22,
-  "genre": "lofi",
-  "seed": 174453,
-  "bpm": 78,
-  "key": "\u2014",
-  "duration_s": 95.10893424036281,
+  "episode": 23,
+  "genre": "disco house",
+  "seed": 182373,
+  "bpm": 120,
+  "key": "A# minor",
+  "duration_s": 138.0,
+  "events": {
+    "risers": 3,
+    "rolls": 3,
+    "crashes": 3
+  },
   "meta": {
     "channel": "Nix Speech",
-    "name": "cold kitchen tile",
-    "title": "cold kitchen tile \u2014 Nix Speech (official audio)",
-    "description": "cold kitchen tile\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.022 \u00b7 lofi \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n\n\u23f1 chapters\n0:00 intro\n0:30 midnight city lights below\n0:46 the signal never dies tonight\n1:02 headlights cut the rain\n1:18 the station hums a quiet song\n#lofi #chillbeats #studymusic",
+    "name": "taxi vinyl",
+    "title": "taxi vinyl \u2014 Nix Speech (official audio)",
+    "description": "taxi vinyl\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
     "tags": [
-      "cold kitchen tile",
-      "study music",
-      "night drive music",
-      "relaxing beats",
-      "aesthetic",
+      "taxi vinyl",
       "type beat",
-      "singer"
+      "aesthetic",
+      "night drive music",
+      "disco house",
+      "house music"
     ],
-    "genre": "lofi",
-    "genre_key": "lofi",
+    "genre": "disco house",
+    "genre_key": "disco_house",
     "lang": "en",
-    "bpm": 78,
-    "key": "\u2014",
-    "style_variant": "Pale blue moonlight spills through a wet window onto cold kitchen floor tiles (free engine)"
+    "bpm": 120,
+    "key": "A# minor",
+    "style_variant": "Raindrops slide down a yellow car windshield, reflecting neon lights and a spinning record (free engine)"
   },
   "schedule": {
-    "video_offset_s": 4444,
-    "video_publish_at": "2026-08-23T11:20:51Z",
-    "short_offset_s": 5698,
-    "short_publish_at": "2026-08-23T11:41:46Z"
+    "video_offset_s": 0,
+    "video_publish_at": null,
+    "short_offset_s": 8447,
+    "short_publish_at": "2026-08-24T13:28:42Z"
   },
-  "video_today": true,
+  "video_today": false,
   "ai_copy": {
-    "hook": "nobody talks about this quiet",
+    "hook": "we only exist in rearview mirrors",
     "lines": [
-      "bare feet on frozen ceramic",
-      "the refrigerator hums in minor",
-      "sodium light through the blinds",
-      "tracing grout lines in the dark",
-      "rain taps the fire escape"
+      "cold vinyl remembers your warmth",
+      "muffled bass through wet glass",
+      "the meter keeps our heartbeat",
+      "neon bleeding through the condensation",
+      "tracing maps on sticky leather"
     ]
   },
   "lang": "en",
-  "vocals": true,
-  "karaoke": 8,
+  "vocals": false,
+  "karaoke": 0,
   "universe": {
-    "chapters": 5,
-    "mascot": true,
+    "chapters": 0,
+    "mascot": false,
     "spectrum": true,
     "loop_echo": true,
     "slowed_twin": false
@@ -56,13 +60,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "if this played",
+  "short_hook": "we only",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep022.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep022.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep022.mp4",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep022_short.mp4"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023_short.mp4"
   ],
-  "video_id": "zmi-xVhMA4o",
-  "short_id": "lr5z907QORM"
+  "video_id": null,
+  "short_id": null
 }
