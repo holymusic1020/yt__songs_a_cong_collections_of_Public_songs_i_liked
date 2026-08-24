@@ -85,7 +85,7 @@ def main():
     print("📦 installing DiffRhythm deps…", flush=True)
     # espeak-ng is REQUIRED by phonemizer for DiffRhythm's vocal G2P
     # (2026-08-19 run died at EspeakBackend — binary was missing)
-    os.system("apt-get install -y -qq espeak-ng > /tmp/espeak.log 2>&1")
+    os.system("apt-get update -qq > /tmp/apt_update.log 2>&1 && apt-get install -y -qq espeak-ng espeak-ng-data libespeak-ng1 > /tmp/espeak.log 2>&1")
     if not os.system("which espeak-ng") == 0:
         tail = (Path("/tmp/espeak.log").read_text()[-400:]
                 if Path("/tmp/espeak.log").exists() else "")

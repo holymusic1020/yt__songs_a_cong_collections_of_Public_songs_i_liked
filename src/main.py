@@ -174,17 +174,29 @@ def _take_external_song(ep: int, cur_genre: str):
     none7 = (None,) * 7
     if not inc.is_dir():
         return none7
-    # scan BOTH the top level AND the kaggle_out/ subdir (the Kaggle lane
-    # drops cooked songs there; 2026-08-22 a real vocal mp3 sat in
-    # incoming/kaggle_out/ and was never picked up because we only looked
-    # one level deep)
-    files = []
-    for p in inc.rglob("*"):
-        if p.suffix.lower() in AUDIO_EXTS and p.is_file():
-            files.append(p)
-    files = sorted(files)
+    files = sorted(p for p in inc.iterdir()
+                   if p.suffix.lower() in AUDIO_EXTS and p.is_file())
     if not files:
         return none7
+
+    # Vocal guard: do not publish a "next_song" artifact as a vocal song unless
+    # its lyrics sidecar exists. This prevents silent/failed/half-cooked queue
+    # artifacts from becoming public uploads.
+    require_vocals = os.environ.get("REQUIRE_VOCALS", "") == "1"
+    clean_files = []
+    for f in files:
+        if f.stem.startswith("next_song") and require_vocals:
+            if (f.parent / "error.txt").exists():
+                print(f"  ⚠ skipping queued song {f.name}: kaggle error.txt present")
+                continue
+            if not f.with_name(f.stem + ".lyrics.txt").exists():
+                print(f"  ⚠ skipping queued song {f.name}: missing .lyrics.txt sidecar")
+                continue
+        clean_files.append(f)
+    files = clean_files
+    if not files:
+        return none7
+
     human = [p for p in files if not p.stem.startswith("next_song")]
     queue = [p for p in files if p.stem.startswith("next_song")]
     src = (human or queue)[0]
@@ -307,9 +319,59 @@ def main() -> None:
         info = {"bpm": bpm_est, "key": "—", "genre": GENRE_LABEL[genre_key],
                 "duration_s": dur}
     else:
-        print("  composing…")
-        song, info = composer.compose(genre_key, rng, target)
-        song = composer.arrange_arc(song, info.get("bpm", 120))
+        # Optional real-song mode: if there is no queued vocal song, cook a
+        # vocal song NOW instead of falling straight to the offline instrumental
+        # engine. Set repo variable COOK_TODAY_IF_QUEUE_EMPTY=1.
+        if video_today and os.environ.get("COOK_TODAY_IF_QUEUE_EMPTY", "") == "1":
+            print("  🎤 no queued vocal song — cooking a real vocal song TODAY…")
+            try:
+                today_lang = ext_lang or "en"
+                try:
+                    from src import copy_ai as _ca
+                    today_lyc = _ca.song_lyrics(
+                        {"name": "(untitled)", "genre": GENRE_LABEL[genre_key]},
+                        today_lang, max(150, target))
+                except Exception as e:
+                    print(f"  (today songwriting: {e} — bank lyrics)")
+                    today_lyc = lyrics.song_lyrics(genre_key, "(untitled)", rng_py, today_lang)
+                from src import music_chain
+                tmp_mp3 = OUT / f"ep{ep:03d}_vocal_source.mp3"
+                tmp_lrc = OUT / f"ep{ep:03d}_vocal_source.lrc.txt"
+                cooked, cooked_by = music_chain.cook(
+                    genre_key, max(150, target), tmp_mp3,
+                    lyrics=today_lyc, lang=today_lang, lrc_out=tmp_lrc)
+                if cooked and shutil.which("ffmpeg"):
+                    ext_wav = OUT / f"ep{ep:03d}.wav"
+                    subprocess.run([shutil.which("ffmpeg"), "-y", "-v", "error",
+                                    "-i", str(cooked), "-ac", "1", "-ar", "44100",
+                                    "-c:a", "pcm_s16le", str(ext_wav)], check=True)
+                    ext_src = Path(cooked)
+                    ext_lang = today_lang
+                    ext_lyc = OUT / f"ep{ep:03d}_vocal_source.lyrics.txt"
+                    ext_lyc.write_text(today_lyc, encoding="utf-8")
+                    ext_lrc = tmp_lrc if tmp_lrc.exists() else None
+                    import wave as _wave
+                    with _wave.open(str(ext_wav), "rb") as _w:
+                        dur2 = _w.getnframes() / _w.getframerate()
+                    from src import music_space as _ms
+                    info = {"bpm": _ms.GENRE_BPM.get(genre_key, 110), "key": "—",
+                            "genre": GENRE_LABEL[genre_key], "duration_s": dur2}
+                    print(f"  ✅ today's vocal cooked by: {cooked_by}")
+                elif os.environ.get("REQUIRE_VOCALS", "") == "1" and args.publish:
+                    raise SystemExit("No vocal music lane succeeded; refusing to publish instrumental fallback")
+            except SystemExit:
+                raise
+            except Exception as e:
+                print(f"  ⚠ today vocal cook failed: {e}")
+                if os.environ.get("REQUIRE_VOCALS", "") == "1" and args.publish:
+                    raise SystemExit("No vocal music lane succeeded; refusing to publish instrumental fallback")
+
+        if not ext_wav:
+            if os.environ.get("REQUIRE_VOCALS", "") == "1" and args.publish and video_today:
+                raise SystemExit("No queued/cooked vocal song found; refusing to publish instrumental fallback")
+            print("  composing…")
+            song, info = composer.compose(genre_key, rng, target)
+            song = composer.arrange_arc(song, info.get("bpm", 120))
     used_names = {h.get("name") for h in st.get("history", []) if h.get("name")}
     dur = info["duration_s"]
 

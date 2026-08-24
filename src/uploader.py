@@ -14,7 +14,13 @@ import os
 import time
 from pathlib import Path
 
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    # needed for auto-comment funnel under Shorts
+    "https://www.googleapis.com/auth/youtube.force-ssl",
+    # needed for adaptive analytics weights
+    "https://www.googleapis.com/auth/yt-analytics.readonly",
+]
 AUDIT_URL = "https://support.google.com/youtube/contact/yt_api_form"
 
 # YouTube's synthetic-media label is required for REALISTIC altered media

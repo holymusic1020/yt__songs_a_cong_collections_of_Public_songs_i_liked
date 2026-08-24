@@ -100,22 +100,27 @@ def cook(genre_key: str, seconds: float, out_path: Path,
     if retries is None:
         retries = _retries()
 
-    lanes = [
-        ("suno",          lambda: _lane_suno(genre_key, seconds, out_path,
-                                             lyrics, lang, lrc_out)),
-        ("lyria",         lambda: _lane_lyria(genre_key, seconds, out_path,
-                                              lyrics, lang, lrc_out)),
-        ("ace-step-v1.5", lambda: _lane_space("ACE-Step/Ace-Step-v1.5",
-                                              genre_key, seconds, out_path,
-                                              lyrics, lang, lrc_out)),
-        ("ace-step-v1",   lambda: _lane_space("ACE-Step/ACE-Step",
-                                              genre_key, seconds, out_path,
-                                              lyrics, lang, lrc_out)),
-        ("kaggle-gpu",    lambda: _lane_kaggle(genre_key, seconds, out_path,
-                                               lyrics, lang, lrc_out)),
-        ("musicgen-local", lambda: _lane_local(genre_key, seconds, out_path,
-                                               lyrics, lang, lrc_out)),
-    ]
+    suno_lane = ("suno", lambda: _lane_suno(genre_key, seconds, out_path,
+                                             lyrics, lang, lrc_out))
+    lyria_lane = ("lyria", lambda: _lane_lyria(genre_key, seconds, out_path,
+                                               lyrics, lang, lrc_out))
+    ace15_lane = ("ace-step-v1.5", lambda: _lane_space("ACE-Step/Ace-Step-v1.5",
+                                                       genre_key, seconds, out_path,
+                                                       lyrics, lang, lrc_out))
+    ace1_lane = ("ace-step-v1", lambda: _lane_space("ACE-Step/ACE-Step",
+                                                     genre_key, seconds, out_path,
+                                                     lyrics, lang, lrc_out))
+    kaggle_lane = ("kaggle-gpu", lambda: _lane_kaggle(genre_key, seconds, out_path,
+                                                      lyrics, lang, lrc_out))
+    local_lane = ("musicgen-local", lambda: _lane_local(genre_key, seconds, out_path,
+                                                        lyrics, lang, lrc_out))
+
+    # If your main goal is "real song with vocals", put Kaggle immediately
+    # after Suno. This avoids wasting minutes/quota on Gemini/ACE lanes first.
+    if os.environ.get("KAGGLE_FIRST", "") == "1":
+        lanes = [suno_lane, kaggle_lane, lyria_lane, ace15_lane, ace1_lane, local_lane]
+    else:
+        lanes = [suno_lane, lyria_lane, ace15_lane, ace1_lane, kaggle_lane, local_lane]
     tried: list[str] = []
     for name, fn in lanes:
         for attempt in range(1, retries + 1):

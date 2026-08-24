@@ -3,3 +3,9 @@ out/
 client_secret.json
 *.wav
 *.mp4
+
+# generated runtime folders — never commit these
+incoming/kaggle_out/
+incoming/**/DiffRhythm/
+out/
+_artifact_next_song/
