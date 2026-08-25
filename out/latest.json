@@ -12,11 +12,11 @@
   },
   "meta": {
     "channel": "Nix Speech",
-    "name": "velvet intercom",
-    "title": "velvet intercom \u2014 Nix Speech (official audio)",
-    "description": "velvet intercom\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
+    "name": "hotel payphone",
+    "title": "hotel payphone \u2014 Nix Speech (official audio)",
+    "description": "hotel payphone\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
     "tags": [
-      "velvet intercom",
+      "hotel payphone",
       "official audio",
       "club instrumental",
       "dance music",
@@ -28,23 +28,23 @@
     "lang": "en",
     "bpm": 120,
     "key": "G minor",
-    "style_variant": "A vintage brass intercom glows under warm magenta light in a dark, wet hallway (free engine)"
+    "style_variant": "Magenta neon light illuminates a wet glass payphone booth outside a dark hotel (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
     "short_offset_s": 5911,
-    "short_publish_at": "2026-08-25T10:08:41Z"
+    "short_publish_at": "2026-08-25T12:42:48Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "nobody talks about the lobby silence",
+    "hook": "you only call from temporary places",
     "lines": [
-      "rain slicking the brass buttons",
-      "your voice comes through like velvet",
-      "warm static on a freezing night",
-      "neon shadows paint the hallway",
-      "the bassline keeps your secret"
+      "neon bleeding into wet pavement",
+      "dropping quarters in the dark",
+      "hum of the lobby vending machine",
+      "midnight fog tastes like static",
+      "busy signals echoing down the hall"
     ]
   },
   "lang": "en",
@@ -60,7 +60,7 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "nobody talks about",
+  "short_hook": "you only call",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.png",
