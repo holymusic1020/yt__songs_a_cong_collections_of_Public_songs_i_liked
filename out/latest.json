@@ -1,50 +1,50 @@
 {
   "episode": 23,
   "genre": "disco house",
-  "seed": 182373,
+  "seed": 182374,
   "bpm": 120,
-  "key": "A# minor",
-  "duration_s": 138.0,
+  "key": "G minor",
+  "duration_s": 192.0,
   "events": {
-    "risers": 3,
-    "rolls": 3,
-    "crashes": 3
+    "risers": 5,
+    "rolls": 5,
+    "crashes": 5
   },
   "meta": {
     "channel": "Nix Speech",
-    "name": "taxi vinyl",
-    "title": "taxi vinyl \u2014 Nix Speech (official audio)",
-    "description": "taxi vinyl\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
+    "name": "sneakers on marble",
+    "title": "sneakers on marble \u2014 Nix Speech (official audio)",
+    "description": "sneakers on marble\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
     "tags": [
-      "taxi vinyl",
+      "sneakers on marble",
+      "official audio",
+      "club instrumental",
+      "dance music",
       "type beat",
-      "aesthetic",
-      "night drive music",
-      "disco house",
-      "house music"
+      "aesthetic"
     ],
     "genre": "disco house",
     "genre_key": "disco_house",
     "lang": "en",
     "bpm": 120,
-    "key": "A# minor",
-    "style_variant": "Raindrops slide down a yellow car windshield, reflecting neon lights and a spinning record (free engine)"
+    "key": "G minor",
+    "style_variant": "Polished white marble floors reflect neon city lights beneath a vast midnight glass ceiling (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 8447,
-    "short_publish_at": "2026-08-24T13:28:42Z"
+    "short_offset_s": 5911,
+    "short_publish_at": "2026-08-25T08:21:00Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "we only exist in rearview mirrors",
+    "hook": "the echo of steps before dawn",
     "lines": [
-      "cold vinyl remembers your warmth",
-      "muffled bass through wet glass",
-      "the meter keeps our heartbeat",
-      "neon bleeding through the condensation",
-      "tracing maps on sticky leather"
+      "cold marble beneath quiet soles",
+      "empty lobbies hold our secrets",
+      "streetlights blurring into rhythmic gold",
+      "g minor static in the hallway",
+      "pavement cooled by midnight rain"
     ]
   },
   "lang": "en",
@@ -60,12 +60,10 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "we only",
+  "short_hook": "the echo of",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.png",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023_short.mp4"
-  ],
-  "video_id": null,
-  "short_id": null
+  ]
 }
