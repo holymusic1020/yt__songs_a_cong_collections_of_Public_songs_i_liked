@@ -38,6 +38,39 @@ IMMEDIATE_UNDER_S = 900
 VIDEO_EVERY = 3          # long-form cadence: every Nth episode
 
 
+def _last_video_dt(st: dict) -> datetime | None:
+    """When was the last REAL video (full/video, not a short) uploaded?
+    Reads state.history; a short-only day (kind 'short') does NOT count.
+    Returns a UTC datetime or None if no video has ever gone up."""
+    best = None
+    for h in st.get("history", []) or []:
+        if h.get("kind") == "short":        # shorts don't advance the video clock
+            continue
+        # prefer the video's actual publish time; fall back to the run time
+        raw = h.get("publish_at") or h.get("at")
+        if not raw or raw == "immediate":
+            raw = h.get("at")
+        if not raw:
+            continue
+        try:
+            dt = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+        if best is None or dt > best:
+            best = dt
+    return best
+
+
+def _keep_alive_hours() -> float:
+    try:
+        v = float((os.environ.get("KEEP_ALIVE_HOURS", "15") or "15").strip())
+        return max(0.0, v)
+    except ValueError:
+        return 15.0
+
+
 def _pick_lang(ep: int) -> str:
     """🌍 World Tour (v17): every Nth COOKED song is a foreign-language drop.
 
@@ -285,6 +318,21 @@ def main() -> None:
     if args.no_shorts and not video_today:
         video_today = True                 # video-only run (rare/manual)
     nxt = ep + ((1 - ep % VIDEO_EVERY) % VIDEO_EVERY)
+    # ---------- KEEP-ALIVE gate (shadowban guard) ----------
+    # Only ever upload a long-form video if the last one is older than
+    # KEEP_ALIVE_HOURS (default 15h). Within the window → stay short-only so
+    # we never spam the channel; the extra video render is simply NOT made.
+    # A short still goes out (keeps the channel alive) — that's the point.
+    if video_today and not args.no_shorts:
+        last = _last_video_dt(st)
+        if last is not None:
+            age_h = (datetime.now(timezone.utc) - last).total_seconds() / 3600.0
+            if age_h < _keep_alive_hours():
+                print(f"  🛡 KEEP-ALIVE: last video was {age_h:.1f}h ago "
+                      f"(< {_keep_alive_hours():.0f}h) — staying short-only, "
+                      f"skipping today's video upload to avoid a spam signal.")
+                video_today = False
+                nxt = ep + ((1 - ep % VIDEO_EVERY) % VIDEO_EVERY)
     print(f"EP.{ep:03d} · genre={genre_key} · "
           f"{'FULL (video+short)' if video_today else f'short-only · next video EP.{nxt:03d}'}")
 

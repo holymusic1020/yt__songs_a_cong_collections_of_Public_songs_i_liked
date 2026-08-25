@@ -2,6 +2,15 @@ name: yt-auto · publish episode
 
 on:
   workflow_dispatch:            # manual "Run workflow" button
+    inputs:
+      run_mode:
+        description: "dry_run = test only (NO YouTube upload) | publish = real release"
+        required: true
+        default: dry_run
+        type: choice
+        options:
+          - dry_run
+          - publish
   schedule:
     - cron: "23 9 * * *"        # DAILY: a short every day; a full video every 3rd EP
 
@@ -113,7 +122,19 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p out
-          python -m src.main --publish 2>&1 | tee out/run.log
+          # SAFE RUN CONTROL: cron always publishes (real release).
+          # Manual runs honour the run_mode input:
+          #   · dry_run → --dry-run (compose + render, NO YouTube upload, NO state change)
+          #   · publish → --publish  (real release, keep-alive-gated in main.py)
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            RUN_ARGS="--publish"
+          elif [[ "${{ inputs.run_mode }}" == "publish" ]]; then
+            RUN_ARGS="--publish"
+          else
+            RUN_ARGS="--dry-run"
+          fi
+          echo "RUN_ARGS=${RUN_ARGS} (event=${{ github.event_name }})"
+          python -m src.main $RUN_ARGS 2>&1 | tee out/run.log
 
       - name: 📋 Release summary
         if: always()
