@@ -12,11 +12,11 @@
   },
   "meta": {
     "channel": "Nix Speech",
-    "name": "sneakers on marble",
-    "title": "sneakers on marble \u2014 Nix Speech (official audio)",
-    "description": "sneakers on marble\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
+    "name": "velvet intercom",
+    "title": "velvet intercom \u2014 Nix Speech (official audio)",
+    "description": "velvet intercom\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
     "tags": [
-      "sneakers on marble",
+      "velvet intercom",
       "official audio",
       "club instrumental",
       "dance music",
@@ -28,23 +28,23 @@
     "lang": "en",
     "bpm": 120,
     "key": "G minor",
-    "style_variant": "Polished white marble floors reflect neon city lights beneath a vast midnight glass ceiling (free engine)"
+    "style_variant": "A vintage brass intercom glows under warm magenta light in a dark, wet hallway (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
     "short_offset_s": 5911,
-    "short_publish_at": "2026-08-25T08:21:00Z"
+    "short_publish_at": "2026-08-25T10:08:41Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "the echo of steps before dawn",
+    "hook": "nobody talks about the lobby silence",
     "lines": [
-      "cold marble beneath quiet soles",
-      "empty lobbies hold our secrets",
-      "streetlights blurring into rhythmic gold",
-      "g minor static in the hallway",
-      "pavement cooled by midnight rain"
+      "rain slicking the brass buttons",
+      "your voice comes through like velvet",
+      "warm static on a freezing night",
+      "neon shadows paint the hallway",
+      "the bassline keeps your secret"
     ]
   },
   "lang": "en",
@@ -60,10 +60,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "the echo of",
+  "short_hook": "nobody talks about",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.png",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023_short.mp4"
-  ]
+  ],
+  "video_id": null,
+  "short_id": null
 }
