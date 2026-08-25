@@ -13,7 +13,15 @@ Steps:
 """
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+# ⚠️ 2026-08-25 fix: ALL THREE scopes are required. A token minted with only
+# youtube.upload throws invalid_scope on videos.insert + the funnel comment +
+# analytics — the pipeline then publishes NOTHING (this hit EP.023; nothing
+# has gone up since EP.022).
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    "https://www.googleapis.com/auth/youtube.force-ssl",
+    "https://www.googleapis.com/auth/yt-analytics.readonly",
+]
 
 flow = InstalledAppFlow.from_client_secrets_file("client_secret.json", SCOPES)
 creds = flow.run_local_server(port=8765)
