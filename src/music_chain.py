@@ -93,27 +93,36 @@ def _retries() -> int:
 def cook(genre_key: str, seconds: float, out_path: Path,
          lyrics: str | None = None, lang: str = "en",
          lrc_out: Path | None = None,
-         retries: int | None = None) -> tuple[Path | None, str | None]:
+         retries: int | None = None,
+         require_vocals: bool = False) -> tuple[Path | None, str | None]:
     """Try every lane in order, each up to `retries` times, until one cooks
     a real audio file. Returns (path, provider_name) or (None, None) → the
-    caller's offline engine takes over (guaranteed lane)."""
+    caller's offline engine takes over (guaranteed lane).
+
+    require_vocals=True drops every lane that CANNOT sing (MusicGen-local is
+    instrumental only), so the grid can never "satisfy" a vocal request with
+    an instrumental file. That is the fix for REQUIRE_VOCALS=1 being skipped:
+    when vocals are required and no singing lane works, cook() returns None
+    and the caller's REQUIRE_VOCALS guard finally fires instead of publishing
+    a musicgen instrumental labelled as vocal."""
     if retries is None:
         retries = _retries()
 
-    suno_lane = ("suno", lambda: _lane_suno(genre_key, seconds, out_path,
-                                             lyrics, lang, lrc_out))
-    lyria_lane = ("lyria", lambda: _lane_lyria(genre_key, seconds, out_path,
-                                               lyrics, lang, lrc_out))
-    ace15_lane = ("ace-step-v1.5", lambda: _lane_space("ACE-Step/Ace-Step-v1.5",
-                                                       genre_key, seconds, out_path,
-                                                       lyrics, lang, lrc_out))
-    ace1_lane = ("ace-step-v1", lambda: _lane_space("ACE-Step/ACE-Step",
-                                                     genre_key, seconds, out_path,
+    # (name, sings, fn)  — sings=False => instrumental-only lane (musicgen-local)
+    suno_lane = ("suno", True, lambda: _lane_suno(genre_key, seconds, out_path,
+                                                  lyrics, lang, lrc_out))
+    lyria_lane = ("lyria", True, lambda: _lane_lyria(genre_key, seconds, out_path,
                                                      lyrics, lang, lrc_out))
-    kaggle_lane = ("kaggle-gpu", lambda: _lane_kaggle(genre_key, seconds, out_path,
-                                                      lyrics, lang, lrc_out))
-    local_lane = ("musicgen-local", lambda: _lane_local(genre_key, seconds, out_path,
-                                                        lyrics, lang, lrc_out))
+    ace15_lane = ("ace-step-v1.5", True, lambda: _lane_space("ACE-Step/Ace-Step-v1.5",
+                                                             genre_key, seconds, out_path,
+                                                             lyrics, lang, lrc_out))
+    ace1_lane = ("ace-step-v1", True, lambda: _lane_space("ACE-Step/ACE-Step",
+                                                          genre_key, seconds, out_path,
+                                                          lyrics, lang, lrc_out))
+    kaggle_lane = ("kaggle-gpu", True, lambda: _lane_kaggle(genre_key, seconds, out_path,
+                                                            lyrics, lang, lrc_out))
+    local_lane = ("musicgen-local", False, lambda: _lane_local(genre_key, seconds, out_path,
+                                                               lyrics, lang, lrc_out))
 
     # If your main goal is "real song with vocals", put Kaggle immediately
     # after Suno. This avoids wasting minutes/quota on Gemini/ACE lanes first.
@@ -121,8 +130,11 @@ def cook(genre_key: str, seconds: float, out_path: Path,
         lanes = [suno_lane, kaggle_lane, lyria_lane, ace15_lane, ace1_lane, local_lane]
     else:
         lanes = [suno_lane, lyria_lane, ace15_lane, ace1_lane, kaggle_lane, local_lane]
+    if require_vocals:
+        lanes = [ln for ln in lanes if ln[1]]
+        print("  🎤 VOCAL MODE: instrumental lane(s) dropped from the grid")
     tried: list[str] = []
-    for name, fn in lanes:
+    for name, _sings, fn in lanes:
         for attempt in range(1, retries + 1):
             try:
                 out = fn()

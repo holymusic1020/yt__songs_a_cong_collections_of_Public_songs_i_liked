@@ -337,9 +337,13 @@ def main() -> None:
                 from src import music_chain
                 tmp_mp3 = OUT / f"ep{ep:03d}_vocal_source.mp3"
                 tmp_lrc = OUT / f"ep{ep:03d}_vocal_source.lrc.txt"
+                # 🎤 require_vocals ensues the grid drops the instrumental-only
+                # MusicGen lane, so this can ONLY be satisfied by a real singing
+                # lane (Suno/Kaggle/Lyria/ACE). Fix for REQUIRE_VOCALS being skipped.
                 cooked, cooked_by = music_chain.cook(
                     genre_key, max(150, target), tmp_mp3,
-                    lyrics=today_lyc, lang=today_lang, lrc_out=tmp_lrc)
+                    lyrics=today_lyc, lang=today_lang, lrc_out=tmp_lrc,
+                    require_vocals=os.environ.get("REQUIRE_VOCALS", "") == "1")
                 if cooked and shutil.which("ffmpeg"):
                     ext_wav = OUT / f"ep{ep:03d}.wav"
                     subprocess.run([shutil.which("ffmpeg"), "-y", "-v", "error",
@@ -347,8 +351,11 @@ def main() -> None:
                                     "-c:a", "pcm_s16le", str(ext_wav)], check=True)
                     ext_src = Path(cooked)
                     ext_lang = today_lang
-                    ext_lyc = OUT / f"ep{ep:03d}_vocal_source.lyrics.txt"
-                    ext_lyc.write_text(today_lyc, encoding="utf-8")
+                    # only ever label it "vocal" (write the lyrics sidecar) when
+                    # the lane actually sang — never for a MusicGen instrumental
+                    if cooked_by != "musicgen-local":
+                        ext_lyc = OUT / f"ep{ep:03d}_vocal_source.lyrics.txt"
+                        ext_lyc.write_text(today_lyc, encoding="utf-8")
                     ext_lrc = tmp_lrc if tmp_lrc.exists() else None
                     import wave as _wave
                     with _wave.open(str(ext_wav), "rb") as _w:
@@ -698,14 +705,19 @@ def main() -> None:
                 # ⚡ cook chain v23.4 THE POWER GRID: suno → lyria → ace-v1.5
                 # → ace-v1, each retried (LANE_RETRIES), then offline engine.
                 from src import music_chain
+                # 🎤 require_vocals so tomorrow's queued song is truly a vocal
+                # song (musicgen-local excluded when REQUIRE_VOCALS=1), so the
+                # next day's vocal guard can't be fooled by an instrumental.
                 cooked, cooked_by = music_chain.cook(
                     nxt_genre, max(150, dur), inc / f"{stem}.mp3",
                     lyrics=nxt_lyc, lang=nxt_lang,
-                    lrc_out=inc / f"{stem}.lrc.txt")   # 🎤⏱ karaoke rides too
+                    lrc_out=inc / f"{stem}.lrc.txt",   # 🎤⏱ karaoke rides too
+                    require_vocals=os.environ.get("REQUIRE_VOCALS", "") == "1")
                 if cooked:
                     print(f"  🎧 tomorrow cooked by: {cooked_by} "
                           f"(chain: suno → lyria → ace-v1.5 → ace-v1 → engine)")
-                if cooked and nxt_lyc:      # the words ride with the mp3
+                # only stamp the words on a song that actually sang
+                if cooked and nxt_lyc and cooked_by != "musicgen-local":
                     (inc / f"{stem}.lyrics.txt").write_text(
                         nxt_lyc, encoding="utf-8")
             else:
