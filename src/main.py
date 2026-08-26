@@ -347,7 +347,8 @@ def main() -> None:
                    "villain_pop": "villain pop", "orbit_trap": "orbit trap"}
     ext_wav = ext_src = ext_name = ext_genre = None
     ext_lang, ext_lyc, ext_lrc = "en", None, None
-    if video_today:
+    everyday = os.environ.get("VOCAL_EVERYDAY", "1") != "0"   # 🎤 vocal shorts too
+    if video_today or everyday:      # was video-days-only → shorts never saw the queue
         (ext_wav, ext_src, ext_name, ext_genre, ext_lang,
          ext_lyc, ext_lrc) = _take_external_song(ep, genre_key) or (None,) * 7
         ext_lang = ext_lang or "en"
@@ -370,7 +371,8 @@ def main() -> None:
         # Optional real-song mode: if there is no queued vocal song, cook a
         # vocal song NOW instead of falling straight to the offline instrumental
         # engine. Set repo variable COOK_TODAY_IF_QUEUE_EMPTY=1.
-        if video_today and os.environ.get("COOK_TODAY_IF_QUEUE_EMPTY", "") == "1":
+        if (video_today or everyday) and \
+            os.environ.get("COOK_TODAY_IF_QUEUE_EMPTY", "1") == "1":  # default ON (was opt-in, video-only)
             print("  🎤 no queued vocal song — cooking a real vocal song TODAY…")
             try:
                 today_lang = ext_lang or "en"
@@ -422,7 +424,7 @@ def main() -> None:
                     raise SystemExit("No vocal music lane succeeded; refusing to publish instrumental fallback")
 
         if not ext_wav:
-            if os.environ.get("REQUIRE_VOCALS", "") == "1" and args.publish and video_today:
+            if os.environ.get("REQUIRE_VOCALS", "") == "1" and args.publish:  # any day — silence is not a release
                 raise SystemExit("No queued/cooked vocal song found; refusing to publish instrumental fallback")
             print("  composing…")
             song, info = composer.compose(genre_key, rng, target)
