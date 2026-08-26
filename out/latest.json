@@ -1,46 +1,46 @@
 {
   "episode": 24,
-  "genre": "villain pop",
+  "genre": "dark ambient",
   "seed": 190294,
-  "bpm": 142,
+  "bpm": 60,
   "key": "\u2014",
   "duration_s": 95.10893424036281,
   "meta": {
     "channel": "Nix Speech",
-    "name": "diesel velvet",
-    "title": "diesel velvet \u2014 Nix Speech (official audio)",
-    "description": "diesel velvet\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 villain pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #villainera #cinematicpop\n",
+    "name": "damp plaster wall",
+    "title": "damp plaster wall \u2014 Nix Speech (official audio)",
+    "description": "damp plaster wall\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
     "tags": [
-      "diesel velvet",
-      "official audio",
-      "type beat",
-      "villain pop",
-      "villain era",
-      "night drive music",
+      "damp plaster wall",
+      "new music",
+      "chill",
+      "dark ambient",
+      "focus music",
+      "sleep music",
       "singer"
     ],
-    "genre": "villain pop",
-    "genre_key": "villain_pop",
+    "genre": "dark ambient",
+    "genre_key": "dark_ambient",
     "lang": "en",
-    "bpm": 142,
+    "bpm": 60,
     "key": "\u2014",
-    "style_variant": "Neon reflections shimmer across wet black asphalt under a dark, starless midnight city sky (free engine)"
+    "style_variant": "Rain lashes a fractured concrete alleyway as flickering blue neon illuminates damp peeling plaster (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
     "short_offset_s": 9561,
-    "short_publish_at": "2026-08-26T04:52:07Z"
+    "short_publish_at": "2026-08-26T05:19:17Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "the city smells like burnt fuel",
+    "hook": "does the ceiling breathe back",
     "lines": [
-      "heavy air clings to skin",
-      "gears grind beneath wet pavement",
-      "velvet shadows mask the exit",
-      "midnight hums in low frequencies",
-      "drip of oil on cold asphalt"
+      "moisture seeping through grey paint",
+      "cold touch of settling concrete",
+      "the radiator clicks in rhythm",
+      "shadows stretch across salt stains",
+      "city lights bleed through dust"
     ]
   },
   "lang": "en",
@@ -56,7 +56,7 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "the city",
+  "short_hook": "does the ceiling",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.png",
