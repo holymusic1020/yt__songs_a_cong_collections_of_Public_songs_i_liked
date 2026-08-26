@@ -18,15 +18,19 @@ GENRES = ["drift_phonk", "deep_pop", "dark_ambient", "lofi", "baroque_waltz",
           "disco_house", "skyline_anthem", "villain_pop", "orbit_trap"]
 
 STYLE = {
-    "drift_phonk": "drift phonk, dark memphis phonk, distorted 808 bass, phonk cowbell melody, night drive, ominous",
-    "deep_pop": "melancholic alt pop, deep pulsing synth bass, airy detuned pads, slow burn build, emotional",
-    "dark_ambient": "dark ambient drone, slow evolving textures, distant thunder, tape hiss, unsettling calm",
-    "lofi": "lofi hip hop, dusty vinyl crackle, warm rhodes chords, soft boom bap drums, rain on the window",
-    "baroque_waltz": "playful baroque waltz, harpsichord and string quartet, vintage ballroom tape, whimsical",
-    "disco_house": "french house disco, funky filtered bassline, four on the floor, lush string stabs, feel-good",
-    "skyline_anthem": "anthemic folk-edm, progressive house festival lift, big piano stabs, euphoric",
-    "villain_pop": "dark cinematic pop, villain aesthetic, music-box bells, heavy 808 sub, menacing elegance",
-    "orbit_trap": "melodic trap, confident rap-sung bounce, rolling hi-hats, sliding 808 bass, spacey pads",
+    # 2026-08-26 QUALITY FIX: every descriptor that ASKED for noise is gone
+    # (was: "tape hiss", "vinyl crackle", "rain on window", "distant thunder",
+    #  "vintage ballroom tape" → the model OBEYED and made 1920s-radio mud).
+    # Every style now explicitly demands a clean modern mix + clear vocals.
+    "drift_phonk": "drift phonk, dark memphis phonk, punchy clean 808 bass, phonk cowbell melody, night drive mood, clean modern studio mix, clear vocals, hi-fi, polished",
+    "deep_pop": "melancholic alt pop, deep pulsing synth bass, airy detuned pads, slow burn build, emotional, clean modern studio production, clear vocals front and center, hi-fi",
+    "dark_ambient": "dark cinematic ambient, slow evolving clean textures, deep sub drone, spacious modern mix, pristine, clear ethereal vocals, hi-fi, no noise",
+    "lofi": "mellow chillhop, warm clean rhodes chords, soft boom bap drums, smooth mellow groove, clean modern studio mix, crisp vocals, hi-fi, no vinyl noise",
+    "baroque_waltz": "playful modern baroque pop waltz, bright harpsichord and clean string quartet, polished studio production, clear vocals, hi-fi",
+    "disco_house": "french house disco, funky filtered bassline, four on the floor, lush modern string stabs, feel-good, clean polished club mix, clear vocals, hi-fi",
+    "skyline_anthem": "anthemic folk-edm, progressive house festival lift, big clean piano stabs, euphoric, polished stadium mix, strong clear vocals, hi-fi",
+    "villain_pop": "dark cinematic pop, villain aesthetic, music-box bells, punchy clean 808 sub, menacing elegance, polished modern mix, clear confident vocals, hi-fi",
+    "orbit_trap": "melodic trap, confident rap-sung bounce, crisp rolling hi-hats, clean sliding 808 bass, spacey polished pads, modern studio mix, clear vocals, hi-fi",
 }
 
 LYRIC_LINES = [
@@ -144,6 +148,26 @@ def main():
         fail(f"no output audio in {out_dir}")
     wav = wavs[0]
     print(f"🎵 output: {wav.name} ({wav.stat().st_size//1024} KB)", flush=True)
+
+    # 🎚 MASTERING (2026-08-26): kill the "old radio" — FFT denoise, rumble
+    # high-pass, mud-cut @180Hz, vocal presence @3.5kHz, glue compression,
+    # limiter, then streaming loudness (loudnorm). Fall back to raw on error.
+    mastered = out_dir / "mastered.wav"
+    AFILT = ("highpass=f=70,"
+             "afftdn=nr=14:nf=-24,"
+             "equalizer=f=180:t=q:w=1:g=-2,"
+             "equalizer=f=3500:t=q:w=2:g=3.5,"
+             "acompressor=threshold=-20dB:ratio=3:attack=8:release=120:makeup=2,"
+             "alimiter=limit=0.93,"
+             "loudnorm=I=-14:TP=-1.5:LRA=11")
+    r = os.system(f'ffmpeg -y -v error -i "{wav}" -af "{AFILT}" '
+                  f'-ar 44100 "{mastered}" > /tmp/ffm.log 2>&1')
+    if r == 0 and mastered.exists() and mastered.stat().st_size > 80000:
+        wav = mastered
+        print("🎚 mastered: denoise + rumble-cut + presence + loudnorm ✔", flush=True)
+    else:
+        tail = Path("/tmp/ffm.log").read_text()[-200:] if Path("/tmp/ffm.log").exists() else ""
+        print(f"⚠ mastering skipped ({tail}) — raw used", flush=True)
 
     stem = f"next_song--{genre}--en"
     mp3 = WORK / f"{stem}.mp3"
