@@ -1,6 +1,6 @@
 {
   "id": "nixspeech/nix-ace-cook",
-  "title": "Nix ACE-Step Offline Cook",
+  "title": "Nix Ace Cook",
   "code_file": "nix_ace_cook.py",
   "language": "python",
   "kernel_type": "script",

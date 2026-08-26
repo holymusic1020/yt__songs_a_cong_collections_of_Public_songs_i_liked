@@ -84,14 +84,19 @@ def main():
     t0 = time.time()
     print("=== NIX × ACE-Step OFFLINE (your Kaggle GPU · $0 · no HF quota) ===", flush=True)
 
-    # 1) install the model + friends (ACE's own colab one-liner + pins)
-    sh(["pip", "install", "-q", "git+https://github.com/ace-step/ACE-Step.git"], timeout=1800)
+    # 1) install — SURGICAL (v2, 2026-08-26): --no-deps for the package itself,
+    # then only the runtime deps. requirements.txt pulls gradio + UNPINNED
+    # torch/vision/audio → pip used to REINSTALL torch (multi-GB, >60-min
+    # hang: the first cook outlived its leash). Cut it. Kaggle already has
+    # torch/vision/audio/tokenizers/numpy — do not touch.
+    sh(["pip", "install", "-q", "--no-deps",
+        "git+https://github.com/ace-step/ACE-Step.git"], timeout=900)
     sh(["pip", "install", "-q",
         "diffusers>=0.33.0", "transformers==4.50.0", "accelerate==1.6.0",
-        "librosa==0.11.0", "soundfile==0.13.1", "loguru==0.7.3",
-        "pypinyin==0.53.0", "py3langid==0.3.0", "hangul-romanize==0.1.0",
-        "num2words==0.5.14", "spacy==3.8.4", "cutlet", "fugashi[unidic-lite]",
-        "click", "peft", "datasets==3.4.1", "pytorch-lightning==2.5.1"], timeout=1800)
+        "librosa", "soundfile", "loguru", "pypinyin", "py3langid",
+        "hangul-romanize", "num2words", "spacy==3.8.4", "cutlet",
+        "fugashi[unidic-lite]", "opencc-python-reimplemented",
+        "click", "datasets", "tqdm"], timeout=1200)
 
     # T4 has NO bf16 — force fp16 (≈7 GB weights) via the pipeline's env hook
     os.environ["ACE_PIPELINE_DTYPE"] = "float16"

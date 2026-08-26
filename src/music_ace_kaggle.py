@@ -26,7 +26,7 @@ from pathlib import Path
 KERNEL_SLUG = os.environ.get("ACE_KAGGLE_KERNEL_SLUG", "nix-ace-cook")
 NOTEBOOK_DIR = Path(__file__).resolve().parents[1] / "kaggle_ace"
 POLL_S = int(os.environ.get("KAGGLE_POLL_S", "15") or "15")
-MAX_WAIT_S = int(os.environ.get("ACE_KAGGLE_MAX_WAIT_S", "3600") or "3600")
+MAX_WAIT_S = int(os.environ.get("ACE_KAGGLE_MAX_WAIT_S", "5400") or "5400")  # 90min: first cooks pull 7GB weights
 OUTPUT_TIMEOUT_S = int(os.environ.get("KAGGLE_OUTPUT_TIMEOUT_S", "600") or "600")
 OUTPUT_TRIES = int(os.environ.get("KAGGLE_OUTPUT_TRIES", "3") or "3")
 
@@ -127,12 +127,31 @@ def generate(genre_key: str, seconds: float, out_path: Path,
                          seconds, genre_key)
         print("  🎤 ace-offline: ACE-Step v1 cooking on YOUR Kaggle GPU "
               "(no HF quota, $0)…", flush=True)
+        # 🧟 zombie rescue: a previous run may have left this kernel RUNNING
+        # (2026-08-26: the 7GB-weight first cook outlived a 60-min leash, then
+        # the retry push died on 409 Conflict). A live kernel blocks pushes —
+        # try to delete it first (best effort; fresh lyrics need a fresh cook).
+        _uid = os.environ.get('KAGGLE_USERNAME', '').strip()
+        _st = _run([kaggle, "kernels", "status", f"{_uid}/{KERNEL_SLUG}"],
+                   timeout=60, check=False)
+        if "running" in ((_st.stdout or "") + (_st.stderr or "")).lower():
+            print("  [ace-kaggle] stale kernel still RUNNING — deleting it…", flush=True)
+            _run([kaggle, "kernels", "delete", f"{_uid}/{KERNEL_SLUG}", "-y"],
+                 timeout=120, check=False)
+            time.sleep(8)
         rc, out = _push(staging, cfg)
         if rc != 0:
-            print(f"  ⚠ ace-kaggle push failed (rc={rc}): {out[-400:]} — next lane",
-                  flush=True)
-            return None
-        print(f"  [ace-kaggle] push ok: {out.strip()[-160:]}", flush=True)
+            # 409 after a failed delete → the old kernel is already cooking
+            # the same words; don't die, just keep polling it instead.
+            if "conflict" in out.lower() or "409" in out:
+                print("  [ace-kaggle] push conflicted — kernel already live; "
+                      "polling it instead", flush=True)
+            else:
+                print(f"  ⚠ ace-kaggle push failed (rc={rc}): {out[-400:]} — next lane",
+                      flush=True)
+                return None
+        else:
+            print(f"  [ace-kaggle] push ok: {out.strip()[-160:]}", flush=True)
 
         kernel_id = f"{os.environ.get('KAGGLE_USERNAME', '').strip()}/{KERNEL_SLUG}"
         t0 = time.time()
