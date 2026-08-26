@@ -7,11 +7,11 @@
   "duration_s": 95.08185941043084,
   "meta": {
     "channel": "Nix Speech",
-    "name": "wet stone stairs",
-    "title": "wet stone stairs \u2014 Nix Speech (official audio)",
-    "description": "wet stone stairs\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
+    "name": "hollowed streetlamp",
+    "title": "hollowed streetlamp \u2014 Nix Speech (official audio)",
+    "description": "hollowed streetlamp\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
     "tags": [
-      "wet stone stairs",
+      "hollowed streetlamp",
       "new music",
       "chill",
       "dark ambient",
@@ -24,23 +24,23 @@
     "lang": "en",
     "bpm": 60,
     "key": "\u2014",
-    "style_variant": "Rain streaks down dark stone steps beneath a dim, flickering streetlamp\u2019s cold blue glow (free engine)"
+    "style_variant": "Wet asphalt glistens under a flickering streetlamp as dense mist swallows the endless road (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
     "short_offset_s": 9561,
-    "short_publish_at": "2026-08-26T05:51:58Z"
+    "short_publish_at": "2026-08-26T07:08:33Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "the cold dampens your rhythm",
+    "hook": "static hum beneath the glass",
     "lines": [
-      "rain pooling on grey slate",
-      "midnight seeped into the concrete",
-      "we keep climbing without purpose",
-      "slick footsteps echoing downward",
-      "shadows held in jagged cracks"
+      "damp pavement mirrors the flicker",
+      "shadows stretch against cold brick",
+      "traffic died an hour ago",
+      "the light buzzes for no one",
+      "empty lungs inhale midnight air"
     ]
   },
   "lang": "en",
@@ -56,7 +56,7 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "the cold dampens",
+  "short_hook": "static hum beneath",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.png",
