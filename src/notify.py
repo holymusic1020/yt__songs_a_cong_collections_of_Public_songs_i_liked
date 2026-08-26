@@ -91,6 +91,38 @@ def send_telegram(token: str, chat_id: str, text: str, dry: bool) -> str:
                  {"Content-Type": "application/x-www-form-urlencoded"})
 
 
+def send_telegram_video(token: str, chat_id: str, path: str, caption: str) -> str:
+    """Send a rendered mp4 to the owner's Telegram (dry-run previews).
+    Bots cap uploads at 50 MB — bigger files are skipped with a note.
+    Falls back to sendDocument if sendVideo rejects the file."""
+    if not token or not chat_id:
+        return "skipped (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set)"
+    p = Path(path)
+    if not p.exists():
+        return f"skipped ({p.name} missing)"
+    size = p.stat().st_size
+    if size > 49 * 1024 * 1024:
+        return f"skipped ({p.name} is {size/1e6:.1f} MB > 49 MB bot cap)"
+    import requests                       # lazy — plain alerts never need it
+    api = f"https://api.telegram.org/bot{token}"
+    with open(p, "rb") as fh:
+        r = requests.post(f"{api}/sendVideo",
+                          data={"chat_id": chat_id, "caption": caption[:1024],
+                                "supports_streaming": "true"},
+                          files={"video": (p.name, fh, "video/mp4")},
+                          timeout=300)
+    if r.status_code == 200:
+        return f"sent {p.name} ({size/1e6:.1f} MB)"
+    with open(p, "rb") as fh:
+        r2 = requests.post(f"{api}/sendDocument",
+                           data={"chat_id": chat_id, "caption": caption[:1024]},
+                           files={"document": (p.name, fh, "video/mp4")},
+                           timeout=300)
+    if r2.status_code == 200:
+        return f"sent {p.name} as document ({size/1e6:.1f} MB)"
+    raise RuntimeError(f"telegram {r.status_code}: {r.text[:160]}")
+
+
 def send_discord(webhook: str, text: str, dry: bool) -> str:
     if not webhook:
         return "skipped (NOTIFY_WEBHOOK not set)"

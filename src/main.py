@@ -774,6 +774,28 @@ def main() -> None:
             print(f"  (queue cook skipped: {e} — tomorrow will ask the space live)")
     else:
         print("  DRY-RUN — no upload, state untouched.")
+        # 📨 dry-run = drop today's renders in the owner's Telegram instead of
+        # YouTube, so a human can review the episode. The daily cron
+        # (09:23 UTC / 3:23 PM BDT) still composes + publishes a FRESH one.
+        try:
+            from src import notify as _notify
+            _tok = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+            _cid = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+            _m = meta if isinstance(meta, dict) else {}
+            _cap = (f"🧪 TEST PREVIEW · EP.{ep:03d} — '{_m.get('name', '?')}' "
+                    f"({genre_key} · {_m.get('bpm', '?')} bpm · {_m.get('key', '?')})\n"
+                    f"🎤 vocals: {'yes' if lyr_today else 'NO — instrumental'}\n"
+                    f"🚫 dry-run — NOTHING went to YouTube. Real release: "
+                    f"daily cron 3:23 PM BDT (a new episode).")
+            _any = False
+            for _f in (short_mp4, twin_mp4, long_mp4):
+                if _f and Path(_f).exists():
+                    print(f"  📨 telegram: {_notify.send_telegram_video(_tok, _cid, str(_f), _cap)}")
+                    _any = True
+            if not _any:
+                print("  📨 telegram: nothing rendered to send")
+        except Exception as _e:
+            print(f"  📨 telegram preview failed ({_e}) — dry-run unaffected")
 
     _write_summary(OUT / "summary.md", meta, sched, video_today, vid, sid)
     if errors:
