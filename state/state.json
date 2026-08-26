@@ -1,5 +1,5 @@
 {
-  "episode": 22,
+  "episode": 23,
   "history": [
     {
       "episode": 1,
@@ -286,6 +286,19 @@
       "publish_at": "2026-08-23T11:20:51Z",
       "short_publish_at": "2026-08-23T11:41:46Z",
       "at": "2026-08-23T10:07:53+00:00"
+    },
+    {
+      "episode": 23,
+      "kind": "short",
+      "youtube_id": "_DFFuqESFCA",
+      "video_id": null,
+      "short_id": "_DFFuqESFCA",
+      "title": "indigo headlights \u2014 Nix Speech (official audio)",
+      "name": "indigo headlights",
+      "genre": "disco_house",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-26T03:34:08Z",
+      "at": "2026-08-26T01:13:30+00:00"
     }
   ]
 }

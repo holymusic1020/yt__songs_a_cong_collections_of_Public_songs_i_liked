@@ -1,50 +1,50 @@
 {
   "episode": 23,
   "genre": "disco house",
-  "seed": 182374,
-  "bpm": 120,
+  "seed": 182375,
+  "bpm": 119,
   "key": "G minor",
-  "duration_s": 192.0,
+  "duration_s": 123.02496598639456,
   "events": {
-    "risers": 5,
-    "rolls": 5,
-    "crashes": 5
+    "risers": 3,
+    "rolls": 3,
+    "crashes": 3
   },
   "meta": {
     "channel": "Nix Speech",
-    "name": "hotel payphone",
-    "title": "hotel payphone \u2014 Nix Speech (official audio)",
-    "description": "hotel payphone\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
+    "name": "indigo headlights",
+    "title": "indigo headlights \u2014 Nix Speech (official audio)",
+    "description": "indigo headlights\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
     "tags": [
-      "hotel payphone",
-      "official audio",
+      "indigo headlights",
+      "new music",
+      "chill",
+      "funky house",
       "club instrumental",
-      "dance music",
-      "type beat",
-      "aesthetic"
+      "house music"
     ],
     "genre": "disco house",
     "genre_key": "disco_house",
     "lang": "en",
-    "bpm": 120,
+    "bpm": 119,
     "key": "G minor",
-    "style_variant": "Magenta neon light illuminates a wet glass payphone booth outside a dark hotel (free engine)"
+    "style_variant": "Glistening puddles on an empty asphalt road reflect the vivid indigo light of sweeping headlights (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 5911,
-    "short_publish_at": "2026-08-25T12:42:48Z"
+    "short_offset_s": 8497,
+    "short_publish_at": "2026-08-26T03:34:08Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "you only call from temporary places",
+    "hook": "some roads only exist after midnight",
     "lines": [
-      "neon bleeding into wet pavement",
-      "dropping quarters in the dark",
-      "hum of the lobby vending machine",
-      "midnight fog tastes like static",
-      "busy signals echoing down the hall"
+      "indigo glare on the wet asphalt",
+      "bassline humming through the floorboards",
+      "dashboard light painting your skin blue",
+      "mist drifting through the open window",
+      "two headlights cutting the heavy fog"
     ]
   },
   "lang": "en",
@@ -60,12 +60,12 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "you only call",
+  "short_hook": "some roads only",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.png",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023_short.mp4"
   ],
   "video_id": null,
-  "short_id": null
+  "short_id": "_DFFuqESFCA"
 }
