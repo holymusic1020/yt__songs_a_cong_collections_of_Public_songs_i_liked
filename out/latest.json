@@ -1,50 +1,45 @@
 {
-  "episode": 23,
-  "genre": "disco house",
-  "seed": 182375,
-  "bpm": 119,
+  "episode": 24,
+  "genre": "dark ambient",
+  "seed": 190294,
+  "bpm": 80,
   "key": "G minor",
-  "duration_s": 123.02496598639456,
-  "events": {
-    "risers": 3,
-    "rolls": 3,
-    "crashes": 3
-  },
+  "duration_s": 159.0,
   "meta": {
     "channel": "Nix Speech",
-    "name": "indigo headlights",
-    "title": "indigo headlights \u2014 Nix Speech (official audio)",
-    "description": "indigo headlights\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.023 \u00b7 disco house \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#housemusic #disco #groove\n",
+    "name": "basement pilot light",
+    "title": "basement pilot light \u2014 Nix Speech (official audio)",
+    "description": "basement pilot light\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
     "tags": [
-      "indigo headlights",
+      "basement pilot light",
       "new music",
       "chill",
-      "funky house",
-      "club instrumental",
-      "house music"
+      "dark ambient",
+      "focus music",
+      "sleep music"
     ],
-    "genre": "disco house",
-    "genre_key": "disco_house",
+    "genre": "dark ambient",
+    "genre_key": "dark_ambient",
     "lang": "en",
-    "bpm": 119,
+    "bpm": 80,
     "key": "G minor",
-    "style_variant": "Glistening puddles on an empty asphalt road reflect the vivid indigo light of sweeping headlights (free engine)"
+    "style_variant": "Shadows stretch from a tiny blue pilot light glowing inside a dark concrete boiler room (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 8497,
-    "short_publish_at": "2026-08-26T03:34:08Z"
+    "short_offset_s": 7679,
+    "short_publish_at": "2026-08-26T03:46:37Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "some roads only exist after midnight",
+    "hook": "that 3am hum under the floorboards",
     "lines": [
-      "indigo glare on the wet asphalt",
-      "bassline humming through the floorboards",
-      "dashboard light painting your skin blue",
-      "mist drifting through the open window",
-      "two headlights cutting the heavy fog"
+      "a single blue flame in concrete",
+      "cold pipes whispering to the dark",
+      "streetlights bleed through the sidewalk grate",
+      "we are just waiting for morning",
+      "dust dancing in the radiator warmth"
     ]
   },
   "lang": "en",
@@ -60,12 +55,10 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "some roads only",
+  "short_hook": "that 3am hum",
   "files": [
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.wav",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023.png",
-    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep023_short.mp4"
-  ],
-  "video_id": null,
-  "short_id": "_DFFuqESFCA"
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.wav",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.png",
+    "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024_short.mp4"
+  ]
 }
