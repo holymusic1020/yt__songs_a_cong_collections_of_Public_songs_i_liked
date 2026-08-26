@@ -112,13 +112,25 @@ def main():
             fail(f"pip install failed (both ways): {log}")
     os.system("pip -q install mutagen")
 
+    # SOURCE SURGERY (2026-08-26, free quality war): DiffRhythm defaults are
+    # steps=32 (lofi-fast) + cfg_strength=4.0, hardcoded. Crank to 56/4.5 -
+    # about 1.7x GPU time for much cleaner, more intelligible vocals ($0).
+    os.system("sed -i 's/steps=32/steps=56/' DiffRhythm/infer/infer.py")
+    os.system("sed -i 's/cfg_strength=4.0/cfg_strength=4.5/' DiffRhythm/infer/infer.py")
+    chk = subprocess.run(["grep", "-c", "steps=56", "DiffRhythm/infer/infer.py"],
+                         capture_output=True, text=True).stdout.strip()
+    print(f"infer surgery: steps=56 x{chk} (cfg 4.5 applied)", flush=True)
+
     # write LRC
     lrc = build_lrc()
     lrc_path = WORK / "song.lrc"
     lrc_path.write_text(lrc, encoding="utf-8")
     print(f"✍️ lyrics: {len(LYRIC_LINES)} lines", flush=True)
 
-    style = STYLE.get(genre, "pop")
+    voice = ["female", "male"][datetime.datetime.now(datetime.timezone.utc).toordinal() % 2]
+    style = (STYLE.get(genre, "pop") +
+             f", expressive {voice} lead vocal, professional clean studio singing,"
+             " intelligible lyrics, radio-ready")
     out_dir = WORK / "out"
     out_dir.mkdir(exist_ok=True)
     # run from the DiffRhythm ROOT so `model`, `g2p`, `infer_utils` all

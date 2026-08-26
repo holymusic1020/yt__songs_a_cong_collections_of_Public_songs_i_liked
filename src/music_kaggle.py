@@ -39,7 +39,7 @@ from pathlib import Path
 KERNEL_SLUG = os.environ.get("KAGGLE_KERNEL_SLUG", "nix-speech-vocal-cook")
 NOTEBOOK_DIR = Path(__file__).resolve().parents[1] / "kaggle_cook"
 POLL_S = int(os.environ.get("KAGGLE_POLL_S", "15") or "15")
-MAX_WAIT_S = int(os.environ.get("KAGGLE_MAX_WAIT_S", "1500") or "1500")  # 25 min
+MAX_WAIT_S = int(os.environ.get("KAGGLE_MAX_WAIT_S", "3600") or "3600")  # 60 min: 56-step + 285s cooks run longer but cleaner
 # DiffRhythm on a T4 takes ~10-15 min; the OUTPUT download can also be slow
 # (kaggle kernels output pulls the whole /kaggle/working) — 600s so it never
 # times out mid-download (the 2026-08-20 runs cooked 10-13 min then the
@@ -128,6 +128,7 @@ def generate(genre_key: str, seconds: float, out_path: Path,
     # notebook's lrc timing valid; en-only (DiffRhythm G2P is en/zh).
     nb_dir = NOTEBOOK_DIR
     staging = None
+    alen = "285" if (seconds or 0) >= 200 else "95"   # full-length model on video days
     if lyrics and lyrics.strip() and (lang or "en") == "en":
         import tempfile
         lines = [ln.strip(" -\u2013\u2014\u2022") for ln in lyrics.splitlines() if ln.strip()]
@@ -148,6 +149,21 @@ def generate(genre_key: str, seconds: float, out_path: Path,
             _script.write_text(_txt[:_a] + _rendered + _txt[_b:], encoding="utf-8")
             nb_dir = staging
             print(f"  \U0001f4dd fresh lyrics injected ({len(lines)} lines — not the bank)", flush=True)
+    if staging is None and alen == "285":
+        import tempfile
+        staging = Path(tempfile.mkdtemp(prefix="kaggle_nb_"))
+        for _f in NOTEBOOK_DIR.iterdir():
+            if _f.is_file():
+                shutil.copy(_f, staging / _f.name)
+    if staging is not None:
+        _script = staging / "nix_speech_cook.py"
+        _txt = _script.read_text(encoding="utf-8")
+        if alen == "285":
+            _txt = _txt.replace('"--audio-length", "95",',
+                                '"--audio-length", "285",\n        "--chunked",', 1)
+            _script.write_text(_txt, encoding="utf-8")
+        nb_dir = staging
+        print(f"  [kaggle] staged notebook (len={alen}" + (", full model + chunked" if alen == "285" else "") + ")", flush=True)
     rc, out = _push(nb_dir, cfg)
     if staging:
         shutil.rmtree(staging, ignore_errors=True)

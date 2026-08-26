@@ -111,6 +111,7 @@ jobs:
           VOCAL_EVERYDAY: "1"            # shorts days also use queue/cook (was video-only)
           KAGGLE_FIRST: "0"   # 0 = ACE-Step v1.5 auditions BEFORE kaggle (quality war); kaggle = backup
           COOK_TODAY_IF_QUEUE_EMPTY: "1" # no queued song? cook a vocal one live
+          KAGGLE_MAX_WAIT_S: "3600"      # HQ 56-step cooks run longer; do not give up early
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}               # free-space vocal GPU quota ⭐
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}   # 🎵 free-GPU vocal lane (no card)
