@@ -1,5 +1,5 @@
 {
-  "episode": 23,
+  "episode": 24,
   "history": [
     {
       "episode": 1,
@@ -299,6 +299,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-26T03:34:08Z",
       "at": "2026-08-26T01:13:30+00:00"
+    },
+    {
+      "episode": 24,
+      "kind": "short",
+      "youtube_id": "shXURKsk95I",
+      "video_id": null,
+      "short_id": "shXURKsk95I",
+      "title": "cold radiator hiss \u2014 Nix Speech (official audio)",
+      "name": "cold radiator hiss",
+      "genre": "dark_ambient",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-26T14:01:36Z",
+      "at": "2026-08-26T11:23:16+00:00"
     }
   ]
 }
