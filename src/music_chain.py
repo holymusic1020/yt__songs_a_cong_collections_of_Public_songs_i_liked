@@ -75,6 +75,16 @@ def _lane_local(genre_key, seconds, out_path, lyrics, lang, lrc_out):
                                 lyrics=lyrics, lang=lang, lrc_out=lrc_out)
 
 
+def _lane_ace_kaggle(genre_key, seconds, out_path, lyrics, lang, lrc_out):
+    """🎤 ACE-Step OFFLINE on the boss's own Kaggle GPU (open model, Apache-2.0,
+    NO ZeroGPU quota, $0). The lane built after DiffRhythm got ear-rejected 4x."""
+    if os.environ.get("ACE_KAGGLE_OFF", "") == "1":
+        raise _LaneSkipped("ACE_KAGGLE_OFF=1")
+    from src import music_ace_kaggle
+    return music_ace_kaggle.generate(genre_key, seconds, out_path,
+                                     lyrics=lyrics, lang=lang, lrc_out=lrc_out)
+
+
 def _lane_kaggle(genre_key, seconds, out_path, lyrics, lang, lrc_out):
     """🎵 DiffRhythm on Kaggle's FREE GPU (30h/wk, no credit card) — the
     no-card VOCAL lane: full songs WITH SUNG VOCALS."""
@@ -113,6 +123,8 @@ def cook(genre_key: str, seconds: float, out_path: Path,
                                                   lyrics, lang, lrc_out))
     lyria_lane = ("lyria", True, lambda: _lane_lyria(genre_key, seconds, out_path,
                                                      lyrics, lang, lrc_out))
+    acek_lane = ("ace-kaggle", True, lambda: _lane_ace_kaggle(genre_key, seconds, out_path,
+                                                               lyrics, lang, lrc_out))
     ace15_lane = ("ace-step-v1.5", True, lambda: _lane_space("ACE-Step/Ace-Step-v1.5",
                                                              genre_key, seconds, out_path,
                                                              lyrics, lang, lrc_out))
@@ -127,9 +139,9 @@ def cook(genre_key: str, seconds: float, out_path: Path,
     # If your main goal is "real song with vocals", put Kaggle immediately
     # after Suno. This avoids wasting minutes/quota on Gemini/ACE lanes first.
     if os.environ.get("KAGGLE_FIRST", "") == "1":
-        lanes = [suno_lane, kaggle_lane, lyria_lane, ace15_lane, ace1_lane, local_lane]
+        lanes = [suno_lane, kaggle_lane, lyria_lane, acek_lane, ace15_lane, ace1_lane, local_lane]
     else:
-        lanes = [suno_lane, lyria_lane, ace15_lane, ace1_lane, kaggle_lane, local_lane]
+        lanes = [suno_lane, lyria_lane, acek_lane, ace15_lane, ace1_lane, kaggle_lane, local_lane]
     if require_vocals:
         lanes = [ln for ln in lanes if ln[1]]
         print("  🎤 VOCAL MODE: instrumental lane(s) dropped from the grid")

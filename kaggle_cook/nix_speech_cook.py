@@ -128,9 +128,7 @@ def main():
     print(f"✍️ lyrics: {len(LYRIC_LINES)} lines", flush=True)
 
     voice = ["female", "male"][datetime.datetime.now(datetime.timezone.utc).toordinal() % 2]
-    style = (STYLE.get(genre, "pop") +
-             f", expressive {voice} lead vocal, professional clean studio singing,"
-             " intelligible lyrics, radio-ready")
+    style = f"{STYLE.get(genre, 'pop')}, {voice} vocals, clean modern mix"  # tag-style: DiffRhythm chokes on sentences
     out_dir = WORK / "out"
     out_dir.mkdir(exist_ok=True)
     # run from the DiffRhythm ROOT so `model`, `g2p`, `infer_utils` all

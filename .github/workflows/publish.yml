@@ -108,7 +108,7 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           # 🎤 VOCALS-EVERYWHERE pack (2026-08-26)
           REQUIRE_VOCALS: "1"            # never publish an instrumental again — refuse instead
-          VOCAL_EVERYDAY: "0"    # boss 2026-08-26: no music gen on shorts days; 1 song per video (2-3 days)
+          VOCAL_EVERYDAY: "1"    # TEMP until ace-kaggle lane ear-approved (boss 2026-08-26: then flip 0 = vocals on video days only)
           KAGGLE_FIRST: "0"   # 0 = ACE-Step v1.5 auditions BEFORE kaggle (quality war); kaggle = backup
           COOK_TODAY_IF_QUEUE_EMPTY: "1" # no queued song? cook a vocal one live
           KAGGLE_MAX_WAIT_S: "3600"      # HQ 56-step cooks run longer; do not give up early
