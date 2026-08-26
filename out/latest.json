@@ -7,11 +7,11 @@
   "duration_s": 159.0,
   "meta": {
     "channel": "Nix Speech",
-    "name": "basement pilot light",
-    "title": "basement pilot light \u2014 Nix Speech (official audio)",
-    "description": "basement pilot light\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
+    "name": "hollow streetlamp",
+    "title": "hollow streetlamp \u2014 Nix Speech (official audio)",
+    "description": "hollow streetlamp\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
     "tags": [
-      "basement pilot light",
+      "hollow streetlamp",
       "new music",
       "chill",
       "dark ambient",
@@ -23,23 +23,23 @@
     "lang": "en",
     "bpm": 80,
     "key": "G minor",
-    "style_variant": "Shadows stretch from a tiny blue pilot light glowing inside a dark concrete boiler room (free engine)"
+    "style_variant": "A flickering iron streetlamp casts long, distorted shadows across a wet, abandoned cobblestone alleyway (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
     "short_offset_s": 7679,
-    "short_publish_at": "2026-08-26T03:46:37Z"
+    "short_publish_at": "2026-08-26T04:08:08Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "that 3am hum under the floorboards",
+    "hook": "the hum keeps the silence awake",
     "lines": [
-      "a single blue flame in concrete",
-      "cold pipes whispering to the dark",
-      "streetlights bleed through the sidewalk grate",
-      "we are just waiting for morning",
-      "dust dancing in the radiator warmth"
+      "shadows stretch across wet asphalt",
+      "light bleeds into empty puddles",
+      "counting steps under orange glass",
+      "cold air tastes like iron tonight",
+      "nobody walks these miles anymore"
     ]
   },
   "lang": "en",
@@ -55,7 +55,7 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "that 3am hum",
+  "short_hook": "the hum keeps",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.png",
