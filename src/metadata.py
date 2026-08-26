@@ -203,14 +203,24 @@ def add_chapters(meta: dict, lrc_entries, dur: float) -> int:
     return len(picks)
 
 
+
+# day-rotated title emojis (2026-08-26): one emoji per DAY, not per channel —
+# deterministic so the dry-run and the real publish of the same day agree.
+from datetime import datetime as _dt, timezone as _tz
+_DAY_EMOJIS  = ["\U0001F90D", "\U0001FA76", "\U0001F5A4", "\u2728", "\U0001F319", "\u2601\uFE0F", "\U0001F4AB", "\U0001FAE7", "\U0001F940", "\U0001F3A7", "\U0001F30C", "\U0001F56F\uFE0F"]
+_SLOW_EMOJIS = ["\U0001F4A4", "\U0001F32B\uFE0F", "\U0001F327\uFE0F", "\U0001F9CA", "\U0001F578\uFE0F", "\U0001F30A"]
+_pool_i = _dt.now(_tz.utc).toordinal()
+TITLE_EMOJI  = _DAY_EMOJIS[_pool_i % len(_DAY_EMOJIS)]
+SLOWED_EMOJI = _SLOW_EMOJIS[_pool_i % len(_SLOW_EMOJIS)]
+
 def short_meta(meta: dict, hook_line: str, slowed: bool = False) -> dict:
     """Shorts packaging: hook line first (psych trigger), clean official copy.
     v23: every short carries the 'use this sound' CTA (original-sound pages
     compound), and the slowed+reverb twin gets honest, searchable packaging."""
     if slowed:
-        title = f'"{hook_line}" 💤 {meta["name"]} (slowed + reverb)'
+        title = f'"{hook_line}" {SLOWED_EMOJI} {meta["name"]} (slowed + reverb)'
     else:
-        title = f'"{hook_line}" 🤍 {meta["name"]}'
+        title = f'"{hook_line}" {TITLE_EMOJI} {meta["name"]}'
     desc = (f"{meta['name']} — full version on the channel.\n"
             f"by Nix Speech\n"
             f"🎧 use this sound — tap the audio below\n"

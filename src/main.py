@@ -424,7 +424,10 @@ def main() -> None:
                     raise SystemExit("No vocal music lane succeeded; refusing to publish instrumental fallback")
 
         if not ext_wav:
-            if os.environ.get("REQUIRE_VOCALS", "") == "1" and args.publish:  # any day — silence is not a release
+            # vocal refusal only on singing days (video days, or everyday mode).
+            # boss 2026-08-26: shorts days dont generate music; instrumental short ok.
+            want_song = video_today or everyday
+            if want_song and os.environ.get("REQUIRE_VOCALS", "") == "1" and args.publish:
                 raise SystemExit("No queued/cooked vocal song found; refusing to publish instrumental fallback")
             print("  composing…")
             song, info = composer.compose(genre_key, rng, target)
