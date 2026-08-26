@@ -4,14 +4,14 @@
   "seed": 190294,
   "bpm": 60,
   "key": "\u2014",
-  "duration_s": 95.10893424036281,
+  "duration_s": 95.08185941043084,
   "meta": {
     "channel": "Nix Speech",
-    "name": "damp plaster wall",
-    "title": "damp plaster wall \u2014 Nix Speech (official audio)",
-    "description": "damp plaster wall\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
+    "name": "wet stone stairs",
+    "title": "wet stone stairs \u2014 Nix Speech (official audio)",
+    "description": "wet stone stairs\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
     "tags": [
-      "damp plaster wall",
+      "wet stone stairs",
       "new music",
       "chill",
       "dark ambient",
@@ -24,23 +24,23 @@
     "lang": "en",
     "bpm": 60,
     "key": "\u2014",
-    "style_variant": "Rain lashes a fractured concrete alleyway as flickering blue neon illuminates damp peeling plaster (free engine)"
+    "style_variant": "Rain streaks down dark stone steps beneath a dim, flickering streetlamp\u2019s cold blue glow (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
     "short_offset_s": 9561,
-    "short_publish_at": "2026-08-26T05:19:17Z"
+    "short_publish_at": "2026-08-26T05:51:58Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "does the ceiling breathe back",
+    "hook": "the cold dampens your rhythm",
     "lines": [
-      "moisture seeping through grey paint",
-      "cold touch of settling concrete",
-      "the radiator clicks in rhythm",
-      "shadows stretch across salt stains",
-      "city lights bleed through dust"
+      "rain pooling on grey slate",
+      "midnight seeped into the concrete",
+      "we keep climbing without purpose",
+      "slick footsteps echoing downward",
+      "shadows held in jagged cracks"
     ]
   },
   "lang": "en",
@@ -56,7 +56,7 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "does the ceiling",
+  "short_hook": "the cold dampens",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.png",
