@@ -18,8 +18,9 @@ SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     # needed for auto-comment funnel under Shorts
     "https://www.googleapis.com/auth/youtube.force-ssl",
-    # needed for adaptive analytics weights
-    "https://www.googleapis.com/auth/yt-analytics.readonly",
+    # needed for adaptive analytics weights — Analytics API accepts
+    # youtube.readonly (token granted it; yt-analytics.readonly was not)
+    "https://www.googleapis.com/auth/youtube.readonly",
 ]
 AUDIT_URL = "https://support.google.com/youtube/contact/yt_api_form"
 
