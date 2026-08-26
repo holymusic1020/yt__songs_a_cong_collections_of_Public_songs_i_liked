@@ -109,7 +109,7 @@ jobs:
           # 🎤 VOCALS-EVERYWHERE pack (2026-08-26)
           REQUIRE_VOCALS: "1"            # never publish an instrumental again — refuse instead
           VOCAL_EVERYDAY: "1"            # shorts days also use queue/cook (was video-only)
-          KAGGLE_FIRST: "1"              # free DiffRhythm GPU lane right after Suno
+          KAGGLE_FIRST: "0"   # 0 = ACE-Step v1.5 auditions BEFORE kaggle (quality war); kaggle = backup
           COOK_TODAY_IF_QUEUE_EMPTY: "1" # no queued song? cook a vocal one live
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}               # free-space vocal GPU quota ⭐

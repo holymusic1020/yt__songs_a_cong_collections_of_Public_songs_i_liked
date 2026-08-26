@@ -121,7 +121,36 @@ def generate(genre_key: str, seconds: float, out_path: Path,
 
     # 1) push the notebook (this also starts it)
     print("  🎵 kaggle: pushing vocal cook to free GPU…", flush=True)
-    rc, out = _push(NOTEBOOK_DIR, cfg)
+    # 📝 FRESH-LYRICS INJECTION (2026-08-26): main.py writes brand-new lyrics
+    # every episode, but the notebook always sang its built-in 8-line bank —
+    # every song sounded the same ("still sucks" traced here). Render today's
+    # words into a temp copy of the script before pushing. 8-line cap keeps the
+    # notebook's lrc timing valid; en-only (DiffRhythm G2P is en/zh).
+    nb_dir = NOTEBOOK_DIR
+    staging = None
+    if lyrics and lyrics.strip() and (lang or "en") == "en":
+        import tempfile
+        lines = [ln.strip(" -\u2013\u2014\u2022") for ln in lyrics.splitlines() if ln.strip()]
+        lines = [ln for ln in lines if not ln.lower().startswith(
+            ("verse", "chorus", "hook", "bridge", "intro", "outro", "title", "["))]
+        if len(lines) >= 4:
+            lines = lines[:8]
+            staging = Path(tempfile.mkdtemp(prefix="kaggle_nb_"))
+            for _f in NOTEBOOK_DIR.iterdir():
+                if _f.is_file():
+                    shutil.copy(_f, staging / _f.name)
+            _script = staging / "nix_speech_cook.py"
+            _txt = _script.read_text(encoding="utf-8")
+            _a = _txt.index("LYRIC_LINES = [")
+            _b = _txt.index("]", _a) + 1
+            _rendered = "LYRIC_LINES = [\n" + "".join(
+                f"    {json.dumps(ln)},\n" for ln in lines) + "]"
+            _script.write_text(_txt[:_a] + _rendered + _txt[_b:], encoding="utf-8")
+            nb_dir = staging
+            print(f"  \U0001f4dd fresh lyrics injected ({len(lines)} lines — not the bank)", flush=True)
+    rc, out = _push(nb_dir, cfg)
+    if staging:
+        shutil.rmtree(staging, ignore_errors=True)
     if rc != 0:
         print(f"  ⚠ kaggle push failed (rc={rc}): {out[-400:]} — next lane")
         return None
