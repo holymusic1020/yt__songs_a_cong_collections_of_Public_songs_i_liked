@@ -1,50 +1,51 @@
 {
   "episode": 24,
-  "genre": "dark ambient",
+  "genre": "villain pop",
   "seed": 190294,
-  "bpm": 80,
-  "key": "G minor",
-  "duration_s": 159.0,
+  "bpm": 142,
+  "key": "\u2014",
+  "duration_s": 95.10893424036281,
   "meta": {
     "channel": "Nix Speech",
-    "name": "hollow streetlamp",
-    "title": "hollow streetlamp \u2014 Nix Speech (official audio)",
-    "description": "hollow streetlamp\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 dark ambient \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkambient #ambient #sleepmusic\n",
+    "name": "diesel velvet",
+    "title": "diesel velvet \u2014 Nix Speech (official audio)",
+    "description": "diesel velvet\nby Nix Speech\n\n\u2117 2026 Nix Speech. All rights reserved.\nEP.024 \u00b7 villain pop \u00b7 official audio\n\nnew music every few days. subscribe for the night shift \ud83c\udf19\n#darkpop #villainera #cinematicpop\n",
     "tags": [
-      "hollow streetlamp",
-      "new music",
-      "chill",
-      "dark ambient",
-      "focus music",
-      "sleep music"
+      "diesel velvet",
+      "official audio",
+      "type beat",
+      "villain pop",
+      "villain era",
+      "night drive music",
+      "singer"
     ],
-    "genre": "dark ambient",
-    "genre_key": "dark_ambient",
+    "genre": "villain pop",
+    "genre_key": "villain_pop",
     "lang": "en",
-    "bpm": 80,
-    "key": "G minor",
-    "style_variant": "A flickering iron streetlamp casts long, distorted shadows across a wet, abandoned cobblestone alleyway (free engine)"
+    "bpm": 142,
+    "key": "\u2014",
+    "style_variant": "Neon reflections shimmer across wet black asphalt under a dark, starless midnight city sky (free engine)"
   },
   "schedule": {
     "video_offset_s": 0,
     "video_publish_at": null,
-    "short_offset_s": 7679,
-    "short_publish_at": "2026-08-26T04:08:08Z"
+    "short_offset_s": 9561,
+    "short_publish_at": "2026-08-26T04:52:07Z"
   },
   "video_today": false,
   "ai_copy": {
-    "hook": "the hum keeps the silence awake",
+    "hook": "the city smells like burnt fuel",
     "lines": [
-      "shadows stretch across wet asphalt",
-      "light bleeds into empty puddles",
-      "counting steps under orange glass",
-      "cold air tastes like iron tonight",
-      "nobody walks these miles anymore"
+      "heavy air clings to skin",
+      "gears grind beneath wet pavement",
+      "velvet shadows mask the exit",
+      "midnight hums in low frequencies",
+      "drip of oil on cold asphalt"
     ]
   },
   "lang": "en",
-  "vocals": false,
-  "karaoke": 0,
+  "vocals": true,
+  "karaoke": 8,
   "universe": {
     "chapters": 0,
     "mascot": false,
@@ -55,7 +56,7 @@
   "visuals": {
     "kind": "scenes"
   },
-  "short_hook": "the hum keeps",
+  "short_hook": "the city",
   "files": [
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.wav",
     "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/ep024.png",
