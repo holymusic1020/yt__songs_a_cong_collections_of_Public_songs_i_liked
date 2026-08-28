@@ -199,7 +199,7 @@ def generate(genre_key: str, seconds: float, out_path: Path,
             return out_path
         errs = list(out_dir.rglob("error.txt"))
         if errs:
-            why = errs[0].read_text(encoding="utf-8", errors="replace")[-400:]
+            why = errs[0].read_text(encoding="utf-8", errors="replace")[-1500:]
             print(f"  ⚠ ace kernel reported: {why.strip()} — next lane", flush=True)
         else:
             print("  ⚠ ace-kaggle output has no usable song — next lane", flush=True)

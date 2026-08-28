@@ -127,14 +127,17 @@ def main():
                     lyrics=lyrics_txt, infer_step=60, guidance_scale=15.0,
                     manual_seeds=[SEED], save_path=str(out_dir))
 
+    # v3 autopsy (2026-08-28): kernels v3/v4 died silently at 10/20 min —
+    # classic 16GB OOM paths (init + gen). Start with cpu_offload=True:
+    # slower (models shuttle CPU<->GPU) but it CANNOT OOM-kill the cook.
+    # If offload-free fits this kernel dies... no — offload first, always.
+    print("📊 gpu mem at start:", end=" ", flush=True)
     try:
-        gen(offload=False)
-    except RuntimeError as e:
-        if "out of memory" not in str(e).lower():
-            raise
-        print("⚠ T4 OOM — retry with cpu_offload=True (slower, safe)", flush=True)
-        torch.cuda.empty_cache()
-        gen(offload=True)
+        print(f"{torch.cuda.memory_allocated()/1e9:.1f}G", flush=True)
+    except Exception:
+        print("n/a", flush=True)
+    import gc
+    gen(offload=True)
 
     wavs = sorted(out_dir.glob("*.wav"), key=lambda p: p.stat().st_mtime)
     if not wavs:
@@ -173,13 +176,15 @@ def main():
 
 
 if __name__ == "__main__":
+    WORK.mkdir(parents=True, exist_ok=True)
     try:
         main()
     except SystemExit:
-        raise
+        (WORK / "log.txt").write_text("systemexit during main\n")
     except Exception:
         tb = traceback.format_exc()
         print(tb, flush=True)
-        WORK.mkdir(parents=True, exist_ok=True)
-        (WORK / "error.txt").write_text(tb[-1500:])
-        raise
+        (WORK / "error.txt").write_text(tb[-2500:])   # lane downloads & prints this
+    # NOTE (v3): do NOT re-raise — a raised kernel = status error = the lane
+    # never fetches the output and the traceback dies unseen. Exit 0 so the
+    # output (error.txt on failure, mp3 on success) always comes home.
