@@ -13,6 +13,7 @@ Contract with the GitHub lane:
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -86,8 +87,16 @@ def _tg(text):
 
 
 def _tg_file(path, caption):
+    """TG the file to the boss AND return {message_id, file_id, method}.
+
+    v12 (2026-08-30): the Kaggle kernels-output API keeps DROPPING the mp3
+    out of the bundle (boss got a demo with NO song — all lanes fell to the
+    instrumental engine). The TG copy always lands, so the lane now pulls
+    the song straight from Telegram using the file_id we persist in
+    tg_ids.json (a tiny text file — the bundle never drops those).
+    """
     if not (TG_TOKEN and TG_CHAT):
-        return
+        return None
     for method, field in (("sendAudio", "audio"), ("sendDocument", "document")):
         try:
             r = subprocess.run(
@@ -97,12 +106,23 @@ def _tg_file(path, caption):
                  "-F", field + "=@" + str(path),
                  "-F", "caption=" + caption],
                 capture_output=True, text=True, timeout=300)
-            if '"ok":true' in (r.stdout or ""):
+            try:
+                _ok = bool(json.loads(r.stdout or "{}").get("ok"))
+            except Exception:
+                _ok = '"ok":true' in (r.stdout or "")
+            if _ok:
                 mark("phase: tg audio sent via " + method)
-                return
+                try:
+                    res = json.loads(r.stdout or "{}").get("result", {}) or {}
+                    return {"message_id": res.get("message_id", 0),
+                            "file_id": (res.get(field) or {}).get("file_id", ""),
+                            "method": method}
+                except Exception:
+                    return {"message_id": 0, "file_id": "", "method": method}
         except Exception:
             pass
     mark("phase: tg audio send FAILED")
+    return None
 
 
 def mark(msg):
@@ -114,7 +134,7 @@ def mark(msg):
     except Exception:
         pass
     if any(k in msg for k in _TG_KEYS):
-        _tg("🎤 ace v11 " + RUN_TOKEN + " · " + msg[:160])
+        _tg("🎤 ace v12 " + RUN_TOKEN + " · " + msg[:160])
 
 
 def sh(cmd, timeout=1800):
@@ -265,7 +285,9 @@ def main():
         "ffmpeg master/export failed"
     mark(f"phase: mastered (plain v6 chain) {mp3.name}")
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
-    _tg_file(mp3, f"🎤 ACE-OFFLINE v11 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · goat chain · karaoke=what-you-HEAR 🎯 · EARS PLEASE 👂")
+    tg_mp3 = None
+    tg_lrc = None
+    tg_mp3 = _tg_file(mp3, f"🎤 ACE-OFFLINE v12 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · goat chain · karaoke=what-you-HEAR 🎯 · EARS PLEASE 👂")
 
     # 3) sidecars: rough lrc (even split) + lyrics + result json
     if lyrics_txt:
@@ -335,6 +357,20 @@ def main():
                 for i, l in enumerate(sung))
         (WORK / f"{stem}.lrc.txt").write_text(lrc, encoding="utf-8")
         (WORK / f"{stem}.lyrics.txt").write_text(lyrics_txt + "\n", encoding="utf-8")
+        tg_lrc = _tg_file(WORK / f"{stem}.lrc.txt",
+                          f"🎤⏱ karaoke map {RUN_TOKEN} — captions transcribed FROM the audio (screen can never disagree)")
+    # 🛟 v12 (2026-08-30, boss demo had NO vocals at all): persist the TG
+    # file_ids so the lane can pull the song from Telegram even when Kaggle's
+    # output API drops the mp3 from the bundle.
+    (WORK / "tg_ids.json").write_text(json.dumps(
+        {"run_token": RUN_TOKEN, "mp3": tg_mp3 or {}, "lrc": tg_lrc or {}}))
+    # 🧹 v12: slim /kaggle/working — 1.6GB of model-cache junk crowds the song
+    # out of the output bundle. Checkpoints are dead weight after gen().
+    for _dead in ("hf_cache", "ace_ckpt", "ace_out", "checkpoints"):
+        try:
+            shutil.rmtree(WORK / _dead, ignore_errors=True)
+        except Exception:
+            pass
     (WORK / "SUCCESS.txt").write_text(
         f"RUN_TOKEN={RUN_TOKEN}\n"
         f"ace-offline ok · {dur:.0f}s · {GENRE_KEY} · {voice} · {mp3.stat().st_size}\n")

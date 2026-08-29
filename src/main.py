@@ -902,10 +902,26 @@ def main() -> None:
                     f"🚫 dry-run — NOTHING went to YouTube. Real release: "
                     f"daily cron 3:23 PM BDT (a new episode).")
             _any = False
-            for _f in (short_mp4, twin_mp4, long_mp4):
-                if _f and Path(_f).exists():
-                    print(f"  📨 telegram: {_notify.send_telegram_video(_tok, _cid, str(_f), _cap)}")
-                    _any = True
+            if os.environ.get("REQUIRE_VOCALS", "") == "1" and not lyr_today:
+                # 🛟 v12 (2026-08-30, boss: "now no vocals again"): a dry-run
+                # MUST NEVER drop an instrumental "demo" — every vocal lane
+                # failed, so there is nothing to ear-test. Say so in ONE text
+                # instead of burning the boss's ears (same refusal class as
+                # the publish-time SystemExit guard above).
+                _sos = _notify.send_telegram(
+                    _tok, _cid,
+                    f"🎤❌ VOCAL COOK MISSED TODAY — demo withheld.\n"
+                    f"Every singing lane missed (Kaggle bundle drop / HF ZeroGPU "
+                    f"quota / lyria paywall), so today's render is an instrumental — "
+                    f"refusing to waste your ears on it.\n"
+                    f"Nothing went to YouTube. Nothing to review — next demo fires "
+                    f"when a vocal lane lands.", dry=False)
+                print(f"  📨 telegram: instrumental demo withheld ({_sos})")
+            else:
+                for _f in (short_mp4, twin_mp4, long_mp4):
+                    if _f and Path(_f).exists():
+                        print(f"  📨 telegram: {_notify.send_telegram_video(_tok, _cid, str(_f), _cap)}")
+                        _any = True
             if not _any:
                 print("  📨 telegram: nothing rendered to send")
         except Exception as _e:

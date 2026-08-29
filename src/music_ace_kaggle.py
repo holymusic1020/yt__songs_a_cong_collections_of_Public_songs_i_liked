@@ -79,6 +79,32 @@ def _push(notebook_dir: Path, cfg: Path) -> tuple[int, str]:
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
+def _tg_fetch(file_id: str, dest: Path, min_bytes: int) -> bool:
+    """🛟 v12: pull a file the KERNEL sent us on Telegram, by file_id.
+
+    The bot can re-download any file it sent via getFile → file URL, so the
+    whisper-karaoke'd ACE song is retrievable even when Kaggle's output API
+    drops the mp3 from the kernel bundle.
+    """
+    _tok = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    if not (_tok and file_id):
+        return False
+    try:
+        import urllib.request
+        _gf = json.loads(urllib.request.urlopen(
+            f"https://api.telegram.org/bot{_tok}/getFile?file_id={file_id}",
+            timeout=30).read().decode("utf-8", "replace"))
+        _fp = (_gf.get("result") or {}).get("file_path", "")
+        if not _fp:
+            return False
+        urllib.request.urlretrieve(
+            f"https://api.telegram.org/file/bot{_tok}/{_fp}", str(dest))
+        return dest.exists() and dest.stat().st_size >= min_bytes
+    except Exception as _fe:
+        print(f"  [ace-kaggle] TG fetch failed ({str(_fe)[:90]})", flush=True)
+        return False
+
+
 def _stage(lyrics: str | None, seconds: float, genre_key: str) -> Path:
     """Stamp today's lyrics/duration/genre into a temp copy of the notebook."""
     import tempfile
@@ -226,7 +252,35 @@ def generate(genre_key: str, seconds: float, out_path: Path,
             if _candidates:
                 _body = _candidates[0].read_text(encoding="utf-8", errors="replace")[:2000]
                 print(f"  [ace-kaggle] 📜 {_name}:\n{_body}", flush=True)
+        # 🛟 v12 (2026-08-30, boss: "now no vocals again" — the demo that
+        # landed was an engine instrumental because EVERY vocal lane failed,
+        # and this one failed only because Kaggle's output API dropped the
+        # mp3 from the bundle while SUCCESS.txt survived). The kernel TG-sends
+        # the song the moment it masters and persists the file_ids in
+        # tg_ids.json (a tiny text file the bundle never drops) — so pull the
+        # song straight from Telegram when the bundle has no mp3.
         mp3s = sorted(out_dir.glob("next_song--*.mp3"))
+        if not (mp3s and mp3s[0].stat().st_size >= 80_000):
+            _idf = sorted(out_dir.rglob("tg_ids.json"))
+            _tj: dict = {}
+            if _idf:
+                try:
+                    _tj = json.loads(_idf[0].read_text(encoding="utf-8", errors="replace"))
+                except Exception:
+                    _tj = {}
+            if _tj.get("run_token") == run_token:
+                _fid = ((_tj.get("mp3") or {}).get("file_id")) or ""
+                _tmp = out_dir / f"next_song--tg_{run_token}.mp3"
+                if _fid and _tg_fetch(_fid, _tmp, 80_000):
+                    _lfid = ((_tj.get("lrc") or {}).get("file_id")) or ""
+                    if _lfid:
+                        _tg_fetch(_lfid,
+                                  _tmp.with_name(_tmp.stem + ".lrc.txt"), 20)
+                    mp3s = [_tmp]
+                    print(f"  🛟 v12 TG OUT-OF-BAND save: bundle had no mp3 — "
+                          f"pulled the song from Telegram "
+                          f"({_tmp.stat().st_size // 1024} KB, drop-proof)",
+                          flush=True)
         if mp3s and mp3s[0].stat().st_size >= 80_000:
             src = mp3s[0]
             shutil.copy(src, out_path)
