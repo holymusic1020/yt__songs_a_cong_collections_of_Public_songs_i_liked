@@ -84,6 +84,16 @@ def main():
     t0 = time.time()
     print("=== NIX × ACE-Step OFFLINE (your Kaggle GPU · $0 · no HF quota) ===", flush=True)
 
+    # 🔩 TORCH SWAP (v4, 2026-08-29 — ROOT CAUSE of kernels v3-v6 dying):
+    # Kaggle's current base-image torch DROPPED sm_75 (Turing): first CUDA op
+    # in umt5's embed_tokens → "no kernel image is available for execution".
+    # DiffRhythm sings on the SAME T4 because its requirements pin
+    # torchaudio 2.6.0 → torch 2.6.0 (PyPI cu124 build has sm_75). Mirror the
+    # stack that is PROVEN working on this iron — swap BEFORE anything imports.
+    sh(["pip", "uninstall", "-y", "-q", "torch", "torchvision", "torchaudio"], timeout=600)
+    sh(["pip", "install", "-q", "torch==2.6.0", "torchvision==0.21.0",
+        "torchaudio==2.6.0"], timeout=1800)
+
     # 1) install — SURGICAL (v2, 2026-08-26): --no-deps for the package itself,
     # then only the runtime deps. requirements.txt pulls gradio + UNPINNED
     # torch/vision/audio → pip used to REINSTALL torch (multi-GB, >60-min
@@ -104,7 +114,16 @@ def main():
 
     import torch
     assert torch.cuda.is_available(), "no GPU on this kernel (enable_gpu: true?)"
-    print(f"torch {torch.__version__} · gpu: {torch.cuda.get_device_name(0)}", flush=True)
+    si = (f"python {sys.version.split()[0]}\ntorch {torch.__version__} (cuda {torch.version.cuda})\n"
+          f"gpu: {torch.cuda.get_device_name(0)} capability {torch.cuda.get_device_capability(0)}\n")
+    (WORK / "log.txt").write_text(si)   # corpse's birth certificate — comes home in the download
+    print(si, flush=True)
+    # 🔥 ARCH SMOKE TEST (v4): one CUDA op RIGHT NOW — a dead-arch env must
+    # die HERE in seconds, not 20 minutes deep in a text encoder's embedding.
+    probe = torch.randn(64, device="cuda")
+    _ = (probe * probe).sum().item(); del probe
+    torch.cuda.synchronize()
+    print("✔ CUDA arch smoke test passed", flush=True)
     from acestep.pipeline_ace_step import ACEStepPipeline
 
     voice = ["female", "male"][date.today().toordinal() % 2]
