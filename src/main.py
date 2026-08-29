@@ -388,6 +388,14 @@ def main() -> None:
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--publish", action="store_true")
     args = p.parse_args()
+    try:                       # 🕶 boss switches live in-repo (no workflow edits)
+        import json as _js
+        _sw = _js.loads(Path("state/boss_switches.json").read_text(encoding="utf-8"))
+    except Exception:
+        _sw = {}
+    if _sw.get("shorts") is False:
+        args.no_shorts = True
+        print("  🕶 boss switch: shorts OFF — long videos only until unlocked", flush=True)
 
     st = state.load()
     ep = st["episode"] + 1

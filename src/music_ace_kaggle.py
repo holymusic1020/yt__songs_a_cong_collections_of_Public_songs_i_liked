@@ -220,7 +220,8 @@ def generate(genre_key: str, seconds: float, out_path: Path,
         for _f in _inv:
             if _f.is_file():
                 print(f"    · {_f.name} ({_f.stat().st_size} B)", flush=True)
-        for _name in ("log.txt", "out.json", "error.txt", "SUCCESS.txt"):
+        for _name in ("log.txt", "out.json", "error.txt", "SUCCESS.txt",
+                      "next_song--*.lrc.txt", "next_song--*.lyrics.txt"):
             _candidates = sorted(out_dir.rglob(_name))
             if _candidates:
                 _body = _candidates[0].read_text(encoding="utf-8", errors="replace")[:2000]

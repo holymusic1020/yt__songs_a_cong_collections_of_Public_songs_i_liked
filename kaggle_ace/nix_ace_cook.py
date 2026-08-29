@@ -114,7 +114,7 @@ def mark(msg):
     except Exception:
         pass
     if any(k in msg for k in _TG_KEYS):
-        _tg("🎤 ace v9 " + RUN_TOKEN + " · " + msg[:160])
+        _tg("🎤 ace v10 " + RUN_TOKEN + " · " + msg[:160])
 
 
 def sh(cmd, timeout=1800):
@@ -152,7 +152,7 @@ def build_lyrics(lines):
 
 def main():
     t0 = time.time()
-    mark("=== ACE NOTEBOOK v9 START (goat chain + breathing lyrics + whisper lrc) ===")
+    mark("=== ACE NOTEBOOK v10 START (goat chain + breathing lyrics + DP whisper lrc) ===")
     print("=== NIX × ACE-Step OFFLINE (your Kaggle GPU · $0 · no HF quota) ===", flush=True)
 
     # 🔩 TORCH SWAP (v4, 2026-08-29 — ROOT CAUSE of kernels v3-v6 dying):
@@ -265,60 +265,97 @@ def main():
         "ffmpeg master/export failed"
     mark(f"phase: mastered (plain v6 chain) {mp3.name}")
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
-    _tg_file(mp3, f"🎤 ACE-OFFLINE v9 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · goat chain + REAL song sheet 📄 · EARS PLEASE 👂")
+    _tg_file(mp3, f"🎤 ACE-OFFLINE v10 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · goat chain + REAL song sheet 📄 · EARS PLEASE 👂")
 
     # 3) sidecars: rough lrc (even split) + lyrics + result json
     if lyrics_txt:
         sung = [l for l in lyrics_txt.splitlines() if l.strip() and not l.startswith("[")]
         lrc = None
-        # 🎤⏱ v9: REAL line timing — transcribe the just-mastered track with
-        # whisper-tiny and pin lines to detected segments (karaoke that locks).
-        # ANY weakness/failure → exact old even-split; the chain is untouched.
+        # 🎤⏱ v10 (2026-08-29): v9's greedy matcher cascaded on the repeated
+        # hook — subs sat whole sections off ("isn't even matching"). Now:
+        # whisper base.en + WORD timestamps + global monotonic alignment
+        # (one bad segment can't poison the rest). Fallback: exact even split.
         try:
-            mark("phase: aligning lyrics (whisper-tiny)")
+            mark("phase: aligning lyrics (whisper base.en)")
             sh(["pip", "install", "-q", "-U", "openai-whisper"], timeout=900)
             import whisper
             try:
                 torch.cuda.empty_cache()
             except Exception:
                 pass
-            wm = whisper.load_model("tiny.en")
+            wm = whisper.load_model("base.en")
             res = wm.transcribe(str(mp3), language="en", fp16=True,
-                                temperature=0, condition_on_previous_text=False)
-            segs = [(float(x["start"]), float(x["end"]),
-                     "".join(c if c.isalnum() or c == " " else " "
-                             for c in x["text"].lower()).split())
-                    for x in res["segments"]]
+                                temperature=0, condition_on_previous_text=False,
+                                word_timestamps=True)
             def _ws(s):
                 return [w for w in ("".join(c if c.isalnum() or c == " " else " "
                                             for c in s.lower())).split() if len(w) > 2]
-            times, si = [], 0
-            for ln in sung:
-                want = _ws(ln)[:4]
-                hit = None
-                for j in range(si, min(len(segs), si + 4)):
-                    have = segs[j][2]
-                    if want and sum(1 for w in want if w in have) >= max(1, len(want) // 2):
-                        hit = j
-                        break
-                if hit is not None:
-                    times.append(max(0.0, segs[hit][0] - 0.15))
-                    si = hit + 1
+            segs = []
+            for x in res["segments"]:
+                words = _ws(x["text"])
+                wts = [(float(w["start"]), _ws(w["word"])) for w in x.get("words", [])]
+                segs.append((float(x["start"]), float(x["end"]), set(words), wts))
+            L = [set(_ws(l)) for l in sung]
+            M, N = len(sung), len(segs)
+            mono_ok = False
+            pick = []
+            tot = 0.0
+            if M and N:
+                score = [[len(Li & sj[2]) / max(1, len(Li)) for sj in segs]
+                         for Li in L]
+                NEG = -1e9
+                dp = [[NEG] * N for _ in range(M)]
+                par = [[-1] * N for _ in range(M)]
+                for i in range(M):
+                    # expected segment position of line i ≈ its ratio — the
+                    # tie-breaker that pins duplicate hooks to their own spot
+                    epos = i * (N - 1) / max(1, M - 1)
+                    for j in range(N):
+                        if i == 0:
+                            dp[i][j] = score[i][j]
+                            par[i][j] = 0
+                            continue
+                        best, bestk = NEG, -1
+                        for k in range(j + 1):
+                            v = dp[i - 1][k]
+                            if v > best + 1e-9 or (
+                                    abs(v - best) <= 1e-9 and bestk >= 0
+                                    and abs(k - epos) < abs(bestk - epos)):
+                                best, bestk = v, k
+                        dp[i][j] = (score[i][j] + best) if bestk >= 0 else NEG
+                        par[i][j] = bestk
+                tot, j = max((dp[M - 1][j], j) for j in range(N))
+                if j >= 0 and dp[M - 1][j] > NEG and tot >= 0.6 * M:
+                    pick = [0] * M
+                    for i in range(M - 1, -1, -1):
+                        pick[i] = j
+                        j = par[i][j] if par[i][j] >= 0 else j
+                    mono_ok = all(pick[i] <= pick[i + 1] for i in range(M - 1))
+                if N and mono_ok:
+                    times = []
+                    for i, l in enumerate(sung):
+                        s0, _e, _ws_set, wts = segs[pick[i]]
+                        ts = s0 - 0.15
+                        _lk = L[i]
+                        for wst, ww in wts:
+                            if any(k in ww or ww in k for k in _lk):
+                                ts = max(0.0, wst - 0.12)
+                                break
+                        times.append(max(0.0, ts))
+                    last_t = -1.0
+                    mono = []
+                    for ts in times:
+                        if ts <= last_t:
+                            ts = round(last_t + 0.4, 2)
+                        mono.append(ts); last_t = ts
+                    lrc = "\n".join(f"[{int(ts//60):02d}:{ts%60:05.2f}] {l}"
+                                    for ts, l in zip(mono, sung)) + "\n"
+                    mark(f"phase: lrc aligned {len(mono)}/{len(sung)} lines "
+                         f"(whisper base+DP, score {tot:.1f}/{M})")
                 else:
-                    times.append((times[-1] + dur / (len(sung) + 1))
-                                 if times else dur * 0.06)
-            last_t = -1.0
-            mono = []
-            for ts in times:
-                if ts <= last_t:
-                    ts = round(last_t + 0.4, 2)
-                mono.append(ts); last_t = ts
-            if len(mono) >= max(4, int(0.6 * len(sung))):
-                lrc = "\n".join(f"[{int(ts//60):02d}:{ts%60:05.2f}] {l}"
-                                for ts, l in zip(mono, sung)) + "\n"
-                mark(f"phase: lrc aligned {len(mono)}/{len(sung)} lines (whisper)")
+                    mark(f"phase: whisper map weak (score {tot if N else 0:.1f}/{M}) — even split stands")
             else:
-                mark("phase: whisper map weak — even split stands")
+                mark("phase: whisper returned no segments — even split stands")
         except Exception as e:
             mark(f"phase: whisper align failed ({type(e).__name__}) — even split stands")
         if lrc is None:
