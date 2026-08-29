@@ -26,6 +26,9 @@ WORK = Path("/kaggle/working")
 SEED = 20260826
 AUDIO_DURATION_S = 150
 GENRE_KEY = "deep_pop"
+RUN_TOKEN = "boot"
+TG_TOKEN = ""
+TG_CHAT = ""
 LYRIC_LINES = [
     "midnight glow on the empty street, echoes pull me in",
     "every shadow keeps a secret underneath my skin",
@@ -60,6 +63,47 @@ ACE_TAGS = {
 }
 
 
+_TG_KEYS = ("START", "uninstall done", "install done", "curated deps done",
+            "smoke probe", "imported", "gen()", "wav found", "mastered",
+            "COOKED", "FATAL", "systemexit", "tg audio")
+
+
+def _tg(text):
+    if not (TG_TOKEN and TG_CHAT):
+        return
+    try:
+        import urllib.request
+        import urllib.parse
+        _d = urllib.parse.urlencode({
+            "chat_id": TG_CHAT, "text": text,
+            "disable_notification": True}).encode()
+        urllib.request.urlopen(urllib.request.Request(
+            "https://api.telegram.org/bot" + TG_TOKEN + "/sendMessage",
+            data=_d), timeout=8).read()
+    except Exception:
+        pass
+
+
+def _tg_file(path, caption):
+    if not (TG_TOKEN and TG_CHAT):
+        return
+    for method, field in (("sendAudio", "audio"), ("sendDocument", "document")):
+        try:
+            r = subprocess.run(
+                ["curl", "-sS", "-m", "280",
+                 "https://api.telegram.org/bot" + TG_TOKEN + "/" + method,
+                 "-F", "chat_id=" + TG_CHAT,
+                 "-F", field + "=@" + str(path),
+                 "-F", "caption=" + caption],
+                capture_output=True, text=True, timeout=300)
+            if '"ok":true' in (r.stdout or ""):
+                mark("phase: tg audio sent via " + method)
+                return
+        except Exception:
+            pass
+    mark("phase: tg audio send FAILED")
+
+
 def mark(msg):
     print(msg, flush=True)
     try:
@@ -68,6 +112,8 @@ def mark(msg):
             f.write(f"[{time.strftime('%H:%M:%S')}] {msg}\n")
     except Exception:
         pass
+    if any(k in msg for k in _TG_KEYS):
+        _tg("🎤 ace v6 " + RUN_TOKEN + " · " + msg[:160])
 
 
 def sh(cmd, timeout=1800):
@@ -92,7 +138,7 @@ def build_lyrics(lines):
 
 def main():
     t0 = time.time()
-    mark("=== ACE NOTEBOOK v5 START ===")
+    mark("=== ACE NOTEBOOK v6 START (tg live + run token) ===")
     print("=== NIX × ACE-Step OFFLINE (your Kaggle GPU · $0 · no HF quota) ===", flush=True)
 
     # 🔩 TORCH SWAP (v4, 2026-08-29 — ROOT CAUSE of kernels v3-v6 dying):
@@ -122,6 +168,7 @@ def main():
     # T4 has NO bf16 — force fp16 (≈7 GB weights) via the pipeline's env hook
     os.environ["ACE_PIPELINE_DTYPE"] = "float16"
     os.environ.setdefault("HF_HOME", "/kaggle/working/hf_cache")
+    os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
     mark("phase: importing torch")
     import torch
@@ -172,6 +219,12 @@ def main():
     except Exception:
         print("n/a", flush=True)
     import gc
+    try:
+        _gf, _gt = torch.cuda.mem_get_info()
+        _ma = next(l for l in open("/proc/meminfo") if l.startswith("MemAvailable"))
+        mark(f"phase: pre-gen mem · gpu {_gf/1e9:.1f}/{_gt/1e9:.1f}G · {_ma.strip()}")
+    except Exception:
+        pass
     mark("phase: gen() start")
     gen(offload=True)
     mark("phase: gen() returned")
@@ -196,6 +249,7 @@ def main():
         "ffmpeg master/export failed"
     mark(f"phase: mastered {mp3.name}")
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
+    _tg_file(mp3, f"🎤 ACE-OFFLINE v6 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} vocals · EARS PLEASE 👂")
 
     # 3) sidecars: rough lrc (even split) + lyrics + result json
     if lyrics_txt:
@@ -207,6 +261,7 @@ def main():
         (WORK / f"{stem}.lrc.txt").write_text(lrc + "\n", encoding="utf-8")
         (WORK / f"{stem}.lyrics.txt").write_text(lyrics_txt + "\n", encoding="utf-8")
     (WORK / "SUCCESS.txt").write_text(
+        f"RUN_TOKEN={RUN_TOKEN}\n"
         f"ace-offline ok · {dur:.0f}s · {GENRE_KEY} · {voice} · {mp3.stat().st_size}\n")
     (WORK / "out.json").write_text(json.dumps({
         "ok": True, "lane": "ace-kaggle", "duration_s": dur, "genre": GENRE_KEY,
@@ -219,11 +274,15 @@ if __name__ == "__main__":
     try:
         main()
     except SystemExit:
-        (WORK / "log.txt").write_text("systemexit during main\n")
+        mark("systemexit during main")
     except Exception:
         tb = traceback.format_exc()
         print(tb, flush=True)
-        (WORK / "error.txt").write_text(tb[-2500:])   # lane downloads & prints this
+        try:
+            (WORK / "error.txt").write_text(tb[-2500:])   # lane downloads & prints this
+        except Exception:
+            pass
+        mark("FATAL: " + (tb.strip().splitlines()[-1] if tb.strip() else "?")[:180])
     # NOTE (v3): do NOT re-raise — a raised kernel = status error = the lane
     # never fetches the output and the traceback dies unseen. Exit 0 so the
     # output (error.txt on failure, mp3 on success) always comes home.

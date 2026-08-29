@@ -108,9 +108,30 @@ def _stage(lyrics: str | None, seconds: float, genre_key: str) -> Path:
     from datetime import datetime, timezone
     txt = txt.replace("SEED = 20260826",
                       f"SEED = {datetime.now(timezone.utc).toordinal()}", 1)
+    # 4) v6 (2026-08-29): per-attempt run token (staleness autopsy) + TG
+    #    live-beacon creds. Stamped into the PRIVATE kernel only, never printed.
+    import re as _re
+    import uuid as _uuid
+    run_token = (f"ace-{datetime.now(timezone.utc).strftime('%y%m%d%H%M')}"
+                 f"-{_uuid.uuid4().hex[:5]}")
+    if 'RUN_TOKEN = "boot"' in txt:
+        txt = txt.replace('RUN_TOKEN = "boot"',
+                          f'RUN_TOKEN = {json.dumps(run_token)}', 1)
+        print(f"  [ace-kaggle] run token: {run_token}", flush=True)
+    else:
+        print("  ⚠ ace-kaggle: RUN_TOKEN anchor missing — autopsy OFF", flush=True)
+    _tg_t = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    _tg_c = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+    if (_re.fullmatch(r"[0-9]+:[A-Za-z0-9_-]{30,60}", _tg_t)
+            and _re.fullmatch(r"-?[0-9]+", _tg_c)):
+        txt = txt.replace('TG_TOKEN = ""', f'TG_TOKEN = {json.dumps(_tg_t)}', 1)
+        txt = txt.replace('TG_CHAT = ""', f'TG_CHAT = {json.dumps(_tg_c)}', 1)
+        print("  [ace-kaggle] TG live-beacons wired into kernel (silent until the audio lands)", flush=True)
+    else:
+        print("  (ace-kaggle: TG creds absent/odd — kernel beacons off)", flush=True)
     script.write_text(txt, encoding="utf-8")
     print(f"  [ace-kaggle] staged (dur={dur}s, genre={genre_key})", flush=True)
-    return staging
+    return staging, run_token
 
 
 def generate(genre_key: str, seconds: float, out_path: Path,
@@ -123,8 +144,8 @@ def generate(genre_key: str, seconds: float, out_path: Path,
     kaggle = shutil.which("kaggle")
     staging = None
     try:
-        staging = _stage(lyrics if (lang or "en") == "en" else None,
-                         seconds, genre_key)
+        staging, run_token = _stage(lyrics if (lang or "en") == "en" else None,
+                                    seconds, genre_key)
         print("  🎤 ace-offline: ACE-Step v1 cooking on YOUR Kaggle GPU "
               "(no HF quota, $0)…", flush=True)
         # 🧟 zombie rescue: a previous run may have left this kernel RUNNING
@@ -170,14 +191,20 @@ def generate(genre_key: str, seconds: float, out_path: Path,
             return None
 
         out_dir = out_path.parent / "ace_kaggle_out"
+        shutil.rmtree(out_dir, ignore_errors=True)   # v6: no carryover ghosts
         out_dir.mkdir(exist_ok=True)
         dl_ok = False
         for dl_try in range(1, OUTPUT_TRIES + 1):
             try:
-                _run([kaggle, "kernels", "output", kernel_id, "-p", str(out_dir)],
-                     timeout=OUTPUT_TIMEOUT_S, check=False)
-                dl_ok = True
-                break
+                _r = _run([kaggle, "kernels", "output", kernel_id, "-p", str(out_dir)],
+                          timeout=OUTPUT_TIMEOUT_S, check=False)
+                if any(out_dir.iterdir()):
+                    dl_ok = True
+                    break
+                print(f"  [ace-kaggle] dl {dl_try}/{OUTPUT_TRIES} came back EMPTY "
+                      f"({((_r.stdout or '') + (_r.stderr or '')).strip()[-120:]}) — retrying…",
+                      flush=True)
+                time.sleep(10)
             except Exception as e:
                 print(f"  [ace-kaggle] dl {dl_try}/{OUTPUT_TRIES} failed "
                       f"({str(e)[:70]}) — retrying…", flush=True)
@@ -209,6 +236,26 @@ def generate(genre_key: str, seconds: float, out_path: Path,
             print(f"  🎁 ACE-OFFLINE cooked {genre_key} ({mode}, "
                   f"{out_path.stat().st_size // 1024} KB)", flush=True)
             return out_path
+        # 🧭 v6 staleness autopsy (2026-08-29): v13/v14 "completed" kernels each
+        # handed back the SAME OLD bundle (identical SUCCESS.txt + hf_cache
+        # blobs, zero fresh files) = the fresh run died before persistence
+        # (SIGKILL class; Kaggle then serves the last persisted version).
+        suc = sorted(out_dir.rglob("SUCCESS.txt"))
+        sval = suc[0].read_text(encoding="utf-8", errors="replace") if suc else ""
+        if f"RUN_TOKEN={run_token}" in sval:
+            print("  ⚠ v6 RIDDLE: fresh SUCCESS but no mp3 in bundle — "
+                  "output file drop; audio went out-of-band via TG instead", flush=True)
+        elif suc:
+            _bad = (sval.splitlines()[0][:60] if sval.strip() else "?")
+            print(f"  ⚠ v6 STALE BUNDLE — its token «{_bad}» ≠ "
+                  f"«RUN_TOKEN={run_token}»: attempt died pre-persistence "
+                  "(SIGKILL class); TG beacons hold the true last phase — next lane",
+                  flush=True)
+            return None
+        else:
+            print("  ⚠ v6 EMPTY/OUTPUTLESS — zero persistence (death before any "
+                  "SUCCESS); TG beacons hold the true last phase — next lane", flush=True)
+            return None
         errs = list(out_dir.rglob("error.txt"))
         if errs:
             why = errs[0].read_text(encoding="utf-8", errors="replace")[-1500:]
