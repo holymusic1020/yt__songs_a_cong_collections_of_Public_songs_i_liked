@@ -94,6 +94,9 @@ jobs:
           [ -n "$PREV" ] || { echo "no previous run — nothing queued yet"; exit 0; }
           mkdir -p incoming
           gh run download "$PREV" -n next-song -D incoming || echo "queue empty — engine will compose today"
+          # 🧟 zombie kill (2026-08-29): the stale DiffRhythm corpse that kept
+          # re-serving itself through this hand-off for days is poison by name:
+          rm -f incoming/next_song--drift_phonk--en.* || true
           ls -la incoming/ || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -187,7 +190,9 @@ jobs:
           git config user.name "yt-auto-bot"
           git config user.email "actions@users.noreply.github.com"
           git add state/state.json out/latest.json 2>/dev/null || true
-          [ -d incoming ] && git add -A incoming || true   # consumed drops + human uploads
+          # 🧱 audio NEVER rides the state commit (2026-08-29 hydra fix):
+          [ -d incoming ] && git add 'incoming/*.txt' 'incoming/*.md' 'incoming/*.json' 2>/dev/null || true
+          git rm -q -r --cached --ignore-unmatch incoming/*.mp3 incoming/*.wav incoming/*.m4a incoming/*.flac incoming/*.ogg 2>/dev/null || true
           git commit -m "ep: publish run $(date -u +%Y-%m-%d)" || echo "no changes"
           git pull --rebase origin "${GITHUB_REF_NAME}" || true
           git push || echo "nothing to push"
