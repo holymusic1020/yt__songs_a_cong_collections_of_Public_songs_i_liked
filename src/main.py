@@ -93,6 +93,91 @@ def _pick_lang(ep: int) -> str:
     return langs[(ep // every - 1) % len(langs)]
 
 
+
+def _retime_lrc_to_vocals(audio, entries: list, dur: float) -> list:
+    """🎤⏱ Snap a naive karaoke map (kernel even-split) onto REAL sung phrases.
+
+    The ACE kernel times lines by spreading them evenly over the song — vocals
+    don't sing on a grid. Spectral approach (no new deps): STFT the 44.1k mono
+    wav, a frame counts as SUNG when it's loud enough AND its mid-band
+    (300–3400 Hz, where voices live) dominates — that catches phrase attacks
+    even while the instrumental bed keeps playing (silencedetect can't: a
+    loud-mastered bed never dips below the floor). Lines are then spread
+    across [first_sung, last_sung] weighted by word count, each start snapped
+    to the nearest detected phrase onset (±0.9 s). ANY doubt (too few frames,
+    too few onsets, cramped window) → the original map unchanged, so a good
+    karaoke is never made worse. Boss 2026-08-29: "subtitle and vocal isn't
+    matching the time".
+    """
+    if len(entries) < 2:
+        return entries
+    try:
+        import wave as _wv
+        with _wv.open(str(audio), "rb") as wf:
+            sr = wf.getframerate()
+            raw = wf.readframes(wf.getnframes())
+        if sr < 8000 or not raw:
+            return entries
+        pcm = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
+        win, hop = int(sr * 0.05), int(sr * 0.025)           # 50 ms / 25 ms
+        nfr = (len(pcm) - win) // hop
+        if nfr < 12:
+            return entries
+        shp = (nfr, win)
+        std = (pcm.strides[0] * hop, pcm.strides[0])
+        seg = np.lib.stride_tricks.as_strided(pcm, shape=shp,
+                                              strides=std, writeable=False)
+        spec = np.abs(np.fft.rfft(seg * np.hanning(win)[None, :], axis=1))
+        fr = np.fft.rfftfreq(win, 1.0 / sr)
+        vox = spec[:, (fr >= 300) & (fr <= 3400)].sum(axis=1)
+        tot = spec[:, (fr >= 60) & (fr <= 8000)].sum(axis=1) + 1e-9
+        energy = (seg.astype(np.float64) ** 2).sum(axis=1)
+        ratio = vox / tot
+        # bed reference: mid-band ratio of the QUIET half ≈ pure instrumental
+        quiet = energy <= np.percentile(energy, 45)
+        if quiet.sum() < nfr * 0.1:
+            quiet = energy <= np.percentile(energy, 60)
+        bed_ref = float(np.median(ratio[quiet])) if quiet.any() else float(
+            np.percentile(ratio, 50))
+        sung = ((ratio > bed_ref * 1.5)
+                & (vox > np.percentile(vox, 60))
+                & (energy > np.percentile(energy, 55)))
+        times = np.arange(nfr) * (hop / sr)
+        onsets, last = [], -10.0
+        prev = False
+        for i in range(nfr):
+            if sung[i] and not prev and times[i] - last >= 0.5:
+                onsets.append(float(times[i]))
+                last = times[i]
+            prev = bool(sung[i])
+        if len(onsets) < 2:
+            return entries
+        ends = [times[i] for i in range(nfr) if sung[i]]
+        if not ends:
+            return entries
+        v0, v1 = onsets[0], float(ends[-1])
+        if v1 - v0 < len(entries) * 1.2 or v1 <= v0:
+            return entries
+        weights = [max(1, len(txt.split())) for _, txt in entries]
+        total_w = sum(weights)
+        span = v1 - v0
+        out, cursor = [], max(0.0, v0)
+        for (_t, txt), w in zip(entries, weights):
+            cand = [o for o in onsets if abs(o - cursor) <= 0.9]
+            st_ = min(cand, key=lambda o: abs(o - cursor)) if cand else cursor
+            out.append((round(st_, 2), txt))
+            cursor = cursor + span * (w / total_w)
+        fixed, last_t = [], -1.0
+        for st_, txt in out:                    # strict monotonic guard
+            if st_ <= last_t:
+                st_ = round(last_t + 0.4, 2)
+            fixed.append((st_, txt))
+            last_t = st_
+        return fixed
+    except Exception:
+        return entries
+
+
 def _iso(dt: datetime) -> str:
     return dt.isoformat(timespec="seconds").replace("+00:00", "Z")
 
@@ -452,6 +537,12 @@ def main() -> None:
                 print(f"  🎤⏱ karaoke map: {len(lrc_entries)} timed lines")
         except Exception:
             lrc_entries = []
+    if lrc_entries and ext_wav and Path(ext_wav).exists() and dur > 20:
+        _orig = [t_ for t_, _ in lrc_entries]
+        lrc_entries = _retime_lrc_to_vocals(ext_wav, lrc_entries, dur)
+        if lrc_entries and [t_ for t_, _ in lrc_entries] != _orig:
+            print(f"  🎤⏱ subtitles snapped onto the real sung pauses "
+                  f"({len(lrc_entries)} lines)")
 
     from src import naming
     probe = {"genre": info["genre"], "genre_key": genre_key,

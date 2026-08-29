@@ -113,7 +113,7 @@ def mark(msg):
     except Exception:
         pass
     if any(k in msg for k in _TG_KEYS):
-        _tg("🎤 ace v6 " + RUN_TOKEN + " · " + msg[:160])
+        _tg("🎤 ace v7 " + RUN_TOKEN + " · " + msg[:160])
 
 
 def sh(cmd, timeout=1800):
@@ -138,7 +138,7 @@ def build_lyrics(lines):
 
 def main():
     t0 = time.time()
-    mark("=== ACE NOTEBOOK v6 START (tg live + run token) ===")
+    mark("=== ACE NOTEBOOK v7 START (enchant + token) ===")
     print("=== NIX × ACE-Step OFFLINE (your Kaggle GPU · $0 · no HF quota) ===", flush=True)
 
     # 🔩 TORCH SWAP (v4, 2026-08-29 — ROOT CAUSE of kernels v3-v6 dying):
@@ -240,16 +240,35 @@ def main():
     # 2) master + export (vocal-forward chain, 44.1k mp3 192k — radio loud)
     stem = f"next_song--ace_{GENRE_KEY}_{SEED}"
     mp3 = WORK / f"{stem}.mp3"
-    ff = sh(["ffmpeg", "-y", "-v", "error", "-i", str(raw),
-             "-af", ("highpass=f=85,acompressor=threshold=-20dB:ratio=2.5:attack=8:release=140,"
+    # ✨ v7 ENCHANT (boss 2026-08-29: "voice a lil robotic — enchant ONLY if
+    # safe, else don't ruin"): mastering-only sparkle (harmonic exciter +
+    # gentle 2.8k presence). ZERO timing/pitch/melody change possible. On ANY
+    # hiccup we re-render with the exact boss-approved v6 chain — the good
+    # thing is never at risk.
+    base_chain = ("highpass=f=85,acompressor=threshold=-20dB:ratio=2.5:attack=8:release=140,"
+                  "loudnorm=I=-14:TP=-1:LRA=11,alimiter=limit=0.95,"
+                  "aresample=44100")
+    enchant_chain = ("highpass=f=85,"
+                     "aexciter=level_in=0.9:level_out=0.9:amount=0.5:drive=8.5:blend=0.3:freq=7500,"
+                     "acompressor=threshold=-20dB:ratio=2.5:attack=8:release=140,"
+                     "equalizer=f=2800:t=q:w=1.2:g=1.2,"
                      "loudnorm=I=-14:TP=-1:LRA=11,alimiter=limit=0.95,"
-                     "aresample=44100"),
+                     "aresample=44100")
+    fx = "plain"
+    ff = sh(["ffmpeg", "-y", "-v", "error", "-i", str(raw),
+             "-af", enchant_chain,
              "-ac", "2", "-b:a", "192k", str(mp3)], timeout=600)
+    if ff.returncode == 0 and mp3.exists() and mp3.stat().st_size >= 80_000:
+        fx = "enchant ✨"
+    else:                       # filter missing/failed → exact v6 chain
+        ff = sh(["ffmpeg", "-y", "-v", "error", "-i", str(raw),
+                 "-af", base_chain,
+                 "-ac", "2", "-b:a", "192k", str(mp3)], timeout=600)
     assert ff.returncode == 0 and mp3.exists() and mp3.stat().st_size >= 80_000, \
         "ffmpeg master/export failed"
-    mark(f"phase: mastered {mp3.name}")
+    mark(f"phase: mastered ({fx}) {mp3.name}")
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
-    _tg_file(mp3, f"🎤 ACE-OFFLINE v6 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} vocals · EARS PLEASE 👂")
+    _tg_file(mp3, f"🎤 ACE-OFFLINE v7 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · {fx} · EARS PLEASE 👂")
 
     # 3) sidecars: rough lrc (even split) + lyrics + result json
     if lyrics_txt:
