@@ -60,6 +60,16 @@ ACE_TAGS = {
 }
 
 
+def mark(msg):
+    print(msg, flush=True)
+    try:
+        WORK.mkdir(parents=True, exist_ok=True)
+        with open(WORK / "log.txt", "a") as f:
+            f.write(f"[{time.strftime('%H:%M:%S')}] {msg}\n")
+    except Exception:
+        pass
+
+
 def sh(cmd, timeout=1800):
     print("  $ " + " ".join(str(c) for c in cmd)[:150], flush=True)
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
@@ -82,6 +92,7 @@ def build_lyrics(lines):
 
 def main():
     t0 = time.time()
+    mark("=== ACE NOTEBOOK v5 START ===")
     print("=== NIX × ACE-Step OFFLINE (your Kaggle GPU · $0 · no HF quota) ===", flush=True)
 
     # 🔩 TORCH SWAP (v4, 2026-08-29 — ROOT CAUSE of kernels v3-v6 dying):
@@ -90,28 +101,29 @@ def main():
     # DiffRhythm sings on the SAME T4 because its requirements pin
     # torchaudio 2.6.0 → torch 2.6.0 (PyPI cu124 build has sm_75). Mirror the
     # stack that is PROVEN working on this iron — swap BEFORE anything imports.
-    sh(["pip", "uninstall", "-y", "-q", "torch", "torchvision", "torchaudio"], timeout=600)
+    mark("phase: torch uninstall"); sh(["pip", "uninstall", "-y", "-q", "torch", "torchvision", "torchaudio"], timeout=600); mark("phase: torch uninstall done")
     sh(["pip", "install", "-q", "torch==2.6.0", "torchvision==0.21.0",
-        "torchaudio==2.6.0"], timeout=1800)
+        "torchaudio==2.6.0"], timeout=1800); mark("phase: torch 2.6.0 install done")
 
     # 1) install — SURGICAL (v2, 2026-08-26): --no-deps for the package itself,
     # then only the runtime deps. requirements.txt pulls gradio + UNPINNED
     # torch/vision/audio → pip used to REINSTALL torch (multi-GB, >60-min
     # hang: the first cook outlived its leash). Cut it. Kaggle already has
     # torch/vision/audio/tokenizers/numpy — do not touch.
-    sh(["pip", "install", "-q", "--no-deps",
-        "git+https://github.com/ace-step/ACE-Step.git"], timeout=900)
+    mark("phase: ace git install"); sh(["pip", "install", "-q", "--no-deps",
+        "git+https://github.com/ace-step/ACE-Step.git"], timeout=900); mark("phase: ace git install done")
     sh(["pip", "install", "-q",
         "diffusers>=0.33.0", "transformers==4.50.0", "accelerate==1.6.0",
         "librosa", "soundfile", "loguru", "pypinyin", "py3langid",
         "hangul-romanize", "num2words", "spacy==3.8.4", "cutlet",
         "fugashi[unidic-lite]", "opencc-python-reimplemented",
-        "click", "datasets", "tqdm"], timeout=1200)
+        "click", "datasets", "tqdm"], timeout=1200); mark("phase: curated deps done")
 
     # T4 has NO bf16 — force fp16 (≈7 GB weights) via the pipeline's env hook
     os.environ["ACE_PIPELINE_DTYPE"] = "float16"
     os.environ.setdefault("HF_HOME", "/kaggle/working/hf_cache")
 
+    mark("phase: importing torch")
     import torch
     assert torch.cuda.is_available(), "no GPU on this kernel (enable_gpu: true?)"
     si = (f"python {sys.version.split()[0]}\ntorch {torch.__version__} (cuda {torch.version.cuda})\n"
@@ -123,8 +135,11 @@ def main():
     probe = torch.randn(64, device="cuda")
     _ = (probe * probe).sum().item(); del probe
     torch.cuda.synchronize()
+    mark("phase: CUDA smoke probe PASSED")
     print("✔ CUDA arch smoke test passed", flush=True)
+    mark("phase: importing ACEStepPipeline")
     from acestep.pipeline_ace_step import ACEStepPipeline
+    mark("phase: ACEStepPipeline imported")
 
     voice = ["female", "male"][date.today().toordinal() % 2]
     prompt = ACE_TAGS.get(GENRE_KEY, ACE_TAGS["deep_pop"]).format(v=voice)
@@ -150,19 +165,23 @@ def main():
     # classic 16GB OOM paths (init + gen). Start with cpu_offload=True:
     # slower (models shuttle CPU<->GPU) but it CANNOT OOM-kill the cook.
     # If offload-free fits this kernel dies... no — offload first, always.
+    mark("phase: building pipeline (weights dl inside)")
     print("📊 gpu mem at start:", end=" ", flush=True)
     try:
         print(f"{torch.cuda.memory_allocated()/1e9:.1f}G", flush=True)
     except Exception:
         print("n/a", flush=True)
     import gc
+    mark("phase: gen() start")
     gen(offload=True)
+    mark("phase: gen() returned")
 
     wavs = sorted(out_dir.glob("*.wav"), key=lambda p: p.stat().st_mtime)
     if not wavs:
         wavs = sorted(WORK.rglob("*.wav"), key=lambda p: p.stat().st_mtime)
     assert wavs, "ACE-Step produced no wav"
     raw = wavs[-1]
+    mark(f"phase: wav found {raw.name}")
     print(f"🎼 raw generation: {raw.name} ({raw.stat().st_size//1024} KB)", flush=True)
 
     # 2) master + export (vocal-forward chain, 44.1k mp3 192k — radio loud)
@@ -175,6 +194,7 @@ def main():
              "-ac", "2", "-b:a", "192k", str(mp3)], timeout=600)
     assert ff.returncode == 0 and mp3.exists() and mp3.stat().st_size >= 80_000, \
         "ffmpeg master/export failed"
+    mark(f"phase: mastered {mp3.name}")
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
 
     # 3) sidecars: rough lrc (even split) + lyrics + result json
