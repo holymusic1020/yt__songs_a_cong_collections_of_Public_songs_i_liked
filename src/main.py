@@ -544,12 +544,9 @@ def main() -> None:
                 print(f"  🎤⏱ karaoke map: {len(lrc_entries)} timed lines")
         except Exception:
             lrc_entries = []
-    if lrc_entries and ext_wav and Path(ext_wav).exists() and dur > 20:
-        _orig = [t_ for t_, _ in lrc_entries]
-        lrc_entries = _retime_lrc_to_vocals(ext_wav, lrc_entries, dur)
-        if lrc_entries and [t_ for t_, _ in lrc_entries] != _orig:
-            print(f"  🎤⏱ subtitles snapped onto the real sung pauses "
-                  f"({len(lrc_entries)} lines)")
+    # 🔙 v8 (boss ears 2026-08-29): spectral sub-snapping made drift WORSE
+    # (bed synths fooled the voice detector). Reverted — kernel timing stands
+    # until a PROVEN aligner exists.
 
     from src import naming
     probe = {"genre": info["genre"], "genre_key": genre_key,
