@@ -97,16 +97,13 @@ def _pick_lang(ep: int) -> str:
 def _retime_lrc_to_vocals(audio, entries: list, dur: float) -> list:
     """🎤⏱ Snap a naive karaoke map (kernel even-split) onto REAL sung phrases.
 
-    The ACE kernel times lines by spreading them evenly over the song — vocals
-    don't sing on a grid. Spectral approach (no new deps): STFT the 44.1k mono
-    wav, a frame counts as SUNG when it's loud enough AND its mid-band
-    (300–3400 Hz, where voices live) dominates — that catches phrase attacks
-    even while the instrumental bed keeps playing (silencedetect can't: a
-    loud-mastered bed never dips below the floor). Lines are then spread
-    across [first_sung, last_sung] weighted by word count, each start snapped
-    to the nearest detected phrase onset (±0.9 s). ANY doubt (too few frames,
-    too few onsets, cramped window) → the original map unchanged, so a good
-    karaoke is never made worse. Boss 2026-08-29: "subtitle and vocal isn't
+    STFT the 44.1k mono wav; a frame counts as SUNG when loud enough and its
+    mid-band (300–3400 Hz, where voices live) dominates vs the instrumental
+    bed (bed ratio measured on the quiet half). Loud masters are dense, so we
+    walk a 3-rung ladder (strict → relaxed) and take the first that finds a
+    usable phrase map; if NONE does, the original map goes back unchanged —
+    a good karaoke is never made worse. Always prints a one-line diagnostic
+    so runs can't silently no-op. Boss 2026-08-29: "subtitle and vocal isn't
     matching the time".
     """
     if len(entries) < 2:
@@ -125,39 +122,45 @@ def _retime_lrc_to_vocals(audio, entries: list, dur: float) -> list:
             return entries
         shp = (nfr, win)
         std = (pcm.strides[0] * hop, pcm.strides[0])
-        seg = np.lib.stride_tricks.as_strided(pcm, shape=shp,
-                                              strides=std, writeable=False)
+        seg = np.lib.stride_tricks.as_strided(
+            pcm, shape=shp, strides=std, writeable=False)
         spec = np.abs(np.fft.rfft(seg * np.hanning(win)[None, :], axis=1))
         fr = np.fft.rfftfreq(win, 1.0 / sr)
         vox = spec[:, (fr >= 300) & (fr <= 3400)].sum(axis=1)
         tot = spec[:, (fr >= 60) & (fr <= 8000)].sum(axis=1) + 1e-9
         energy = (seg.astype(np.float64) ** 2).sum(axis=1)
         ratio = vox / tot
-        # bed reference: mid-band ratio of the QUIET half ≈ pure instrumental
         quiet = energy <= np.percentile(energy, 45)
         if quiet.sum() < nfr * 0.1:
             quiet = energy <= np.percentile(energy, 60)
         bed_ref = float(np.median(ratio[quiet])) if quiet.any() else float(
             np.percentile(ratio, 50))
-        sung = ((ratio > bed_ref * 1.5)
-                & (vox > np.percentile(vox, 60))
-                & (energy > np.percentile(energy, 55)))
         times = np.arange(nfr) * (hop / sr)
-        onsets, last = [], -10.0
-        prev = False
-        for i in range(nfr):
-            if sung[i] and not prev and times[i] - last >= 0.5:
-                onsets.append(float(times[i]))
-                last = times[i]
-            prev = bool(sung[i])
-        if len(onsets) < 2:
+
+        best = None
+        for scale, vq, eq in ((1.6, 60, 55), (1.35, 55, 50), (1.15, 50, 45)):
+            sung = ((ratio > bed_ref * scale)
+                    & (vox > np.percentile(vox, vq))
+                    & (energy > np.percentile(energy, eq)))
+            onsets, last = [], -10.0
+            prev = False
+            for i in range(nfr):
+                if sung[i] and not prev and times[i] - last >= 0.5:
+                    onsets.append(float(times[i]))
+                    last = times[i]
+                prev = bool(sung[i])
+            ends = [times[i] for i in range(nfr) if sung[i]]
+            if not ends:
+                continue
+            v0, v1 = onsets[0], float(ends[-1])
+            if len(onsets) >= max(3, len(entries) // 2) and                     v1 - v0 >= len(entries) * 1.2 and v1 > v0:
+                best = (scale, v0, v1, onsets)
+                break
+        if best is None:
+            print(f"  🎤⏱ sub-sync: no reliable phrase map (bed_ref {bed_ref:.2f}, "
+                  f"ladder exhausted) — keeping kernel timing", flush=True)
             return entries
-        ends = [times[i] for i in range(nfr) if sung[i]]
-        if not ends:
-            return entries
-        v0, v1 = onsets[0], float(ends[-1])
-        if v1 - v0 < len(entries) * 1.2 or v1 <= v0:
-            return entries
+        scale, v0, v1, onsets = best
         weights = [max(1, len(txt.split())) for _, txt in entries]
         total_w = sum(weights)
         span = v1 - v0
@@ -173,8 +176,12 @@ def _retime_lrc_to_vocals(audio, entries: list, dur: float) -> list:
                 st_ = round(last_t + 0.4, 2)
             fixed.append((st_, txt))
             last_t = st_
+        print(f"  🎤⏱ sub-sync: {len(onsets)} phrase onsets · voice window "
+              f"{v0:.1f}–{v1:.1f}s of {dur:.0f}s · bed_ref {bed_ref:.2f} · "
+              f"ladder ×{scale} — subs snapped", flush=True)
         return fixed
-    except Exception:
+    except Exception as e:
+        print(f"  🎤⏱ sub-sync skipped ({type(e).__name__}: {e})", flush=True)
         return entries
 
 
