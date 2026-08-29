@@ -1,4 +1,5 @@
 {
   "shorts": false,
-  "note": "boss 2026-08-29: make only vid no shorts yet — long videos only until he unlocks, plus every release gated on ear-approval first"
+  "publish": false,
+  "note": "boss 2026-08-29: only vid no shorts yet · NO releases until ear-approval — cron runs preview-only (TG videos) while publish=false; flips to true on boss GO"
 }

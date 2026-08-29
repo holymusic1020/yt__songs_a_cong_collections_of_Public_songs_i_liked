@@ -396,6 +396,12 @@ def main() -> None:
     if _sw.get("shorts") is False:
         args.no_shorts = True
         print("  🕶 boss switch: shorts OFF — long videos only until unlocked", flush=True)
+    if _sw.get("publish") is False and os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+        if args.publish:
+            print("  🕶 boss gate: PUBLISH_HOLD — cron runs as PREVIEW (TG only, "
+                  "zero uploads) until boss flips state/boss_switches.json", flush=True)
+        args.publish = False
+        args.dry_run = True
 
     st = state.load()
     ep = st["episode"] + 1
