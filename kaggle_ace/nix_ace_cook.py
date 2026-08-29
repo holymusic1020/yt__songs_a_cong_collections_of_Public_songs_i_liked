@@ -65,7 +65,8 @@ ACE_TAGS = {
 
 _TG_KEYS = ("START", "uninstall done", "install done", "curated deps done",
             "smoke probe", "imported", "gen()", "wav found", "mastered",
-            "COOKED", "FATAL", "systemexit", "tg audio")
+            "COOKED", "FATAL", "systemexit", "tg audio", "lrc aligned",
+            "whisper", "even split")
 
 
 def _tg(text):
@@ -113,7 +114,7 @@ def mark(msg):
     except Exception:
         pass
     if any(k in msg for k in _TG_KEYS):
-        _tg("🎤 ace v8 " + RUN_TOKEN + " · " + msg[:160])
+        _tg("🎤 ace v9 " + RUN_TOKEN + " · " + msg[:160])
 
 
 def sh(cmd, timeout=1800):
@@ -126,19 +127,32 @@ def sh(cmd, timeout=1800):
 
 
 def build_lyrics(lines):
+    """v9 (boss 2026-08-29): "vocals have no feeling — no stops, unfinished".
+    Root cause: 8 flat lines over 150s = ~15-18s per line stretched forever.
+    Now: short punctuated lines in real sections, hook repeats twice — ACE
+    breathes at punctuation and section tags. Text-side only; zero timbre."""
     lines = [l.strip() for l in lines if l.strip()]
-    if len(lines) >= 4:
-        half = max(2, len(lines) // 2)
+    if not lines:
+        return ""  # instrumental
+    lines = [l if l[-1:] in ",.!?—–" else l + "," for l in lines]
+    n = len(lines)
+    if n >= 8:
+        hook = [h.rstrip(",.") + ("," if i == 0 else ".") for i, h in enumerate(lines[-2:])]
+        body = lines[:-2]
+        half = max(2, len(body) // 2)
+        v1, v2 = body[:half], body[half:]
+        return ("\n".join(["[verse]", *v1, "[chorus]", *hook,
+                           "[verse]", *v2, "[chorus]", *hook]))
+    if n >= 4:
+        half = max(2, n // 2)
         verse, chorus = lines[:half], lines[half:]
         return "[verse]\n" + "\n".join(verse) + "\n\n[chorus]\n" + "\n".join(chorus)
-    if lines:
-        return "[verse]\n" + "\n".join(lines)
-    return ""  # instrumental
+    return "[verse]\n" + "\n".join(lines)
 
 
 def main():
     t0 = time.time()
-    mark("=== ACE NOTEBOOK v8 START (goat chain restored) ===")
+    mark("=== ACE NOTEBOOK v9 START (goat chain + breathing lyrics + whisper lrc) ===")
     print("=== NIX × ACE-Step OFFLINE (your Kaggle GPU · $0 · no HF quota) ===", flush=True)
 
     # 🔩 TORCH SWAP (v4, 2026-08-29 — ROOT CAUSE of kernels v3-v6 dying):
@@ -251,16 +265,68 @@ def main():
         "ffmpeg master/export failed"
     mark(f"phase: mastered (plain v6 chain) {mp3.name}")
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
-    _tg_file(mp3, f"🎤 ACE-OFFLINE v8 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · ORIGINAL goat chain 🐐 · EARS PLEASE 👂")
+    _tg_file(mp3, f"🎤 ACE-OFFLINE v9 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · goat chain + REAL song sheet 📄 · EARS PLEASE 👂")
 
     # 3) sidecars: rough lrc (even split) + lyrics + result json
     if lyrics_txt:
         sung = [l for l in lyrics_txt.splitlines() if l.strip() and not l.startswith("[")]
-        step = dur / max(1, len(sung) + 1)
-        lrc = "\n".join(
-            f"[{int((i+1)*step//60):02d}:{int((i+1)*step%60):05.2f}] {l}"
-            for i, l in enumerate(sung))
-        (WORK / f"{stem}.lrc.txt").write_text(lrc + "\n", encoding="utf-8")
+        lrc = None
+        # 🎤⏱ v9: REAL line timing — transcribe the just-mastered track with
+        # whisper-tiny and pin lines to detected segments (karaoke that locks).
+        # ANY weakness/failure → exact old even-split; the chain is untouched.
+        try:
+            mark("phase: aligning lyrics (whisper-tiny)")
+            sh(["pip", "install", "-q", "-U", "openai-whisper"], timeout=900)
+            import whisper
+            try:
+                torch.cuda.empty_cache()
+            except Exception:
+                pass
+            wm = whisper.load_model("tiny.en")
+            res = wm.transcribe(str(mp3), language="en", fp16=True,
+                                temperature=0, condition_on_previous_text=False)
+            segs = [(float(x["start"]), float(x["end"]),
+                     "".join(c if c.isalnum() or c == " " else " "
+                             for c in x["text"].lower()).split())
+                    for x in res["segments"]]
+            def _ws(s):
+                return [w for w in ("".join(c if c.isalnum() or c == " " else " "
+                                            for c in s.lower())).split() if len(w) > 2]
+            times, si = [], 0
+            for ln in sung:
+                want = _ws(ln)[:4]
+                hit = None
+                for j in range(si, min(len(segs), si + 4)):
+                    have = segs[j][2]
+                    if want and sum(1 for w in want if w in have) >= max(1, len(want) // 2):
+                        hit = j
+                        break
+                if hit is not None:
+                    times.append(max(0.0, segs[hit][0] - 0.15))
+                    si = hit + 1
+                else:
+                    times.append((times[-1] + dur / (len(sung) + 1))
+                                 if times else dur * 0.06)
+            last_t = -1.0
+            mono = []
+            for ts in times:
+                if ts <= last_t:
+                    ts = round(last_t + 0.4, 2)
+                mono.append(ts); last_t = ts
+            if len(mono) >= max(4, int(0.6 * len(sung))):
+                lrc = "\n".join(f"[{int(ts//60):02d}:{ts%60:05.2f}] {l}"
+                                for ts, l in zip(mono, sung)) + "\n"
+                mark(f"phase: lrc aligned {len(mono)}/{len(sung)} lines (whisper)")
+            else:
+                mark("phase: whisper map weak — even split stands")
+        except Exception as e:
+            mark(f"phase: whisper align failed ({type(e).__name__}) — even split stands")
+        if lrc is None:
+            step = dur / max(1, len(sung) + 1)
+            lrc = "\n".join(
+                f"[{int((i+1)*step//60):02d}:{int((i+1)*step%60):05.2f}] {l}"
+                for i, l in enumerate(sung))
+        (WORK / f"{stem}.lrc.txt").write_text(lrc, encoding="utf-8")
         (WORK / f"{stem}.lyrics.txt").write_text(lyrics_txt + "\n", encoding="utf-8")
     (WORK / "SUCCESS.txt").write_text(
         f"RUN_TOKEN={RUN_TOKEN}\n"

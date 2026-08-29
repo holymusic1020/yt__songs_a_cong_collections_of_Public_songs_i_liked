@@ -94,7 +94,7 @@ def _stage(lyrics: str | None, seconds: float, genre_key: str) -> Path:
         lines = [ln for ln in lines if not ln.lower().startswith(
             ("verse", "chorus", "hook", "bridge", "intro", "outro", "title", "["))]
         if len(lines) >= 4:
-            lines = lines[:8]
+            lines = lines[:18]   # v9: full song sheet (Gemini writes ~22)
             a = txt.index("LYRIC_LINES = [")
             b = txt.index("]", a) + 1
             txt = txt[:a] + "LYRIC_LINES = [\n" + "".join(
