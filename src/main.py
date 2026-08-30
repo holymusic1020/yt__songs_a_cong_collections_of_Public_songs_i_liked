@@ -32,8 +32,8 @@ GENRE_ROTATION = ["deep_pop", "drift_phonk", "skyline_anthem",
                   "baroque_waltz", "villain_pop", "disco_house",
                   "dark_ambient", "orbit_trap", "lofi"]
 
-VIDEO_WINDOW_S = (0, 5 * 3600)
-SHORT_WINDOW_S = (3600, 3 * 3600)
+VIDEO_WINDOW_S = (3600, 5 * 3600)      # boss 2026-08-30: vid drops 1–5h out, random seconds
+SHORT_WINDOW_S = (3600, int(3.5 * 3600))  # boss 2026-08-30: shorts drop 1–3.5h out, random seconds
 IMMEDIATE_UNDER_S = 900
 VIDEO_EVERY = 3          # long-form cadence: every Nth episode
 
