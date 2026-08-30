@@ -142,6 +142,35 @@ check("8 lines → classic arc (no empty bridge)",
       sec8 == ["[verse]", "[chorus]", "[verse]", "[chorus]"])
 check("every line punctuated", all(l[-1] in ",.!?—–" for l in ly8.splitlines() if l and not l.startswith("[")))
 
+
+# ── D) v14 cadence — boss's GO schedule (2 shorts off-day / 1 on vid-day) ──
+print("D) cadence switch (boss GO 2026-08-30)")
+import json as _json
+_sw = _json.loads((ROOT / "state" / "boss_switches.json").read_text())
+check("boss_switches: shorts ON", _sw.get("shorts") is True)
+check("boss_switches: publish ON", _sw.get("publish") is True)
+check("boss_switches: two_shorts_a_day ON", _sw.get("two_shorts_a_day") is True)
+
+# extract _twin_today from the SHIPPED main.py (no heavy imports needed)
+_src = (ROOT / "src" / "main.py").read_text()
+_b = _src.index("def _twin_today")
+_e = _src.index("\n\n\n", _b)
+_ns = {}
+exec(textwrap.dedent(_src[_b:_e]), _ns)
+twin = _ns["_twin_today"]
+check("video day → 1 short only (no twin) even with 2-a-day flag",
+      all(twin(True, ep, 0, True) is False for ep in (1, 4, 7, 10)))
+check("off-day + 2-a-day → twin (2nd short)", all(
+    twin(False, ep, 0, True) is True for ep in (2, 3, 5, 6)))
+check("flag off + SLOWED_EVERY=0 → no twin (legacy default)",
+      all(twin(False, ep, 0, False) is False for ep in range(1, 8)))
+check("legacy slowed_every=3 still fires on off-days at ep%3==0",
+      twin(False, 6, 3, False) is True and twin(False, 5, 3, False) is False)
+check("legacy never fires on a video day", twin(True, 6, 3, False) is False)
+
+# vid every 3rd EP ⟹ long-vid gaps of exactly 3 days — inside "per 2-3 days"
+check("video cadence ep%3==1 → every 3 days", [ep for ep in range(1, 10) if ep % 3 == 1] == [1, 4, 7])
+
 print()
 if FAIL:
     print("❌ FAILURES:", *FAIL, sep="\n  - ")

@@ -38,6 +38,17 @@ IMMEDIATE_UNDER_S = 900
 VIDEO_EVERY = 3          # long-form cadence: every Nth episode
 
 
+def _twin_today(video_today: bool, ep: int, slowed_every: int,
+                two_a_day: bool) -> bool:
+    """Boss cadence (2026-08-30): video day = ONE short only (long vid takes
+    the slot); off-day = 2 shorts (main + slowed+reverb twin). The twin IS
+    the second short — same song, slowed/remixed (a legit separate format,
+    never a same-audio double). Legacy SLOWED_EVERY still fires on off-days."""
+    if video_today:
+        return False
+    return two_a_day or (slowed_every > 0 and ep % slowed_every == 0)
+
+
 def _last_video_dt(st: dict) -> datetime | None:
     """When was the last REAL video (full/video, not a short) uploaded?
     Reads state.history; a short-only day (kind 'short') does NOT count.
@@ -396,6 +407,10 @@ def main() -> None:
     if _sw.get("shorts") is False:
         args.no_shorts = True
         print("  🕶 boss switch: shorts OFF — long videos only until unlocked", flush=True)
+    args.two_shorts_a_day = _sw.get("two_shorts_a_day") is True
+    if args.two_shorts_a_day:
+        print("  🕶 boss cadence: 2 shorts on off-days (main + slowed twin), "
+              "1 short on video days", flush=True)
     if _sw.get("publish") is False and os.environ.get("GITHUB_EVENT_NAME") == "schedule":
         if args.publish:
             print("  🕶 boss gate: PUBLISH_HOLD — cron runs as PREVIEW (TG only, "
@@ -706,15 +721,18 @@ def main() -> None:
                 every = int((os.environ.get("SLOWED_EVERY", "0") or "0").strip())
             except ValueError:
                 every = 0
-            if every > 0 and ep % every == 0:
-                print(f"  💤 every-{every} drop → slowed + reverb twin short…")
+            if _twin_today(video_today, ep, every,
+                           getattr(args, "two_shorts_a_day", False)):
+                print(f"  💤 off-day second drop → slowed + reverb twin short…")
                 twin = shorts.slowed_twin_pack(short_pack, OUT, ep)
                 twin_mp4 = shorts.render_video(twin, OUT / f"ep{ep:03d}_slowed.mp4")
                 # 🚨 shadow-ban guard (2026-08-17): the twin must NEVER land
                 # near the main short — YouTube reads 2 same-time posts as spam.
-                # Default SLOWED_EVERY=0 (off). When enabled, schedule the twin
-                # +22h so it's a SEPARATE day's post, not a same-minute double.
-                t_off = 22 * 3600 + float(rng.uniform(600, 1800))
+                # Boss cadence 2026-08-30: 2 shorts/day, spaced within the same
+                # day — twin rides ~11h after the run (short posts +1–3h).
+                t_off = 11 * 3600 + float(rng.uniform(0, 5400))
+                sched["twin_offset_s"] = round(t_off)
+                sched["twin_publish_at"] = _iso(now + timedelta(seconds=t_off))
 
     print("  📅 schedule:")
     if video_today:
@@ -723,6 +741,9 @@ def main() -> None:
     else:
         print("     video → — (shorts-only day)")
     print(f"     short → {sched['short_publish_at']}  (+{timedelta(seconds=sched['short_offset_s'])})")
+    if twin_mp4:
+        print(f"     twin (slowed) → {sched['twin_publish_at']}  "
+              f"(+{timedelta(seconds=sched['twin_offset_s'])})")
 
     manifest = {"episode": ep, "genre": genre_key, "seed": seed, **info,
                 "meta": meta, "schedule": sched, "video_today": video_today,
@@ -778,10 +799,11 @@ def main() -> None:
                 print(f"  ❌ short upload failed: {e}")
         if twin_mp4 and Path(twin_mp4).exists():      # bonus drop — failures
             try:                                      # never fail the run
-                # 🚨 shadow-ban guard: twin posts ~22h later = a SEPARATE
-                # day's drop, not a same-time double (YouTube spam signal).
-                t_off = 22 * 3600 + float(rng.uniform(600, 1800))
-                twin_at = _iso(now + timedelta(seconds=t_off))
+                # boss cadence 2026-08-30: twin = second short of an off-day,
+                # spaced ~11h from the run within the SAME day (never near the
+                # main short's +1-3h slot — same-time doubles spam-signal YT).
+                twin_at = sched.get("twin_publish_at") or _iso(
+                    now + timedelta(seconds=11 * 3600 + float(rng.uniform(0, 1800))))
                 smeta_t = metadata.short_meta(meta, short_pack["hook_line"],
                                               slowed=True)
                 sid2 = uploader.upload(twin_mp4, smeta_t, publish_at=twin_at)

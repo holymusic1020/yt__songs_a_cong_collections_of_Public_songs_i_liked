@@ -1,5 +1,6 @@
 {
-  "shorts": false,
-  "publish": false,
-  "note": "boss 2026-08-29: only vid no shorts yet · NO releases until ear-approval — cron runs preview-only (TG videos) while publish=false; flips to true on boss GO"
+  "shorts": true,
+  "publish": true,
+  "two_shorts_a_day": true,
+  "note": "boss 2026-08-30: GO — v13 demo ear-approved 99/100. Cadence: long vid every 3rd EP (2-3 days apart); 1 short on vid days, 2 shorts (main + slowed+reverb twin ~11h later) on no-vid days. Daily cron 09:23 UTC publishes for real."
 }
