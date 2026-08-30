@@ -1,5 +1,5 @@
 {
-  "episode": 25,
+  "episode": 26,
   "history": [
     {
       "episode": 1,
@@ -325,6 +325,19 @@
       "publish_at": "2026-08-29T10:22:22Z",
       "short_publish_at": "2026-08-29T11:10:56Z",
       "at": "2026-08-29T09:57:46+00:00"
+    },
+    {
+      "episode": 26,
+      "kind": "short",
+      "youtube_id": "4PnMxXuGE1w",
+      "video_id": null,
+      "short_id": "4PnMxXuGE1w",
+      "title": "cactus intern \u2014 Nix Speech (official audio)",
+      "name": "cactus intern",
+      "genre": "lofi",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-30T11:29:35Z",
+      "at": "2026-08-30T09:43:33+00:00"
     }
   ]
 }
