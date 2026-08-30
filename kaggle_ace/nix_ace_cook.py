@@ -67,7 +67,7 @@ ACE_TAGS = {
 _TG_KEYS = ("START", "uninstall done", "install done", "curated deps done",
             "smoke probe", "imported", "gen()", "wav found", "mastered",
             "COOKED", "FATAL", "systemexit", "tg audio", "lrc aligned",
-            "whisper", "even split", "karaoke")
+            "whisper", "even split", "karaoke", "realism")
 
 
 def _tg(text):
@@ -150,7 +150,10 @@ def build_lyrics(lines):
     """v9 (boss 2026-08-29): "vocals have no feeling — no stops, unfinished".
     Root cause: 8 flat lines over 150s = ~15-18s per line stretched forever.
     Now: short punctuated lines in real sections, hook repeats twice — ACE
-    breathes at punctuation and section tags. Text-side only; zero timbre."""
+    breathes at punctuation and section tags. Text-side only; zero timbre.
+    v13 (boss 2026-08-30, "unmatching stops… give some life"): real song ARC —
+    with a 10+ line sheet ACE now gets verse/chorus/verse/chorus/BRIDGE/chorus
+    so sections MOVE forward instead of stalling/restarting mid-song."""
     lines = [l.strip() for l in lines if l.strip()]
     if not lines:
         return ""  # instrumental
@@ -159,6 +162,13 @@ def build_lyrics(lines):
     if n >= 8:
         hook = [h.rstrip(",.") + ("," if i == 0 else ".") for i, h in enumerate(lines[-2:])]
         body = lines[:-2]
+        if len(body) >= 10:
+            # full arc: v1 · chorus · v2 · chorus · bridge · final chorus
+            third = len(body) // 3
+            v1, v2, br = body[:third], body[third:2 * third], body[2 * third:]
+            return ("\n".join(["[verse]", *v1, "[chorus]", *hook,
+                               "[verse]", *v2, "[chorus]", *hook,
+                               "[bridge]", *br, "[chorus]", *hook]))
         half = max(2, len(body) // 2)
         v1, v2 = body[:half], body[half:]
         return ("\n".join(["[verse]", *v1, "[chorus]", *hook,
@@ -168,6 +178,20 @@ def build_lyrics(lines):
         verse, chorus = lines[:half], lines[half:]
         return "[verse]\n" + "\n".join(verse) + "\n\n[chorus]\n" + "\n".join(chorus)
     return "[verse]\n" + "\n".join(lines)
+
+
+# 🎚 v13 realism suffix (boss 2026-08-30: "doesn't feel real… unmatching
+# stops… full attraction, give some life"). Appended to EVERY genre's tags:
+# continuity + human phrasing + movement, so ACE delivers one living take,
+# not stitched fragments — phonk, lofi, anthem, waltz, all of them.
+REALISM = (", one continuous performance, seamless transitions, no stops, "
+           "no silence gaps, natural human vocal phrasing, realistic breathing, "
+           "vocal ad-libs, dynamic arrangement, professional studio production")
+
+
+def build_prompt(genre_key, voice):
+    base = ACE_TAGS.get(genre_key, ACE_TAGS["deep_pop"]).format(v=voice)
+    return base + REALISM
 
 
 def main():
@@ -223,7 +247,8 @@ def main():
     mark("phase: ACEStepPipeline imported")
 
     voice = ["female", "male"][date.today().toordinal() % 2]
-    prompt = ACE_TAGS.get(GENRE_KEY, ACE_TAGS["deep_pop"]).format(v=voice)
+    prompt = build_prompt(GENRE_KEY, voice)
+    mark("phase: v13 realism tags + bridge arc · one living take")
     lyrics_txt = build_lyrics(LYRIC_LINES)
     dur = float(max(60, min(240, int(AUDIO_DURATION_S))))
     print(f"🎶 genre={GENRE_KEY} · voice={voice} · dur={dur:.0f}s · seed={SEED}", flush=True)
@@ -239,7 +264,7 @@ def main():
             torch_compile=False, cpu_offload=offload, quantized=False,
             overlapped_decode=False)
         return pipe(format="wav", audio_duration=dur, prompt=prompt,
-                    lyrics=lyrics_txt, infer_step=60, guidance_scale=15.0,
+                    lyrics=lyrics_txt, infer_step=80, guidance_scale=15.0,
                     manual_seeds=[SEED], save_path=str(out_dir))
 
     # v3 autopsy (2026-08-28): kernels v3/v4 died silently at 10/20 min —
@@ -287,7 +312,7 @@ def main():
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
     tg_mp3 = None
     tg_lrc = None
-    tg_mp3 = _tg_file(mp3, f"🎤 ACE-OFFLINE v12 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · goat chain · karaoke=what-you-HEAR 🎯 · EARS PLEASE 👂")
+    tg_mp3 = _tg_file(mp3, f"🎤 ACE-OFFLINE v13 {RUN_TOKEN} · {dur:.0f}s {GENRE_KEY} · {voice} · realism chain: bridge arc + living-take tags 🔥 · karaoke=what-you-HEAR 🎯 · EARS PLEASE 👂")
 
     # 3) sidecars: rough lrc (even split) + lyrics + result json
     if lyrics_txt:

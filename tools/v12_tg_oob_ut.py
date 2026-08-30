@@ -115,6 +115,33 @@ kern.TG_TOKEN = ""
 check("no TG creds → None (silent, no crash)",
       kern._tg_file(Path("/tmp/x.mp3"), "cap") is None)
 
+
+# ── C) v13 realism: build_prompt + build_lyrics arc ───────────────────────
+print("C) v13 realism tags + bridge arc")
+for g in ("drift_phonk", "lofi", "skyline_anthem", "villain_pop",
+          "orbit_trap", "unknown_genre_fallback"):
+    p = kern.build_prompt(g, "male")
+    ok = all(k in p for k in ("one continuous performance",
+                              "seamless transitions", "no silence gaps",
+                              "ad-libs", "dynamic arrangement"))
+    check(f"build_prompt({g}) carries realism suffix", ok)
+check("voice {v} still substituted", "male vocals" in kern.build_prompt("lofi", "male")
+      and "female vocals" in kern.build_prompt("lofi", "female"))
+
+_lines18 = [f"line number {i:02d} feels alive tonight" for i in range(18)]
+ly = kern.build_lyrics(_lines18)
+sec = [ln for ln in ly.splitlines() if ln.startswith("[")]
+check("18 lines → full arc [verse][chorus][verse][chorus][bridge][chorus]",
+      sec == ["[verse]", "[chorus]", "[verse]", "[chorus]", "[bridge]", "[chorus]"])
+check("hook repeated 3× (attraction)", ly.count("line number 17") == 3)
+check("bridge carries 4 lines", ly.split("[bridge]")[1].split("[chorus]")[0].strip().count("\n") >= 2)
+
+ly8 = kern.build_lyrics([f"short {i}" for i in range(8)])
+sec8 = [ln for ln in ly8.splitlines() if ln.startswith("[")]
+check("8 lines → classic arc (no empty bridge)",
+      sec8 == ["[verse]", "[chorus]", "[verse]", "[chorus]"])
+check("every line punctuated", all(l[-1] in ",.!?—–" for l in ly8.splitlines() if l and not l.startswith("[")))
+
 print()
 if FAIL:
     print("❌ FAILURES:", *FAIL, sep="\n  - ")
