@@ -1,5 +1,5 @@
 {
-  "episode": 26,
+  "episode": 27,
   "history": [
     {
       "episode": 1,
@@ -338,6 +338,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-08-30T11:29:35Z",
       "at": "2026-08-30T09:43:33+00:00"
+    },
+    {
+      "episode": 27,
+      "kind": "short",
+      "youtube_id": "K9s5FnSQgX8",
+      "video_id": null,
+      "short_id": "K9s5FnSQgX8",
+      "title": "parlor of moths \u2014 Nix Speech (official audio)",
+      "name": "parlor of moths",
+      "genre": "baroque_waltz",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-08-31T12:45:05Z",
+      "at": "2026-08-31T09:31:50+00:00"
     }
   ]
 }
