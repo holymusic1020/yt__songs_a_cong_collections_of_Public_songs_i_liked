@@ -706,7 +706,8 @@ def main() -> None:
         elif copy:
             lines = [copy["hook"]] + copy["lines"]
         short_pack = shorts.build(wav, cover, meta, info, ep, rng, rng_py, OUT,
-                                  lines_override=lines)
+                                  lines_override=lines,
+                                  lrc_entries=(lrc_entries or None))
         print(f"  hook @{short_pack['hook_t0']:.0f}s · "
               f"{short_pack['duration_s']:.1f}s · {len(short_pack['cards'])} cards")
         print(f"  hook: '{short_pack['hook_line']}'")

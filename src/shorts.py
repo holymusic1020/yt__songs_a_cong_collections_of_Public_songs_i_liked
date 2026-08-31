@@ -233,9 +233,49 @@ def render_video(pack: dict, out_path: Path) -> Path | None:
 
 # ------------------------------------------------------------------ build
 
+def _cards_from_lrc(entries, t0, L):
+    """🎤⏱ v15 (boss 2026-08-30: 'sub and vocal isnt matching at same time').
+
+    The old card grid was an EVEN METRONOME — L/len(cards) slices flipping
+    like a clock while the singer breathes freely. That's the dead
+    sheet-timing class sneaking back in through the shorts back door.
+    When the whisper transcript map exists, cards ARE the transcript's own
+    captions inside the hook window — they flip when the VOICE flips.
+    Returns (texts, card_times) or None (caller falls back to the grid)."""
+    win = sorted(((ts, txt.strip()) for ts, txt in (entries or [])
+                  if txt and txt.strip() and t0 - 0.25 <= ts <= t0 + L - 0.4),
+                 key=lambda e: e[0])
+    if len(win) < 3:
+        return None
+    a = [max(0.0, ts - t0) for ts, _ in win]
+    texts = [t for _, t in win]
+    cards = []
+    i = 0
+    while i < len(a):
+        span = (a[i + 1] - a[i]) if i + 1 < len(a) else min(2.0, max(0.4, L - a[i]))
+        txt = texts[i]
+        j = i
+        while span < 0.85 and j + 1 < len(a):   # unreadably fast flip → merge fwd
+            j += 1
+            txt = txt + " " + texts[j]
+            span = (a[j + 1] - a[i]) if j + 1 < len(a) else min(2.0, max(0.4, L - a[i]))
+        cards.append((a[i], min(a[i] + max(span, 0.4), L), txt))
+        i = j + 1
+    if len(cards) < 3:
+        return None
+    cap = max(6, int(L / 1.6))                  # keep the rhythm readable
+    while len(cards) > cap:
+        m = [(cards[k], cards[k + 1]) for k in range(0, len(cards) - 1, 2)]
+        if len(cards) % 2:
+            m.append(cards[-1])
+        cards = [(x[0], y[1], x[2] + " " + y[2]) for x, y in m]
+    return [c[2] for c in cards], [(c[0], c[1]) for c in cards]
+
+
 def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
           ep: int, rng, rng_py, out_dir: Path,
-          lines_override: list[str] | None = None) -> dict:
+          lines_override: list[str] | None = None,
+          lrc_entries: list | None = None) -> dict:
     x, sr = read_wav(wav_path), 44100
     t0, L = pick_hook_window(x, sr, info["bpm"])
     seg = _slice_with_fades(x, sr, t0, L)
@@ -248,14 +288,22 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
         except Exception as e:
             print(f"  (short chime skipped: {e})")
 
-    if lines_override:
-        lines = lines_override[:max(4, int(L // 5.2))]
-    else:
-        lines = lyrics.build_lines(meta["genre_key"], meta["name"], rng_py,
-                                   n=max(4, int(L // 5.2)))
-    if rng_py.random() < 0.6:                     # comment-bait closer card
-        lines = list(lines) + [rng_py.choice(lyrics.BAITS)]
-    lines = _chunk_lines(lines, L)                # ~2 s quick-cuts, not 5 s slabs
+    card_times = None
+    if lrc_entries:                              # 🎤⏱ v15: transcript clock
+        _sy = _cards_from_lrc(lrc_entries, t0, L)
+        if _sy:
+            lines, card_times = _sy
+            print(f"  🎤⏱ short cards ride the TRANSCRIPT clock "
+                  f"({len(lines)} flips — screen moves when the voice moves)")
+    if card_times is None:                       # legacy grid (no transcript)
+        if lines_override:
+            lines = lines_override[:max(4, int(L // 5.2))]
+        else:
+            lines = lyrics.build_lines(meta["genre_key"], meta["name"], rng_py,
+                                       n=max(4, int(L // 5.2)))
+        if rng_py.random() < 0.6:                # comment-bait closer card
+            lines = list(lines) + [rng_py.choice(lyrics.BAITS)]
+        lines = _chunk_lines(lines, L)           # ~2 s quick-cuts, not 5 s slabs
     n_real = len(lines)
     cards = [_lyric_card(ln, out_dir / f"ep{ep:03d}_card{i}.png",
                          credit=(i == 0), cta=(i == n_real - 1))
@@ -264,12 +312,14 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
     # melts into start, retention can spike past 100% (the algo's favorite).
     # Pixel-exact echo of card 0; the 'use this sound' CTA rides the real
     # final card just before it. Kill-switch: LOOP_OFF=1.
-    if os.environ.get("LOOP_OFF", "") != "1" and len(cards) >= 3:
-        cards.append(cards[0])
+    # (v15: only on the legacy grid — synced cards already end at L.)
     base = _base_image(cover_path, meta, ep, out_dir / f"ep{ep:03d}_short_base.jpg")
 
-    per = (L - 0.45) / len(cards)                 # beat of air before the loop
-    card_times = [(i * per, (i + 1) * per) for i in range(len(cards))]
+    if card_times is None:
+        if os.environ.get("LOOP_OFF", "") != "1" and len(cards) >= 3:
+            cards.append(cards[0])
+        per = (L - 0.45) / len(cards)            # beat of air before the loop
+        card_times = [(i * per, (i + 1) * per) for i in range(len(cards))]
 
     seg = _sfx_marks(seg, sr, card_times)         # ticks + riser = tactile cuts
     from src.composer import write_wav
