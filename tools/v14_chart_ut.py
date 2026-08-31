@@ -47,8 +47,11 @@ for g in ("chart_pop", "melodic_trap", "summer_rap"):
     check(f"composer alias for {g}", f'"{g}"' in
           comp_src.split("_ALIASES = {")[1].split("}")[0])
 
-check("ep26 lands on chart_pop today (demo day = new vibe)",
-      ROT[26 % len(ROT)] == "chart_pop")
+check("ep27 lands chart_pop (day 1 of the vibe week)",
+      ROT[27 % len(ROT)] == "chart_pop")
+check("ep28 lands melodic_trap on the FIRST LONG VIDEO",
+      ROT[28 % len(ROT)] == "melodic_trap")
+check("ep29 lands summer_rap", ROT[29 % len(ROT)] == "summer_rap")
 
 for g in ("chart_pop", "melodic_trap", "summer_rap"):
     p = kern.build_prompt(g, "male")

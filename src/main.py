@@ -28,10 +28,10 @@ from src import art, composer, lyrics, metadata, state
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out"
-GENRE_ROTATION = ["deep_pop", "drift_phonk", "chart_pop",
-                  "baroque_waltz", "villain_pop", "melodic_trap",
-                  "disco_house", "skyline_anthem", "summer_rap",
-                  "dark_ambient", "orbit_trap", "lofi"]
+GENRE_ROTATION = ["deep_pop", "drift_phonk", "villain_pop", "chart_pop",
+                  "melodic_trap", "summer_rap", "disco_house",
+                  "skyline_anthem", "baroque_waltz", "dark_ambient",
+                  "orbit_trap", "lofi"]   # v14: boss's chart vibes FIRST — ep27/28/29
 
 VIDEO_WINDOW_S = (3600, 5 * 3600)      # boss 2026-08-30: vid drops 1–5h out, random seconds
 SHORT_WINDOW_S = (3600, int(3.5 * 3600))  # boss 2026-08-30: shorts drop 1–3.5h out, random seconds
