@@ -1,0 +1,63 @@
+"""🧪 v14 UT — chart-class genre implants: full coverage matrix.
+
+v22 rule: NO genre ships half-wired. Every GENRE_ROTATION key must exist in:
+  1. kernel ACE_TAGS        (the ACE style prompt — real stdlib import)
+  2. GENRE_LABEL (main.py)  (display name)
+  3. GENRE_BPM (music_space.py)
+  4. composer fallback      (compose() must never KeyError — source check)
+Run:  python tools/v14_chart_ut.py
+"""
+import importlib.util
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+FAIL = []
+
+
+def check(name, cond):
+    print(("  ✅ " if cond else "  ❌ ") + name)
+    if not cond:
+        FAIL.append(name)
+
+
+main_src = (ROOT / "src" / "main.py").read_text()
+m = re.search(r"GENRE_ROTATION = \[(.*?)\]", main_src, re.S)
+ROT = re.findall(r'"([a-z_]+)"', m.group(1))
+print(f"rotation has {len(ROT)} vibes: {', '.join(ROT)}")
+
+spec = importlib.util.spec_from_file_location(
+    "nix_ace_cook", ROOT / "kaggle_ace" / "nix_ace_cook.py")
+kern = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(kern)
+
+for g in ROT:
+    check(f"ACE_TAGS[{g}] present", g in kern.ACE_TAGS)
+    check(f"ACE_TAGS[{g}] voice placeholder", "{v}" in kern.ACE_TAGS[g])
+    check(f"GENRE_LABEL[{g}]", f'"{g}":' in
+          main_src.split("GENRE_LABEL = {")[1].split("}")[0])
+    check(f"GENRE_BPM[{g}]", f'"{g}":' in
+          (ROOT / "src" / "music_space.py").read_text().split("GENRE_BPM = {")[1].split("}")[0])
+
+comp_src = (ROOT / "src" / "composer.py").read_text()
+check("composer compose() has .get fallback (no KeyError class)",
+      "GENRES.get(genre) or GENRES[_ALIASES.get(genre" in comp_src)
+for g in ("chart_pop", "melodic_trap", "summer_rap"):
+    check(f"composer alias for {g}", f'"{g}"' in
+          comp_src.split("_ALIASES = {")[1].split("}")[0])
+
+check("ep26 lands on chart_pop today (demo day = new vibe)",
+      ROT[26 % len(ROT)] == "chart_pop")
+
+for g in ("chart_pop", "melodic_trap", "summer_rap"):
+    p = kern.build_prompt(g, "male")
+    check(f"{g} prompt = style + REALISM continuity layer",
+          all(k in p for k in ("radio" if g != "summer_rap" else "sing-along",
+                               "one continuous performance", "no silence gaps")))
+
+print()
+if FAIL:
+    print("❌ FAILURES:", *FAIL, sep="\n  - ")
+    sys.exit(1)
+print("✅ v14 UT green — 3 chart vibes fully wired, zero half-shipped.")

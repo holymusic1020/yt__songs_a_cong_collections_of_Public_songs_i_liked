@@ -107,7 +107,8 @@ LANG_CODE = {"en": "en", "pt-BR": "pt", "es": "es", "fr": "fr",
 
 GENRE_BPM = {"drift_phonk": 130, "deep_pop": 96, "dark_ambient": 60,
              "lofi": 78, "baroque_waltz": 172, "disco_house": 118,
-             "skyline_anthem": 128, "villain_pop": 142, "orbit_trap": 148}
+             "skyline_anthem": 128, "villain_pop": 142, "orbit_trap": 148,
+             "chart_pop": 105, "melodic_trap": 150, "summer_rap": 98}
 
 
 def _client(space: str):

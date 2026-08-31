@@ -61,6 +61,18 @@ ACE_TAGS = {
                     "90 bpm, dramatic, punchy mix",
     "orbit_trap":   "melodic space trap, dreamy synths, hard 808s, smooth {v} vocals, "
                     "140 bpm, futuristic, clean mix",
+    # 🎯 v14 chart-class implants (boss 2026-08-30: Espresso / Astronaut In The
+    # Ocean / Sommernacht TYPE — not copies — "make this vibe"). Delayed until
+    # free-first squeeze: radio-ready gloss descriptors steer ACE's average take.
+    "chart_pop":    "glossy chart pop, funky plucky guitars, tight disco-pop drums, "
+                    "bright confident {v} vocals, 105 bpm, polished radio-ready mix, "
+                    "unstoppable earworm chorus",
+    "melodic_trap": "melodic rap anthem, icy atmospheric pads, booming 808 bass, "
+                    "crisp trap hats, catchy sung-rap {v} vocals, 150 bpm, "
+                    "radio-ready hip-hop mix, anthemic chant hook",
+    "summer_rap":   "summer melodic rap, warm afrobeat guitar groove, sunny bouncy "
+                    "percussion, laid-back sing-rap {v} vocals, 98 bpm, feel-good "
+                    "golden-hour mix, big sing-along chorus",
 }
 
 

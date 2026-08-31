@@ -28,8 +28,9 @@ from src import art, composer, lyrics, metadata, state
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out"
-GENRE_ROTATION = ["deep_pop", "drift_phonk", "skyline_anthem",
-                  "baroque_waltz", "villain_pop", "disco_house",
+GENRE_ROTATION = ["deep_pop", "drift_phonk", "chart_pop",
+                  "baroque_waltz", "villain_pop", "melodic_trap",
+                  "disco_house", "skyline_anthem", "summer_rap",
                   "dark_ambient", "orbit_trap", "lofi"]
 
 VIDEO_WINDOW_S = (3600, 5 * 3600)      # boss 2026-08-30: vid drops 1–5h out, random seconds
@@ -465,7 +466,9 @@ def main() -> None:
                    "dark_ambient": "dark ambient", "lofi": "lofi",
                    "baroque_waltz": "baroque waltz", "disco_house": "disco house",
                    "skyline_anthem": "skyline anthem",
-                   "villain_pop": "villain pop", "orbit_trap": "orbit trap"}
+                   "villain_pop": "villain pop", "orbit_trap": "orbit trap",
+                   "chart_pop": "chart pop", "melodic_trap": "melodic trap",
+                   "summer_rap": "summer rap"}
     ext_wav = ext_src = ext_name = ext_genre = None
     ext_lang, ext_lyc, ext_lrc = "en", None, None
     everyday = os.environ.get("VOCAL_EVERYDAY", "1") != "0"   # 🎤 vocal shorts too

@@ -1065,7 +1065,13 @@ GENRES = {"drift_phonk": drift_phonk, "deep_pop": deep_pop,
 
 
 def compose(genre: str, rng: np.random.Generator, target_s: float):
-    return GENRES[genre](rng, target_s)
+    # 🛡 v14: wheel now carries ACE-only vibes (chart_pop / melodic_trap /
+    # summer_rap) — if every vocal lane misses and the engine takes over, a
+    # missing engine mapping must NOT crash the run. Nearest-mood fallback.
+    _ALIASES = {"chart_pop": "disco_house", "melodic_trap": "drift_phonk",
+                "summer_rap": "lofi"}
+    eng = GENRES.get(genre) or GENRES[_ALIASES.get(genre, "deep_pop")]
+    return eng(rng, target_s)
 
 
 def arrange_arc(x, bpm, sr=SR):
