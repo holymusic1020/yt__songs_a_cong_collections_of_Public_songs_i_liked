@@ -626,6 +626,19 @@ def main() -> None:
 
     print("  rendering audio + cover…")
     wav = ext_wav if ext_wav else composer.write_wav(OUT / f"ep{ep:03d}.wav", song)
+    if lrc_entries:                                    # 🎵 v16 musical captions
+        # boss 2026-08-31: "lines isnt matching… dont make ALL the lines
+        # matching — feels lame". Snap every flip to the drum grid (recovered
+        # from the wav itself), pair fast lines into couplets, solo the punch
+        # lines, lead each flip by a breath of anticipation. One musicalized
+        # map feeds BOTH the karaoke burn and the short's lyric cards.
+        try:
+            from src import beatcap
+            lrc_entries = beatcap.musicalize(
+                lrc_entries, info.get("bpm"), wav,
+                hook_words=beatcap.title_words(meta.get("name")))
+        except Exception as e:
+            print(f"  (v16 musical captions skipped: {e})")
     if ext_wav and os.environ.get("CHIME_OFF", "") != "1":
         try:                                 # 🔔 queue masters skip master();
             composer.mix_logo(wav)           #    the chime still opens them
