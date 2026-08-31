@@ -1069,7 +1069,13 @@ def compose(genre: str, rng: np.random.Generator, target_s: float):
     # summer_rap) — if every vocal lane misses and the engine takes over, a
     # missing engine mapping must NOT crash the run. Nearest-mood fallback.
     _ALIASES = {"chart_pop": "disco_house", "melodic_trap": "drift_phonk",
-                "summer_rap": "lofi"}
+                "summer_rap": "lofi",
+                "phonk_mafia": "drift_phonk", "brazilian_phonk": "drift_phonk",
+                "velvet_fang": "villain_pop", "saint_of_leaving": "deep_pop",
+                "emo_rap": "lofi", "ashrise": "orbit_trap",
+                "templestep": "dark_ambient", "lastjuly": "lofi",
+                "indie_waves": "lofi", "god_in_the_bass": "dark_ambient",
+                "lambs_teeth": "deep_pop", "anime_titan": "skyline_anthem"}
     eng = GENRES.get(genre) or GENRES[_ALIASES.get(genre, "deep_pop")]
     return eng(rng, target_s)
 

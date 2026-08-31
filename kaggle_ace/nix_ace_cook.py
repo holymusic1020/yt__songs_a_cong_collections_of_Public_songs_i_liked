@@ -73,6 +73,32 @@ ACE_TAGS = {
     "summer_rap":   "summer melodic rap, warm afrobeat guitar groove, sunny bouncy "
                     "percussion, laid-back sing-rap {v} vocals, 98 bpm, feel-good "
                     "golden-hour mix, big sing-along chorus",
+    # 🌌 v15b universe pour (boss CKPT 3/4/5 — refs-classes + born inventions):
+    "phonk_mafia":  "hard mafia drift phonk, dark memphis bells, distorted 808 cowbells, "
+                    "aggressive {v} vocals, 140 bpm, gritty underground mix, menacing loop hook",
+    "brazilian_phonk": "brazilian funk phonk, ritualistic chants, booming tamborzao funk drums, "
+                    "hypnotic {v} vocals, 130 bpm, gritty favela-night mix, shout-along chant hook",
+    "velvet_fang":  "velvet menace lullaby-trap, whispered intimate verses over dark minimal "
+                    "808 thump, chorus blooms warm yet guarded, breathy {v} vocals, 75 bpm, "
+                    "velvet-and-teeth mix",
+    "saint_of_leaving": "gospel-trap absolution hymn, choir-pad swells over deep trap drums, "
+                    "one-way forgiveness hook, soulful rising {v} vocals, 96 bpm, incense-and-808 mix",
+    "emo_rap":      "emo rap ballad, moody guitar loop, deep sub 808s, raw sing-rap {v} vocals, "
+                    "85 bpm, midnight heartbreak mix, confession chant hook",
+    "ashrise":      "catharsis rock-trap anthem, suppressed tight verses blooming into a resolved "
+                    "soaring chorus, gritty-to-lifting {v} vocals, 118 bpm, sunrise-after-storm mix",
+    "templestep":   "ritual chant-groove, deep drone chants over hand-drum heartbeat pulse, "
+                    "call-and-answer sacred {v} vocals, 100 bpm, incense-and-sub mix",
+    "lastjuly":     "bittersweet golden-hour pop, jangly sunset guitars and warm cicada pads, "
+                    "wistful sing-out {v} vocals, 90 bpm, last-summer-of-childhood mix",
+    "indie_waves":  "groovy indie haze pop, warm lo-fi keys, bouncy laid-back drums, dreamy "
+                    "falsetto {v} vocals, 81 bpm, sun-bleached psychedelic mix, hypnotic looping hook",
+    "god_in_the_bass": "sacred sub-bass prayer wave, colossal slow sub swells under spoken-melody "
+                    "verses, reverent echoing {v} vocals, 70 bpm, cathedral-of-bass mix",
+    "lambs_teeth":  "gentle-to-iron empowerment pop, soft wool-warm verses rising into a firm "
+                    "steel chorus, sweet-to-fierce {v} vocals, 96 bpm, lamb-with-teeth mix",
+    "anime_titan":  "epic anime rock opera, huge cinematic drums, dark orchestral hits, dramatic "
+                    "belted {v} vocals, 130 bpm, apocalyptic wall-of-sound, titanic chant chorus",
 }
 
 

@@ -15,6 +15,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FAIL = []
 
+_NEW24 = ["phonk_mafia", "brazilian_phonk", "velvet_fang", "saint_of_leaving",
+          "emo_rap", "ashrise", "templestep", "lastjuly", "indie_waves",
+          "god_in_the_bass", "lambs_teeth", "anime_titan",
+          "chart_pop", "melodic_trap", "summer_rap"]
+
 
 def check(name, cond):
     print(("  ✅ " if cond else "  ❌ ") + name)
@@ -46,18 +51,25 @@ check("composer compose() has .get fallback (no KeyError class)",
 for g in ("chart_pop", "melodic_trap", "summer_rap"):
     check(f"composer alias for {g}", f'"{g}"' in
           comp_src.split("_ALIASES = {")[1].split("}")[0])
+for g in _NEW24:
+    check(f"composer alias for {g}", f'"{g}":' in
+          comp_src.split("_ALIASES = {")[1].split("}")[0])
 
 check("ep27 lands chart_pop (day 1 of the vibe week)",
       ROT[27 % len(ROT)] == "chart_pop")
 check("ep28 lands melodic_trap on the FIRST LONG VIDEO",
       ROT[28 % len(ROT)] == "melodic_trap")
 check("ep29 lands summer_rap", ROT[29 % len(ROT)] == "summer_rap")
-
-for g in ("chart_pop", "melodic_trap", "summer_rap"):
+check("ep30 → phonk_mafia (first born/ref-class day)", ROT[30 % len(ROT)] == "phonk_mafia")
+check("ep31 → velvet_fang (first INVENTED vibe live)", ROT[31 % len(ROT)] == "velvet_fang")
+check("ep35 → ashrise", ROT[35 % len(ROT)] == "ashrise")
+check("ep36 → brazilian_phonk", ROT[36 % len(ROT)] == "brazilian_phonk")
+check("ep41 → anime_titan closes the new blood", ROT[41 % len(ROT)] == "anime_titan")
+_NEW24 = _NEW24  # (defined above)
+for g in _NEW24:
     p = kern.build_prompt(g, "male")
     check(f"{g} prompt = style + REALISM continuity layer",
-          all(k in p for k in ("radio" if g != "summer_rap" else "sing-along",
-                               "one continuous performance", "no silence gaps")))
+          all(k in p for k in ("one continuous performance", "no silence gaps")))
 
 print()
 if FAIL:

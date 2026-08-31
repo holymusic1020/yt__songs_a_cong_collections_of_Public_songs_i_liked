@@ -29,9 +29,12 @@ from src import art, composer, lyrics, metadata, state
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out"
 GENRE_ROTATION = ["deep_pop", "drift_phonk", "villain_pop", "chart_pop",
-                  "melodic_trap", "summer_rap", "disco_house",
-                  "skyline_anthem", "baroque_waltz", "dark_ambient",
-                  "orbit_trap", "lofi"]   # v14: boss's chart vibes FIRST — ep27/28/29
+                  "melodic_trap", "summer_rap", "phonk_mafia", "velvet_fang",
+                  "emo_rap", "templestep", "lastjuly", "ashrise",
+                  "brazilian_phonk", "saint_of_leaving", "indie_waves",
+                  "lambs_teeth", "god_in_the_bass", "anime_titan",
+                  "disco_house", "skyline_anthem", "baroque_waltz",
+                  "dark_ambient", "orbit_trap", "lofi"]   # v15b: 24-vibe universe wheel
 
 VIDEO_WINDOW_S = (3600, 5 * 3600)      # boss 2026-08-30: vid drops 1–5h out, random seconds
 SHORT_WINDOW_S = (3600, int(3.5 * 3600))  # boss 2026-08-30: shorts drop 1–3.5h out, random seconds
@@ -468,7 +471,13 @@ def main() -> None:
                    "skyline_anthem": "skyline anthem",
                    "villain_pop": "villain pop", "orbit_trap": "orbit trap",
                    "chart_pop": "chart pop", "melodic_trap": "melodic trap",
-                   "summer_rap": "summer rap"}
+                   "summer_rap": "summer rap", "phonk_mafia": "phonk mafia",
+                   "brazilian_phonk": "brazilian phonk", "velvet_fang": "velvet fang",
+                   "saint_of_leaving": "saint of leaving", "emo_rap": "emo rap",
+                   "ashrise": "ashrise", "templestep": "templestep",
+                   "lastjuly": "last july", "indie_waves": "indie waves",
+                   "god_in_the_bass": "god in the bass", "lambs_teeth": "lamb's teeth",
+                   "anime_titan": "anime titan"}
     ext_wav = ext_src = ext_name = ext_genre = None
     ext_lang, ext_lyc, ext_lrc = "en", None, None
     everyday = os.environ.get("VOCAL_EVERYDAY", "1") != "0"   # 🎤 vocal shorts too

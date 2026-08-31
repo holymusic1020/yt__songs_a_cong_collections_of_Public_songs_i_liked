@@ -108,7 +108,11 @@ LANG_CODE = {"en": "en", "pt-BR": "pt", "es": "es", "fr": "fr",
 GENRE_BPM = {"drift_phonk": 130, "deep_pop": 96, "dark_ambient": 60,
              "lofi": 78, "baroque_waltz": 172, "disco_house": 118,
              "skyline_anthem": 128, "villain_pop": 142, "orbit_trap": 148,
-             "chart_pop": 105, "melodic_trap": 150, "summer_rap": 98}
+             "chart_pop": 105, "melodic_trap": 150, "summer_rap": 98,
+             "phonk_mafia": 140, "brazilian_phonk": 130, "velvet_fang": 75,
+             "saint_of_leaving": 96, "emo_rap": 85, "ashrise": 118,
+             "templestep": 100, "lastjuly": 90, "indie_waves": 81,
+             "god_in_the_bass": 70, "lambs_teeth": 96, "anime_titan": 130}
 
 
 def _client(space: str):
