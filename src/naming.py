@@ -31,7 +31,9 @@ def pick_name(genre_key: str, used_names: set, rng, probe: dict,
               ai_fn=None) -> str:
     """Return a title that's neither ours nor the world's. Never hard-fails."""
     from src import metadata
-    bank = metadata.NAME_BANKS[genre_key][0]
+    bank = metadata.NAME_BANKS.get(                       # 🛡 v19 no-kill law:
+        genre_key, metadata.NAME_BANKS["deep_pop"])[0]   # missing bank degrades,
+
 
     for attempt in range(6):
         cand = None

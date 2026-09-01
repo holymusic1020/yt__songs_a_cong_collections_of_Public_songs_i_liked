@@ -57,6 +57,67 @@ NAME_BANKS = {
         ("launchpad lullaby", "pressure diamonds", "plain sight vanish",
          "orbit receipt", "zero gravity alibi", "countdown romance"),
     ],
+    "chart_pop": [
+        ("glitter avenue", "paper crown tonight", "bubble static", "neon honey talk",
+         "ribbon exit", "gloss parade", "flirt arithmetic", "goldrush giggle"),
+    ],
+    "melodic_trap": [
+        ("amber siren lane", "velvet ignition", "honey brakelights", "champagne backroads",
+         "rosegold rumble", "silk slander", "cologne midnight", "moonroof confession"),
+    ],
+    "summer_rap": [
+        ("mango verdict", "poolside sermon", "sunroof grammar", "lemon static",
+         "barefoot ledger", "popsicle tattoo", "july allowance", "cannonball season"),
+    ],
+    "phonk_mafia": [
+        ("concrete rosary", "smoke gavel", "midnight syndicate", "asphalt prophecy",
+         "bone orchestra", "blackmarket hymn", "iron consigliere", "trenchcoat anthem"),
+    ],
+    "velvet_fang": [
+        ("sugarblack bite", "poison valentine", "crimson etiquette", "lacquer fang",
+         "pearl danger", "midnight incisor", "silk appetite", "garnet lipstick"),
+    ],
+    "emo_rap": [
+        ("deadroses voicemail", "pillowcase confession", "teardrop engine", "static love letter",
+         "graveyard text", "mascara tide", "cheap halo", "moonburn therapy"),
+    ],
+    "templestep": [
+        ("incense swagger", "bronze procession", "lotus throttle", "pagoda stride",
+         "saffron engine", "temple runner", "golden threshold", "monk mode royalty"),
+    ],
+    "lastjuly": [
+        ("august apology", "firefly debt", "sundress archive", "lakehouse echo",
+         "thirtyfirst sunset", "sparkler residue", "boardwalk ghost", "lemonade requiem"),
+    ],
+    "ashrise": [
+        ("cinder gospel", "phoenix commute", "embers decree", "soot halo",
+         "furnace baptism", "coal constellation", "rise residue", "smoke ring coronation"),
+    ],
+    "brazilian_phonk": [
+        ("carnival menace", "baile shadow", "berimbau pressure", "tropic gavel",
+         "montagem midnight", "ritmo verdict", "midnight capoeira", "cobalt fiesta"),
+    ],
+    "saint_of_leaving": [
+        ("goodbye cathedral", "suitcase psalm", "departure liturgy", "halo on wheels",
+         "taxi requiem", "doorframe requiem", "farewell procession", "runway valediction"),
+    ],
+    "indie_waves": [
+        ("cardigan static", "saltwater cassette", "wetsuit heart", "garage lagoon",
+         "kelp radio", "freckle surf", "moonpool classification", "static shoreline"),
+    ],
+    "lambs_teeth": [
+        ("wool over iron", "soft artillery", "lamb artillery", "quiet fang",
+         "mercy razor", "serenity subpoena", "butterknife anthem", "marshmallow blade"),
+    ],
+    "god_in_the_bass": [
+        ("subwoofer gospel", "trunk cathedral", "holy ripple", "floorboard sermon",
+         "bass litany", "deep voice amen", "heaven low end", "sacred frequency"),
+    ],
+    "anime_titan": [
+        ("wallbreaker anthem", "survey heart", "colossal sunrise", "meteor uniform",
+         "final episode sky", "sakura artillery", "rumble season", "counterattack lullaby"),
+    ],
+
 }
 
 DESCRIPTION_TMPL = """{name}
@@ -79,6 +140,22 @@ HASHTAGS = {
     "skyline_anthem": "#edm #festivalvibes #anthem",
     "villain_pop": "#darkpop #villainera #cinematicpop",
     "orbit_trap": "#trap #melodicrap #spacemood",
+    "chart_pop": "#popsong #viral #dancepop",
+    "melodic_trap": "#melodictrap #trap #nightvibes",
+    "summer_rap": "#summerrap #summerhit #vibes",
+    "phonk_mafia": "#phonk #phonkmafia #gymmotivation",
+    "velvet_fang": "#darkpop #villain #aesthetic",
+    "emo_rap": "#emorap #sadrap #latenight",
+    "templestep": "#templemusic #spiritualvibes #bassmusic",
+    "lastjuly": "#nostalgia #summersong #endofsummer",
+    "ashrise": "#comeback #motivation #epicmusic",
+    "brazilian_phonk": "#brazilianphonk #montagem #funk",
+    "saint_of_leaving": "#farewell #emotional #goodbye",
+    "indie_waves": "#indiepop #bedroompop #chillvibes",
+    "lambs_teeth": "#underdog #darkpop #quietpower",
+    "god_in_the_bass": "#bassmusic #spiritual #lowend",
+    "anime_titan": "#anime #amv #epicanime",
+
 }
 
 TAGS = {
@@ -100,6 +177,22 @@ TAGS = {
                     "music box beat", "villain era", "dark pop type beat"],
     "orbit_trap": ["melodic trap", "trap type beat", "confidence trap",
                    "space trap", "rap beat", "night trap"],
+    "chart_pop": ["viral pop", "dance pop", "tiktok song", "summer hit", "pop lyrics"],
+    "melodic_trap": ["melodic trap", "trap soul", "night drive rap", "emotional trap", "type beat"],
+    "summer_rap": ["summer rap", "chill rap", "pool party music", "sunny vibes", "feel good rap"],
+    "phonk_mafia": ["phonk", "memphis phonk", "dark phonk", "gym phonk", "mafia music", "type beat"],
+    "velvet_fang": ["dark pop", "villain song", "seductive pop", "midnight pop", "aesthetic music"],
+    "emo_rap": ["emo rap", "sad rap", "heartbreak rap", "late night music", "sadboy"],
+    "templestep": ["temple music", "spiritual bass", "ethnic electronic", "sacred beats", "zen bass"],
+    "lastjuly": ["sad summer song", "nostalgia pop", "end of summer", "melancholy music", "memory song"],
+    "ashrise": ["epic comeback", "motivation music", "phoenix song", "rise up", "epic pop"],
+    "brazilian_phonk": ["brazilian phonk", "funk carioca", "montagem", "baile funk", "phonk brasil"],
+    "saint_of_leaving": ["farewell song", "goodbye music", "leaving song", "emotional pop", "sad anthem"],
+    "indie_waves": ["indie pop", "bedroom pop", "chill indie", "surf vibes", "indie summer"],
+    "lambs_teeth": ["underdog anthem", "dark pop", "quiet rage", "emotional pop", "revenge soft"],
+    "god_in_the_bass": ["bass music", "spiritual bass", "deep bass", "prayer music", "heavy low end"],
+    "anime_titan": ["anime opening", "epic anime music", "anime ost style", "amv music", "titan anthem"],
+
 }
 
 
@@ -134,7 +227,7 @@ LANG_HASHTAG = {"pt-BR": " #brazilianphonk #international",
 def _tags_for(genre_key: str, name: str, rng: random.Random,
               vocal: bool = False) -> list[str]:
     """Rotating tag set — identical blocks across uploads read as spam."""
-    pool = list(dict.fromkeys(t for t in TAGS[genre_key] + GENERIC_TAGS
+    pool = list(dict.fromkeys(t for t in TAGS.get(genre_key, []) + GENERIC_TAGS
                               if not (vocal and t == "instrumental")))
     picks = rng.sample(pool, k=min(len(pool), 5))
     if vocal and rng.random() < 0.75:
@@ -145,7 +238,7 @@ def _tags_for(genre_key: str, name: str, rng: random.Random,
 def build(genre_key: str, info: dict, ep: int, rng: random.Random,
           used_names: set | None = None, name: str | None = None,
           lang: str = "en", vocal: bool = False) -> dict:
-    bank = NAME_BANKS[genre_key][0]
+    bank = NAME_BANKS.get(genre_key, NAME_BANKS["deep_pop"])[0]  # 🛡 never dies
     name = name or _fresh_name(bank, used_names or set(), rng)
     genre = info["genre"]
     if lang != "en":                      # world-tour honesty label (looks pro)
@@ -154,7 +247,7 @@ def build(genre_key: str, info: dict, ep: int, rng: random.Random,
     title = f"{name} — {CHANNEL} (official audio)"
     description = DESCRIPTION_TMPL.format(
         name=name, genre=genre, ep=ep, channel=CHANNEL,
-        year=year, hashtags=HASHTAGS[genre_key] + LANG_HASHTAG.get(lang, ""),
+        year=year, hashtags=HASHTAGS.get(genre_key, "#music #vibes") + LANG_HASHTAG.get(lang, ""),
     )
     return {
         "channel": CHANNEL,
