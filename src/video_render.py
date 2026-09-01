@@ -195,12 +195,32 @@ def _image_segments(images: list, per_s: float, w: int, h: int) -> list[str]:
     frames = max(1, int(FPS * per_s))
     parts = []
     for i in range(len(images)):
+        # v21 🎞 boss heard the bg "stop after sometime" (EP.028 first long):
+        # the old zoom 1.04+0.0007*on SATURATED at 1.28 after ~12 s into a
+        # 37.5 s scene → frozen backdrop for ~25 s of every scene. New curve
+        # spans the WHOLE scene (1.06→~1.30 computed per scene length) and a
+        # slow sinusoidal sway keeps the frame breathing — background never
+        # holds still again. Kill-switch: KB_STILL=1 restores the frozen look.
+        if os.environ.get("KB_STILL", "") == "1":
+            zoom = "min(1.04+0.0007*on,1.28)"
+            x = "iw/2-(iw/zoom/2)"
+            y = "ih/2-(ih/zoom/2)"
+        else:
+            slope = f"1.06+0.24*on/{frames}"
+            zoom = slope
+            sway = f"sin(on/{max(FPS * 6, 90)})*9"           # ±9 px, ~6 s breath
+            sway2 = f"cos(on/{max(FPS * 7, 120)})*7"         # out-of-phase drift
+            x = f"iw/2-(iw/zoom/2)+{sway}"
+            y = f"ih/2-(ih/zoom/2)+{sway2}"
         parts.append(
             f"[{i}:v]scale={w}:{h}:force_original_aspect_ratio=increase,"
             f"crop={w}:{h},setsar=1,"
-            f"zoompan=z='min(1.04+0.0007*on,1.28)':x='iw/2-(iw/zoom/2)':"
-            f"y='ih/2-(ih/zoom/2)':d={frames}:s={w}x{h}:fps={FPS},"
+            f"zoompan=z='{zoom}':x='{x}':"
+            f"y='{y}':d={frames}:s={w}x{h}:fps={FPS},"
             f"format=yuv420p[s{i}]")
+        if i and not (i % 2):                                  # alternate zoom-out
+            parts[-1] = parts[-1].replace(
+                f"z='{zoom}'", f"z='1.30-0.24*on/{frames}'", 1)
     return parts
 
 
