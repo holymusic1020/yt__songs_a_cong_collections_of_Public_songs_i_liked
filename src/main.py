@@ -869,6 +869,14 @@ def main() -> None:
         except Exception as e:
             print(f"  📮 community post skipped: {e}")
         # housekeeping — upload is done, the media lives on YouTube now.
+        # 🌐 multi-post fan-out FIRST (default OFF; never crashes a release) —
+        # it needs the rendered mp4s that housekeeping is about to wipe.
+        try:
+            from src import multi_post
+            multi_post.fanout(ep=ep, meta=meta, genre_key=genre_key,
+                              out=OUT, yt_vid=vid, yt_sid=sid)
+        except Exception as e:
+            print(f"  🌐 multi-post skipped: {e}")
         # wipe this episode's heavy renders (ep*.wav/mp4/png); keep only the
         # tiny text records (latest.json, summary.md, run.log).
         freed = 0
