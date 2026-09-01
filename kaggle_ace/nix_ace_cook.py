@@ -222,9 +222,12 @@ def build_lyrics(lines):
 # stops… full attraction, give some life"). Appended to EVERY genre's tags:
 # continuity + human phrasing + movement, so ACE delivers one living take,
 # not stitched fragments — phonk, lofi, anthem, waltz, all of them.
-REALISM = (", one continuous performance, seamless transitions, no stops, "
-           "no silence gaps, natural human vocal phrasing, realistic breathing, "
-           "vocal ad-libs, dynamic arrangement, professional studio production")
+REALISM = (", one continuous performance, imperfect human take, natural pitch "
+           "drift, conversational phrasing, off-grid micro-timing, felt vibrato, "
+           "breathy soft attacks, realistic breathing between lines, vocal ad-libs, "
+           "casual delivery like a voice memo, seamless transitions, no stops, "
+           "no silence gaps, dynamic swells, dynamic arrangement, "
+           "professional studio production")
 
 
 def build_prompt(genre_key, voice):
@@ -302,7 +305,7 @@ def main():
             torch_compile=False, cpu_offload=offload, quantized=False,
             overlapped_decode=False)
         return pipe(format="wav", audio_duration=dur, prompt=prompt,
-                    lyrics=lyrics_txt, infer_step=80, guidance_scale=15.0,
+                    lyrics=lyrics_txt, infer_step=80, guidance_scale=8.5,   # v20 ANTI-ROBOT: 15.0 was mic-drop rigidity
                     manual_seeds=[SEED], save_path=str(out_dir))
 
     # v3 autopsy (2026-08-28): kernels v3/v4 died silently at 10/20 min —
