@@ -91,7 +91,7 @@ def fb_reel(mp4: Path, caption: str) -> dict:
         return {"fb": f"render-only — would post reel ~{size / 1e6:.1f} MB ({creds}): {caption[:60]}…"}
     if not (pid and tok):
         return {"fb": "skipped — FB_PAGE_ID/FB_PAGE_TOKEN not set"}
-    api = f"https://graph.facebook.com/v21.0/{pid}"
+    api = f"https://graph.facebook.com/v23.0/{pid}"
     size = mp4.stat().st_size
 
     def call(url, data, headers=None):
@@ -101,7 +101,7 @@ def fb_reel(mp4: Path, caption: str) -> dict:
 
     start = call(f"{api}/video_reels?upload_phase=start&access_token={tok}", b"")
     vid = start["video_id"]
-    up = call(f"https://rupload.facebook.com/video-upload/v21.0/{vid}",
+    up = call(f"https://rupload.facebook.com/video-upload/v23.0/{vid}",
               mp4.read_bytes(),
               {"Authorization": f"OAuth {tok}", "offset": "0",
                "file_size": str(size)})
