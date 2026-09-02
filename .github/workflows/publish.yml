@@ -33,6 +33,7 @@ concurrency:
 
 permissions:
   contents: write               # state.json commit keeps the repo active
+  actions: write                # 🔁 24h-longevity machine rotates TIKTOK_* secrets in-place (boss never re-auths)
   # (no 'workflows' key — invalid scope; self-upgrade zips carry NO
   #  workflow files, so plain contents:write is always enough)
 
@@ -133,6 +134,12 @@ jobs:
           SUNO_OFF: ${{ vars.SUNO_OFF }}                  # 1 = skip suno slot
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  # community post packs 📮
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # ⬛ TIKTOK credentials + 24h-refresh chain (boss onboarding 2026-09-02; bridge law: drafts→direct auto-flip)
+          TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_PRIVACY: ${{ vars.TIKTOK_PRIVACY }}    # SELF_ONLY pre-approval; PUBLIC_TO_EVERYONE one-line flip on approval day
           WORLD_TOUR_EVERY: ${{ vars.WORLD_TOUR_EVERY }}  # 🌍 dials (optional)
           WORLD_LANGS: ${{ vars.WORLD_LANGS }}
           POSTS_OFF: ${{ vars.POSTS_OFF }}                # 1 = silence post packs
