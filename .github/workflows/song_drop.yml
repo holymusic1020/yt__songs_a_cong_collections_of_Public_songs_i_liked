@@ -1,0 +1,83 @@
+name: 🐐 boss-song drop (friday one-off)
+
+on:
+  workflow_dispatch:          # proof runs: boss ears rule the drop
+    inputs:
+      mode:
+        description: "proof = TG previews only | publish = YT+FB live"
+        required: true
+        default: proof
+        type: choice
+        options:
+          - proof
+          - publish
+      audio_url:
+        description: "song file url (GH release asset bridge)"
+        required: false
+        default: ""
+      title:
+        description: "song title (exact string)"
+        required: false
+        default: ""
+      artist:
+        description: "artist name"
+        required: false
+        default: "Nix Speech"
+      cut_s:
+        description: "short-cut start (seconds or m:ss; empty = first minute)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "23 9 * * 5"      # Fridays — self-cleans: no-ops unless today==BOSS_DROP_DATE AND BOSSDROP_ARMED=1
+
+permissions:
+  contents: write             # boss_drops.json anti-double-publish record
+
+jobs:
+  drop:
+    name: 🐐 drop the boss's song
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: friday gate (cron path only)
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TODAY="$(date -u +%F)"
+            if [ "$TODAY" != "${{ vars.BOSS_DROP_DATE }}" ] || [ "${{ vars.BOSSDROP_ARMED }}" != "1" ]; then
+              echo "🫡 boss-drop not armed for $TODAY (need date=${{ vars.BOSS_DROP_DATE }} + ARMed=1) — engine stays in charge today"
+              exit 0
+            fi
+            echo "🐐 BOSS-DROP DAY ($TODAY): armed and owned by the boss"
+          fi
+
+      - uses: actions/checkout@v4
+        if: github.event_name != 'schedule' || (vars.BOSS_DROP_DATE != '' && vars.BOSSDROP_ARMED == '1')
+
+      - name: 🐐 mp3 → GOAT render → publish road
+        if: github.event_name != 'schedule' || (vars.BOSS_DROP_DATE != '' && vars.BOSSDROP_ARMED == '1')
+        env:
+          MODE_ARG: ${{ inputs.mode || 'publish' }}
+          BOSSDROP_URL: ${{ inputs.audio_url || vars.BOSSDROP_URL }}
+          BOSSDROP_TITLE: ${{ inputs.title || vars.BOSSDROP_TITLE }}
+          BOSSDROP_ARTIST: ${{ inputs.artist || vars.BOSSDROP_ARTIST }}
+          BOSSDROP_CUT_S: ${{ inputs.cut_s || vars.BOSSDROP_CUT_S }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID || vars.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          pip install -q pillow google-api-python-client google-auth google-auth-oauthlib
+          python3 tools/song_drop.py "$MODE_ARG"
+
+      - name: commit boss-drop record
+        if: github.event_name == 'schedule' && vars.BOSSDROP_ARMED == '1' || github.event_name == 'workflow_dispatch' && inputs.mode == 'publish'
+        run: |
+          git config user.name "yt-auto-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/boss_drops.json   # anti-double record only — media NEVER rides git (drop law since EP day-1)
+          git commit -m "bossdrop: one-off drop record $(date -u +%F)" || echo "nothing to commit"
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git push || echo "push skipped"

@@ -142,6 +142,7 @@ jobs:
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID || vars.FB_PAGE_ID }}           # page number (1294240837106632 = Nix Speech Graph id; profile-link id ≠ graph id — proof diagnosed)
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}  # EAA page token
           PUBLISH_OFF: ${{ vars.PUBLISH_OFF }}                               # 🛑 MASTER SWITCH — 1 demotes cron runs to dry-run (YT+FB both parked; boss interlude 2026-09-02)
+          BOSS_DROP_DATE: ${{ vars.BOSS_DROP_DATE }}                           # 🐐 set to a date (e.g. 2026-09-04) → that day's engine slot is parked for the boss's own song
           MULTIPOST_DRYRUN: ${{ inputs.multipost_dryrun || vars.MULTIPOST_DRYRUN }}  # 🧪 1 = lanes render-only, zero API calls
         run: |
           set -o pipefail
@@ -151,7 +152,11 @@ jobs:
           #   · dry_run → --dry-run (compose + render, NO YouTube upload, NO state change)
           #   · publish → --publish  (real release, keep-alive-gated in main.py)
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            if [ "${PUBLISH_OFF:-0}" = "1" ]; then
+            TODAY="$(date -u +%F)"
+            if [ "$TODAY" = "${{ vars.BOSS_DROP_DATE }}" ]; then
+              RUN_ARGS="--dry-run"
+              echo "🐐 BOSS-DROP DAY ($TODAY): engine parked — the boss's own song owns this slot; usual drops resume tomorrow"
+            elif [ "${PUBLISH_OFF:-0}" = "1" ]; then
               RUN_ARGS="--dry-run"
               echo "🛑 PUBLISH_OFF=1 — master switch: cron demoted to a harmless dry-run (YT+FB parked; boss interlude 2026-09-02)"
             else
