@@ -86,13 +86,29 @@ def _render_proof_clip():
 
 
 def _fetch_rescue_clip(url):
-    subprocess.run(["pip", "install", "-q", "yt-dlp"], check=True)
+    subprocess.run(["pip", "install", "-q", "--upgrade", "yt-dlp"], check=True)
     clip = os.path.join(tempfile.gettempdir(), "rescue_short.mp4")
-    subprocess.run(["yt-dlp", "-q", "-S", "height,res:720",
-                    "-f", "bv*[ext=mp4]+ba[ext=m4a]/bv*+ba/b",
-                    "--merge-output-format", "mp4", "-o", clip, url], check=True)
-    print(f"  🎬 rescue clip fetched: {os.path.getsize(clip)} bytes ({url})")
-    return clip
+    # datacenter IPs trip YT's bot-check (mystery exit 1 behind -q) — try polite
+    # clients, single-file formats, keep the tail visible for forensics
+    attempts = [
+        ["--extractor-args", "youtube:player_client=android,mweb"],
+        ["--extractor-args", "youtube:player_client=tv,web"],
+        [],
+    ]
+    last = ""
+    for extra in attempts:
+        if os.path.exists(clip):
+            os.remove(clip)
+        r = subprocess.run(["yt-dlp", "--no-progress", "--no-playlist",
+                            "-f", "18/best[height<=720]/best",
+                            *extra, "-o", clip, url],
+                           capture_output=True, text=True)
+        last = (r.stdout + r.stderr)[-300:]
+        if r.returncode == 0 and os.path.exists(clip) and os.path.getsize(clip) > 20000:
+            print(f"  🎬 rescue clip fetched: {os.path.getsize(clip)} bytes ({url})")
+            return clip
+        print(f"  ↻ yt-dlp attempt {extra or 'default'} failed: …{last[-160:]}")
+    raise SystemExit("  ❌ all yt-dlp clients rejected — youtube bot-wall. Fix manually or retry later.")
 
 
 def _reel_this(g, pid, tok, clip, desc):
