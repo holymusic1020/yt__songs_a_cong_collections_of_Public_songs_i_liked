@@ -91,13 +91,22 @@ def fb_reel(mp4: Path, caption: str) -> dict:
         return {"fb": f"render-only — would post reel ~{size / 1e6:.1f} MB ({creds}): {caption[:60]}…"}
     if not (pid and tok):
         return {"fb": "skipped — FB_PAGE_ID/FB_PAGE_TOKEN not set"}
+    # 🎯 FB Reels bullets (2026-09-02: HTTP 400 autopsy after EP.029 YT ✓ / fb ✗):
+    # Reels descriptions have a tight ceiling — caption pack (title+link+tags)
+    # ~260 chars died "Bad Request". Cap at 245. + surface FB's REAL error body
+    # so the next soft-fail line names its poison.
+    desc = caption if len(caption) <= 245 else caption[:242].rstrip() + "…"
     api = f"https://graph.facebook.com/v23.0/{pid}"
     size = mp4.stat().st_size
 
     def call(url, data, headers=None):
         req = urllib.request.Request(url, data=data, headers=headers or {},
                                      method="POST")
-        return json.loads(urllib.request.urlopen(req, timeout=120).read())
+        try:
+            return json.loads(urllib.request.urlopen(req, timeout=180).read())
+        except Exception as e:
+            body = e.read().decode()[:300] if hasattr(e, "read") else str(e)
+            raise RuntimeError(f"fb api «{url.split('?')[0][-36:]}» rejected: {body}")
 
     start = call(f"{api}/video_reels?upload_phase=start&access_token={tok}", b"")
     vid = start["video_id"]
@@ -108,7 +117,7 @@ def fb_reel(mp4: Path, caption: str) -> dict:
     assert up.get("success", True)
     fin = call(f"{api}/video_reels", ("upload_phase=finish&video_state=PUBLISHED"
                f"&video_id={vid}&access_token={tok}&description="
-               + urllib.parse.quote(caption)).encode())
+               + urllib.parse.quote(desc)).encode())
     return {"fb": "published", "fb_reel_id": fin.get("post_id") or vid}
 
 

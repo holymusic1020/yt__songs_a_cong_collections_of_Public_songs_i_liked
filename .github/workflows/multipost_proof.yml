@@ -1,7 +1,16 @@
 name: 🧪 multipost proof (fb reel)
 
 on:
-  workflow_dispatch: {}          # manual-only by design — never fires on cron
+  workflow_dispatch:          # manual-only by design — never fires on cron
+    inputs:
+      rescue_url:
+        description: "optional: re-post THIS YouTube short as a FB reel (rescue mode)"
+        required: false
+        default: ""
+      rescue_title:
+        description: "rescue reel caption title (optional when rescue_url set)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -28,4 +37,6 @@ jobs:
           MULTIPOST: ${{ secrets.MULTIPOST || vars.MULTIPOST }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID || vars.FB_PAGE_ID }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}
+          RESCUE_URL: ${{ inputs.rescue_url }}          # set → rescue mode (collect a missed reel)
+          RESCUE_TITLE: ${{ inputs.rescue_title }}
         run: python3 tools/fb_proof.py
