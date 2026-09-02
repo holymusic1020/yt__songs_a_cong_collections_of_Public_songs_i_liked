@@ -44,6 +44,13 @@ def _fail(which, err):
     sys.exit(1)
 
 
+def _get(url, fields):
+    qs = urllib.parse.urlencode(fields)
+    req = urllib.request.Request(f"{url}?{qs}")
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.load(r)
+
+
 def main():
     pid = os.environ.get("FB_PAGE_ID", "")
     tok = os.environ.get("FB_PAGE_TOKEN", "")
@@ -51,6 +58,34 @@ def main():
         print("  🌐 FB proof skipped — FB_PAGE_ID/FB_PAGE_TOKEN not set "
               "(creds still missing from repo Secrets/Variables)")
         return 0
+
+    # ⛳️ SELF-DIAGNOSING pre-flight (v1 proof died on 100/33 — could be the
+    # api VER, the Object id, or the token-class; check all three loudly)
+    ver = None
+    for v in ("23.0", "22.0", "21.0", "20.0"):
+        try:
+            who = _get(f"https://graph.facebook.com/v{v}/me", {"fields": "id,name", "access_token": tok})
+            print(f"  🔎 v{v}/me ok — token object: id={who.get('id')} name={who.get('name')!r}")
+            ver = v
+            break
+        except Exception as e:
+            print(f"  🔎 v{v}/me fail: {e}")
+    if not ver:
+        print("  ❌ token isn't readable at ANY version — regenerate the PAGE token"); return 1
+    g = f"https://graph.facebook.com/v{ver}"
+    if who.get("id") == pid:
+        print("  ✅ token IS a Page token for this page (ideal)")
+    else:
+        print(f"  ⚠️ token object id ≠ FB_PAGE_ID ({pid}) — trying page lookup anyway")
+        try:
+            pg = _get(f"{g}/{pid}", {"fields": "id,name,link", "access_token": tok})
+            print(f"  ✅ page lookup ok: {pg.get('name')!r} ({pg.get('link','?')})")
+        except Exception as e:
+            print(f"  ❌ page {pid} not visible to this token — {e}")
+            print("     → most likely: a USER token was pasted instead of the PAGE token,")
+            print("       or the id is the wrong page. Re-copy from Explorer with")
+            print("       User-or-Page = your Page, and verify FB_PAGE_ID = the page's number.")
+            return 1
 
     # 0️⃣ render a tiny 9:16 proof clip (testsrc2 + NYX heartbeat hum — the
     # previous drawtext needed fonts AND had unescaped ':' → filter died)
@@ -64,9 +99,9 @@ def main():
     size = os.path.getsize(clip)
     print(f"  🎬 proof clip rendered: {size} bytes")
 
-    # 1️⃣ INIT
+    # 1️⃣ INIT (api version = the one that answered /me)
     try:
-        init = _post(f"{G}/{pid}/video_reels", {"upload_phase": "start", "access_token": tok})
+        init = _post(f"{g}/{pid}/video_reels", {"upload_phase": "start", "access_token": tok})
     except Exception as e:
         _fail("INIT", e); return 1
     vid = init.get("video_id")
@@ -75,7 +110,7 @@ def main():
     print(f"  ✅ init ok — video_id {vid}")
 
     # 2️⃣ UPLOAD (resumable binary header style; falls back to start's upload_url)
-    upl = init.get("upload_url") or f"https://rupload.facebook.com/video-upload/v26.0/{vid}"
+    upl = init.get("upload_url") or f"https://rupload.facebook.com/video-upload/v{ver}/{vid}"
     data = open(clip, "rb").read()
     req = urllib.request.Request(upl, data=data, method="POST", headers={
         "Authorization": f"OAuth {tok}", "offset": "0", "file_size": str(size),
@@ -84,7 +119,6 @@ def main():
         with urllib.request.urlopen(req, timeout=180) as r:
             print("  ✅ upload ok —", r.read().decode()[:120])
     except Exception as e:
-        # fallback: file-url style init sometimes answers differently; try OAuth param style
         try:
             r2 = urllib.request.Request(f"{upl}?oauth_token={urllib.parse.quote(tok)}", data=data,
                                         method="POST", headers={"offset": "0", "file_size": str(size),
@@ -96,7 +130,7 @@ def main():
 
     # 3️⃣ FINISH / PUBLISH
     try:
-        fin = _post(f"{G}/{pid}/video_reels",
+        fin = _post(f"{g}/{pid}/video_reels",
                     {"upload_phase": "finish", "video_id": vid, "video_state": "PUBLISHED",
                      "description": ("🤖 NYX wiring proof — automated test Reel from the yt-auto bot. "
                                      "If you're reading this on the Page: the machine is plugged in. 🎶"),
@@ -105,7 +139,7 @@ def main():
         _fail("FINISH", e); return 1
     print(f"  ✅ finish ok — {_safe(fin)}")
     try:
-        meta = _post(f"{G}/{vid}", {"fields": "permalink_url", "access_token": tok})
+        meta = _get(f"{g}/{vid}", {"fields": "permalink_url", "access_token": tok})
     except Exception:
         meta = {}
     print(f"  🚀 PROOF PASSED — reel live: {meta.get('permalink_url', '(permalink pending — check the Page)')}")
