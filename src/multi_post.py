@@ -121,6 +121,37 @@ def fb_reel(mp4: Path, caption: str) -> dict:
     return {"fb": "published", "fb_reel_id": fin.get("post_id") or vid}
 
 
+def fb_video(mp4: Path, caption: str) -> dict:
+    """Boss-slot full video → Page VIDEO post (2026-09-02 boss: "fb only reel?
+    fb shorts too" → the song drops everywhere: reel=short + video=full)."""
+    pid, tok = os.environ.get("FB_PAGE_ID", ""), os.environ.get("FB_PAGE_TOKEN", "")
+    if os.environ.get("MULTIPOST_DRYRUN") == "1":   # zero-api parity with fb_reel
+        size = mp4.stat().st_size if mp4 and mp4.exists() else 0
+        return {"fb_video": f"render-only — would post video ~{size / 1e6:.1f} MB"}
+    if not (pid and tok):
+        return {"fb_video": "skipped — FB_PAGE_ID/FB_PAGE_TOKEN not set"}
+    cap = caption if len(caption) <= 245 else caption[:242].rstrip() + "…"
+    boundary = "-_-_-_-_-_-_-_-nyxvidboundary-_-_-_-_-_-_-_-"
+    data = open(mp4, "rb").read()
+    parts: list[bytes] = []
+    def field(name: str, value: str) -> None:
+        parts.append(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n".encode())
+    field("description", cap)
+    field("access_token", tok)
+    parts.append(f"--{boundary}\r\nContent-Disposition: form-data; name=\"source\"; filename=\"{mp4.name}\"\r\nContent-Type: video/mp4\r\n\r\n".encode() + data + b"\r\n")
+    parts.append(f"--{boundary}--\r\n".encode())
+    body = b"".join(parts)
+    url = f"https://graph.facebook.com/v23.0/{pid}/videos"
+    req = urllib.request.Request(url, data=body, method="POST",
+                                 headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    try:
+        r = json.loads(urllib.request.urlopen(req, timeout=900).read())
+    except Exception as e:
+        body_txt = e.read().decode()[:300] if hasattr(e, "read") else str(e)
+        raise RuntimeError(f"fb video post rejected: {body_txt}")
+    return {"fb_video": "published", "fb_video_id": r.get("id")}
+
+
 # ──────────────────────────────── tiktok ─────────────────────────────────────
 
 def tiktok_video(mp4: Path, caption: str) -> dict:

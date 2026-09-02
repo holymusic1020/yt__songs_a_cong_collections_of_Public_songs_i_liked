@@ -70,10 +70,33 @@ def main():
         chk(all(Image.open(str(p)).size == (360, 640) for p in imgs), "every scene correct aspect")
         chk(str(imgs[0]).endswith(".png"), "pngs on disk")
 
+    # 6 · fb_video lane: dry parity + zero network + caption cap (v26 boss: "fb shorts too")
+    from src import multi_post
+    import urllib.request as u
+    netmail = []
+    def sentry(*a, **k):
+        netmail.append(a); raise RuntimeError("network in dry!")
+    old_urlopen = u.urlopen
+    u.urlopen = sentry
+    os.environ["MULTIPOST_DRYRUN"] = "1"
+    os.environ["FB_PAGE_ID"] = "x"; os.environ["FB_PAGE_TOKEN"] = "x"
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            mp = Path(td) / "v.mp4"; mp.write_bytes(b"\x00" * 4000)
+            r = multi_post.fb_video(mp, "c" * 300)
+            chk("render-only" in r["fb_video"], "fb_video dry → render-only")
+            chk(netmail == [], "fb_video dry touched ZERO api")
+        os.environ.pop("MULTIPOST_DRYRUN"); os.environ.pop("FB_PAGE_ID"); os.environ.pop("FB_PAGE_TOKEN")
+        with tempfile.TemporaryDirectory() as td:
+            r2 = multi_post.fb_video(Path(td) / "x.mp4", "c")
+            chk("skipped" in r2["fb_video"], "fb_video no-creds → skip")
+    finally:
+        u.urlopen = old_urlopen
+
     print()
     if fails:
         print(f"❌ v21 boss-drop UT: {fails} FAIL"); return 1
-    print("✅ v21 UT green — the boss's song drops safe, single, and GOAT-packaged")
+    print("✅ v21 UT green — the boss's song drops safe, single, and GOAT-packaged (reel AND video)")
     return 0
 
 

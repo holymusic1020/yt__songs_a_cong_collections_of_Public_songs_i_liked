@@ -237,17 +237,21 @@ def main() -> int:
     vid_s = uploader.upload(short_mp4, meta_short)
     print(f"  ✅ short: https://youtu.be/{vid_s}")
     cap_fb = fb_caption(title, artist, f"https://youtu.be/{vid_l}")
-    fb = multi_post.fb_reel(short_mp4, cap_fb)
-    print(f"  🌐 fb: {fb}")
+    fb = multi_post.fb_reel(short_mp4, cap_fb)            # the 60s cut as a REEL
+    print(f"  🌐 fb reel: {fb}")
+    # boss (2026-09-02): "fb only reel? fb shorts too… highest pushing limit"
+    # → the song goes EVERYWHERE: reel(short) + Page VIDEO post(full)
+    fbv = multi_post.fb_video(long_mp4, cap_fb)
+    print(f"  🌐 fb video: {fbv}")
     done[title] = {"date": "2026-09-04", "yt_long": vid_l, "yt_short": vid_s,
-                   "fb": fb}
+                   "fb": fb, "fb_video": fbv}
     state_p.write_text(json.dumps(done, indent=2))
     from src import notify
     notify.send_telegram(tok, cid,
         f"🐐 BOSS-DROP LIVE · '{title}' — {artist}\n"
         f"🎬 long: https://youtu.be/{vid_l}\n"
         f"📱 short: https://youtu.be/{vid_s}\n"
-        f"🟦 fb reel: {fb.get('fb', fb)}\n"
+        f"🟦 fb reel: {fb.get('fb', fb)} · fb video: {fbv.get('fb_video', fbv)}\n"
         f"engine resumes normal daily drops tomorrow 🫡", dry=False)
     print("  🏁 boss drop complete")
     return 0
