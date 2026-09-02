@@ -259,7 +259,12 @@ def main():
         "git+https://github.com/ace-step/ACE-Step.git"], timeout=900); mark("phase: ace git install done")
     sh(["pip", "install", "-q",
         "diffusers>=0.33.0", "transformers==4.50.0", "accelerate==1.6.0",
-        "librosa", "soundfile", "loguru", "pypinyin", "py3langid",
+        "librosa", "soundfile", "loguru", "pypinyin", "py3langid==0.3.0",
+        # ⚠️ py3langid PIN (2026-09-02 incident): 0.4.0 landed on PyPI at 09:10 UTC
+        # mid-cook and dropped/renamed from_pickled_model → ACE-Step died with
+        # AttributeError in EVERY vocal lane at 09:31 (boss: "no vids posted").
+        # 0.3.0 = last-good ACE-Step-compatible API. Unpin only after ace-step/
+        # ACE-Step releases a code base tested against 0.4.x.
         "hangul-romanize", "num2words", "spacy==3.8.4", "cutlet",
         "fugashi[unidic-lite]", "opencc-python-reimplemented",
         "click", "datasets", "tqdm"], timeout=1200); mark("phase: curated deps done")
