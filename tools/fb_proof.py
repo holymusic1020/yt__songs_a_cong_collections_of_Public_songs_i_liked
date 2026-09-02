@@ -101,6 +101,7 @@ def _fetch_rescue_clip(url):
             os.remove(clip)
         r = subprocess.run(["yt-dlp", "--no-progress", "--no-playlist",
                             "-f", "18/best[height<=720]/best",
+                            "--socket-timeout", "15", "--retries", "2",
                             *extra, "-o", clip, url],
                            capture_output=True, text=True)
         last = (r.stdout + r.stderr)[-300:]

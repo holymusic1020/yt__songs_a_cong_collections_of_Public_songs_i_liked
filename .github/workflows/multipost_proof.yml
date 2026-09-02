@@ -19,7 +19,7 @@ jobs:
   proof:
     name: 🧪 fire proof reel to FB Page
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - name: checkout
         uses: actions/checkout@v4
