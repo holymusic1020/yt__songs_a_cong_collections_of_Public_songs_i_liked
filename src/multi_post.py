@@ -210,6 +210,11 @@ def fanout(ep: int, meta: dict, genre_key: str, out: Path,
         try:
             if plat == "fb":
                 results.update(fb_reel(mp4, pack["captions"]["fb"]))
+                # boss (2026-09-02): "always both vids and short/reel huh?" →
+                # video days ride the Page too: reel(short) + VIDEO(long)
+                long_f = pack["media"].get("long")
+                if long_f and Path(long_f).exists():
+                    results.update(fb_video(Path(long_f), pack["captions"]["fb"]))
             elif plat == "tt":
                 results.update(tiktok_video(mp4, pack["captions"]["tt"]))
             else:
