@@ -1,5 +1,5 @@
 {
-  "episode": 28,
+  "episode": 29,
   "history": [
     {
       "episode": 1,
@@ -364,6 +364,19 @@
       "publish_at": "2026-09-01T12:13:19Z",
       "short_publish_at": "2026-09-01T14:17:36Z",
       "at": "2026-09-01T11:11:01+00:00"
+    },
+    {
+      "episode": 29,
+      "kind": "short",
+      "youtube_id": "PvXhcW0mFHU",
+      "video_id": null,
+      "short_id": "PvXhcW0mFHU",
+      "title": "warm vinyl seats \u2014 Nix Speech (official audio)",
+      "name": "warm vinyl seats",
+      "genre": "summer_rap",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-02T17:14:24Z",
+      "at": "2026-09-02T13:46:59+00:00"
     }
   ]
 }
