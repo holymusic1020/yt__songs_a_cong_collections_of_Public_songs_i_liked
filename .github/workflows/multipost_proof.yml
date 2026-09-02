@@ -1,0 +1,31 @@
+name: 🧪 multipost proof (fb reel)
+
+on:
+  workflow_dispatch: {}          # manual-only by design — never fires on cron
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    name: 🧪 fire proof reel to FB Page
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: ffmpeg present?
+        run: |
+          which ffmpeg >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg 2>&1 | tail -2; }
+          ffmpeg -version 2>/dev/null | head -1
+
+      - name: 🩹 python + zero deps (stdlib proof)
+        run: python3 --version
+
+      - name: 🚀 render + post proof reel
+        env:
+          MULTIPOST: ${{ secrets.MULTIPOST || vars.MULTIPOST }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID || vars.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}
+        run: python3 tools/fb_proof.py

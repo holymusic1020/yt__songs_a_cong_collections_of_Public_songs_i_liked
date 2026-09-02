@@ -128,6 +128,11 @@ jobs:
           WORLD_TOUR_EVERY: ${{ vars.WORLD_TOUR_EVERY }}  # 🌍 dials (optional)
           WORLD_LANGS: ${{ vars.WORLD_LANGS }}
           POSTS_OFF: ${{ vars.POSTS_OFF }}                # 1 = silence post packs
+          # 🌐 MULTIPOST keys (2026-09-02 boss onboarding FB): reads from Secrets OR Variables — boss added by hand;
+          # without these lines main.py's multi_post.fanout() sees empty env and stays OFF forever.
+          MULTIPOST: ${{ secrets.MULTIPOST || vars.MULTIPOST }}              # platform list ("fb" now; tt/ig later)
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID || vars.FB_PAGE_ID }}           # page number (61593613331924 = Nix Speech)
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}  # EAA page token
         run: |
           set -o pipefail
           mkdir -p out
