@@ -53,6 +53,14 @@ jobs:
       - uses: actions/checkout@v4
         if: github.event_name != 'schedule' || (vars.BOSS_DROP_DATE != '' && vars.BOSSDROP_ARMED == '1')
 
+      - name: 🎛 deps (ffmpeg + fonts + pylibs)   # song_drop crashed v1: runner ships no ffmpeg; bring it in
+        if: github.event_name != 'schedule' || (vars.BOSS_DROP_DATE != '' && vars.BOSSDROP_ARMED == '1')
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core 2>&1 | tail -2
+          pip install -q pillow google-api-python-client google-auth google-auth-oauthlib
+          ffmpeg -version 2>/dev/null | head -1
+
       - name: 🐐 mp3 → GOAT render → publish road
         if: github.event_name != 'schedule' || (vars.BOSS_DROP_DATE != '' && vars.BOSSDROP_ARMED == '1')
         env:
@@ -69,7 +77,6 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          pip install -q pillow google-api-python-client google-auth google-auth-oauthlib
           python3 tools/song_drop.py "$MODE_ARG"
 
       - name: commit boss-drop record
