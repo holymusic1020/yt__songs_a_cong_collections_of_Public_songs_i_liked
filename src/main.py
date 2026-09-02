@@ -944,6 +944,15 @@ def main() -> None:
             print(f"  (queue cook skipped: {e} — tomorrow will ask the space live)")
     else:
         print("  DRY-RUN — no upload, state untouched.")
+        # 🧪 multipost dry lanes (boss 2026-09-02: "dry run whole process
+        # including yt, tt") — MULTIPOST_DRYRUN=1 makes fanout render-only:
+        # fb/tt report readiness, ZERO api calls. yt dry-run already stands in.
+        if os.environ.get("MULTIPOST_DRYRUN") == "1":
+            try:
+                from src import multi_post
+                print(f"  🧪 multipost dry lanes → {multi_post.fanout(ep=ep, meta=meta, genre_key=genre_key, out=OUT, yt_vid=None, yt_sid=None)}")
+            except Exception as _me:
+                print(f"  🧪 multipost dry lane skipped: {_me}")
         # 📨 dry-run = drop today's renders in the owner's Telegram instead of
         # YouTube, so a human can review the episode. The daily cron
         # (09:23 UTC / 3:23 PM BDT) still composes + publishes a FRESH one.

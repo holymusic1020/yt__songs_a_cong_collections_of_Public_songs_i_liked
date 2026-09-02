@@ -84,6 +84,11 @@ def build_postpack(out: Path, ep: int, meta: dict, genre_key: str,
 
 def fb_reel(mp4: Path, caption: str) -> dict:
     pid, tok = os.environ.get("FB_PAGE_ID", ""), os.environ.get("FB_PAGE_TOKEN", "")
+    # 🧪 whole-process dry run (boss 2026-09-02): report readiness, ZERO api calls
+    if os.environ.get("MULTIPOST_DRYRUN") == "1":
+        size = mp4.stat().st_size if mp4 and mp4.exists() else 0
+        creds = "credentialed ✓" if (pid and tok) else "⚠️ creds MISSING"
+        return {"fb": f"render-only — would post reel ~{size / 1e6:.1f} MB ({creds}): {caption[:60]}…"}
     if not (pid and tok):
         return {"fb": "skipped — FB_PAGE_ID/FB_PAGE_TOKEN not set"}
     api = f"https://graph.facebook.com/v21.0/{pid}"
@@ -111,6 +116,11 @@ def fb_reel(mp4: Path, caption: str) -> dict:
 
 def tiktok_video(mp4: Path, caption: str) -> dict:
     tok = os.environ.get("TIKTOK_ACCESS_TOKEN", "")
+    # 🧪 whole-process dry run (boss 2026-09-02): honest readiness report, no api
+    if os.environ.get("MULTIPOST_DRYRUN") == "1":
+        size = mp4.stat().st_size if mp4 and mp4.exists() else 0
+        return {"tt": (f"render-only — would upload ~{size / 1e6:.1f} MB (SELF_ONLY law): {caption[:60]}…" if tok
+                       else "⚠️ needs TIKTOK_ACCESS_TOKEN — onboarding still open (MULTIPOST.md Part 4); lane code intact")}
     if not tok:
         return {"tt": "skipped — TIKTOK_ACCESS_TOKEN not set"}
     privacy = os.environ.get("TIKTOK_PRIVACY", "SELF_ONLY")  # pre-approval law

@@ -52,15 +52,13 @@ def main():
               "(creds still missing from repo Secrets/Variables)")
         return 0
 
-    # 0️⃣ render a tiny 9:16 proof clip (black bg + NYX heartbeat hum)
+    # 0️⃣ render a tiny 9:16 proof clip (testsrc2 + NYX heartbeat hum — the
+    # previous drawtext needed fonts AND had unescaped ':' → filter died)
     clip = os.path.join(tempfile.gettempdir(), "nyx_proof.mp4")
     subprocess.run([
         "ffmpeg", "-y", "-v", "error",
-        "-f", "lavfi", "-i", "color=c=0x101018:s=720x1280:d=7:r=25",
+        "-f", "lavfi", "-i", "testsrc2=s=720x1280:r=25:d=7",
         "-f", "lavfi", "-i", "sine=frequency=432:duration=7",
-        "-vf", ("drawtext=text='NYX :: WIRING PROOF':fontcolor=white:fontsize=46:"
-                "x=(w-text_w)/2:y=(h-200)/2,drawtext=text='if you can see this — the bot is plugged in':"
-                "fontcolor=gray:fontsize=30:x=(w-text_w)/2:y=(h+120)/2"),
         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-profile:v", "baseline",
         "-c:a", "aac", "-b:a", "96k", "-shortest", clip], check=True)
     size = os.path.getsize(clip)
