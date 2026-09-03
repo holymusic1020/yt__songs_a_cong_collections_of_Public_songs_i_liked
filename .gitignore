@@ -9,3 +9,4 @@ incoming/kaggle_out/
 incoming/**/DiffRhythm/
 out/
 _artifact_next_song/
+*handoff_key*

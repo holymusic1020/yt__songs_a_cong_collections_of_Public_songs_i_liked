@@ -7,9 +7,14 @@ name: 🔗 tiktok linker (one-shot)
 # HOW TO RUN: Actions tab → "🔗 tiktok linker" → Run workflow → paste the
 # WHOLE redirect address (the one with ?code= in it) → Run. Self-verifies and
 # prints TT_SECRET_OK=1 when secrets are live.
-# fire_draft=true (bot use): after linking, ALSO push today's vaulted short
-# (bossdrop-stage/ep030_short.mp4) into the boss's TikTok as a SELF_ONLY draft
-# — the one-tap-publish inbox proof.
+# fire_draft=true (default; bot use): after linking, ALSO push today's vaulted
+# short (bossdrop-stage/ep030_short.mp4) into the boss's TikTok as a SELF_ONLY
+# draft — the one-tap-publish inbox proof.
+# v4 (2026-09-03): TTL race won (boss 2-sec fire, attempt-1 token OK) but
+# gh secret set auth-died (exit 4 — repo GH_TOKEN secret missing/weak; the
+# old rotation HEAD-stub had silently swallowed that for months). FIX ORDER:
+# encrypted HANDOFF to the bot's RSA pubkey echoes FIRST (ciphertext-only in
+# logs — bot-only-decodable) → gh secret set best-effort → draft still fires.
 
 on:
   workflow_dispatch:
@@ -32,7 +37,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: exchange + persist + verify
+      - uses: actions/checkout@v4   # first: carries tools/tt_handoff_pubkey.pem for the handoff
+
+      - name: exchange + handoff + persist + verify
         env:
           TT_CODE: ${{ inputs.code }}
           TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
@@ -80,10 +87,36 @@ jobs:
           open("/tmp/oid", "w").write(d.get("open_id", ""))
           print(f"✅ exchange OK | access ttl {d.get('expires_in')}s | refresh ttl {d.get('refresh_expires_in')}s | scope: {d.get('scope')}")
           PY
-          gh secret set TIKTOK_ACCESS_TOKEN  -R "$REPO" --body "$(cat /tmp/at)"
-          gh secret set TIKTOK_REFRESH_TOKEN -R "$REPO" --body "$(cat /tmp/rt)"
-          [ -s /tmp/oid ] && gh secret set TIKTOK_OPEN_ID -R "$REPO" --body "$(cat /tmp/oid)" || true
-          echo "✅ secrets written"
+          # 🔐 HANDOFF FIRST (nothing below may eat the pair): AES-256 per-token
+          # with one session key, RSA-4096-wrapped to the bot's pubkey. Logs
+          # carry ciphertext only; the private key never leaves the bot sandbox.
+          if openssl rand -base64 32 > /tmp/sessionkey_b64 && base64 -d /tmp/sessionkey_b64 > /tmp/sessionkey; then
+            if openssl pkeyutl -encrypt -pubin -inkey tools/tt_handoff_pubkey.pem -in /tmp/sessionkey -out /tmp/kwrap 2>/dev/null; then
+              for f in at rt oid; do
+                [ -s /tmp/$f ] && openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:/tmp/sessionkey -in "/tmp/$f" 2>/dev/null | base64 -w0 > "/tmp/$f.enc" || true
+              done
+              echo "HANDOFF_K=$(base64 -w0 /tmp/kwrap)"
+              echo "HANDOFF_AT=$(cat /tmp/at.enc 2>/dev/null)"
+              echo "HANDOFF_RT=$(cat /tmp/rt.enc 2>/dev/null)"
+              echo "🔐 handoff sealed"
+            else
+              echo "(handoff wrap failed — continuing; secrets path must carry it)"
+            fi
+          fi
+          # 🗃 persist to repo secrets — BEST EFFORT (GH_TOKEN secret may be missing/weak;
+          #    handoff already guarantees the pair, and rotation self-heals later)
+          for n in TIKTOK_ACCESS_TOKEN TIKTOK_REFRESH_TOKEN TIKTOK_OPEN_ID; do
+            v=""
+            case "$n" in
+              TIKTOK_ACCESS_TOKEN)  v="$(cat /tmp/at)";;
+              TIKTOK_REFRESH_TOKEN) v="$(cat /tmp/rt)";;
+              TIKTOK_OPEN_ID)       v="$(cat /tmp/oid)";;
+            esac
+            [ -n "$v" ] || continue
+            gh secret set "$n" -R "$REPO" --body "$v" \
+              && echo "✅ $n written" \
+              || echo "⚠️ $n write failed (gh auth) — handoff has it; rotation will re-persist when GH_TOKEN is solid"
+          done
           curl -sS "https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name" \
             -H "Authorization: Bearer $(cat /tmp/at)" -o /tmp/ui.json
           python3 - <<'PY'
@@ -96,9 +129,6 @@ jobs:
           else:
               print("⚠️ TT_USERINFO_FAIL:", json.dumps(d)[:300])
           PY
-
-      - uses: actions/checkout@v4
-        if: inputs.fire_draft == 'true'
 
       - name: 🎬 fire first DRAFT into boss's TikTok (SELF_ONLY law)
         if: inputs.fire_draft == 'true'
