@@ -1,5 +1,5 @@
 {
-  "episode": 29,
+  "episode": 30,
   "history": [
     {
       "episode": 1,
@@ -377,6 +377,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-02T17:14:24Z",
       "at": "2026-09-02T13:46:59+00:00"
+    },
+    {
+      "episode": 30,
+      "kind": "short",
+      "youtube_id": "snEJYWK8BH8",
+      "video_id": null,
+      "short_id": "snEJYWK8BH8",
+      "title": "asphalt parlor \u2014 Nix Speech (official audio)",
+      "name": "asphalt parlor",
+      "genre": "phonk_mafia",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-03T11:28:12Z",
+      "at": "2026-09-03T09:49:12+00:00"
     }
   ]
 }
