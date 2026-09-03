@@ -285,6 +285,41 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
     return long_mp4, clip, scenes
 
 
+def _vault_release_asset(paths: list) -> list:
+    """Upload today's shorts into the 'bossdrop-stage' GH release.
+    2026-09-03 bot-wall lesson: YouTube hard-walls datacenter downloads —
+    if a mid-day reel ever needs re-firing we must NEVER depend on fetching
+    our own video back from YouTube. The vault is self-cleaning by name
+    (asset per file, replaced in place)."""
+    import json as _j
+    import urllib.request as _u
+    tok = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if not (tok and repo):
+        print("  (reel vault: no GH_TOKEN — skipped)"); return []
+    rel = _j.loads(_u.urlopen(_u.Request(
+        f"https://api.github.com/repos/{repo}/releases/tags/bossdrop-stage",
+        headers={"Authorization": f"Bearer {tok}"}), timeout=60).read())
+    rid, assets = rel["id"], rel.get("assets", [])
+    out = []
+    for p in paths:
+        p = Path(p)
+        name = p.name
+        for a in assets:
+            if a["name"] == name:                       # self-clean by name
+                _u.urlopen(_u.Request(
+                    f"https://api.github.com/repos/{repo}/releases/assets/{a['id']}",
+                    method="DELETE", headers={"Authorization": f"Bearer {tok}"}), timeout=60)
+        req = _u.Request(
+            f"https://uploads.github.com/repos/{repo}/releases/{rid}/assets?name={name}",
+            data=p.read_bytes(), method="POST",
+            headers={"Authorization": f"Bearer {tok}", "Content-Type": "video/mp4"})
+        up = _j.loads(_u.urlopen(req, timeout=600).read())
+        out.append(up.get("browser_download_url", ""))
+        print(f"  🧲 vaulted: {name}")
+    return out
+
+
 def _write_summary(path: Path, meta: dict, sched: dict, video_today: bool,
                    vid: str | None, sid: str | None) -> None:
     link = lambda i: f"https://youtu.be/{i}" if i else "_(dry run / n/a)_"
@@ -877,6 +912,14 @@ def main() -> None:
                               out=OUT, yt_vid=vid, yt_sid=sid)
         except Exception as e:
             print(f"  🌐 multi-post skipped: {e}")
+        # 🧲 reel-source vault (2026-09-03 bot-wall lesson): YT hard-walls
+        # datacenter downloads → every render self-stashes into the release
+        # so a reel-rescue NEVER needs YouTube again. Before the wipe.
+        try:
+            _vault_release_asset([p for p in (short_mp4, twin_mp4, long_mp4)
+                                  if p and Path(p).exists()])
+        except Exception as e:
+            print(f"  (reel vault skipped: {e})")
         # wipe this episode's heavy renders (ep*.wav/mp4/png); keep only the
         # tiny text records (latest.json, summary.md, run.log).
         freed = 0
