@@ -20,6 +20,7 @@ import json
 import os
 import subprocess
 import sys
+import re
 import tempfile
 import urllib.parse
 import urllib.request
@@ -86,8 +87,18 @@ def _render_proof_clip():
 
 
 def _fetch_rescue_clip(url):
-    subprocess.run(["pip", "install", "-q", "--upgrade", "yt-dlp"], check=True)
     clip = os.path.join(tempfile.gettempdir(), "rescue_short.mp4")
+    # 🛟 raw mp4 bridge (2026-09-03 boss route): YT bot-walls datacenter IPs; boss
+    # Studio-downloads his OWN short → wetransfer → release asset → plain http pull.
+    # Any *.mp4-ish url skips the yt-dlp ladder entirely.
+    if re.search(r"\.mp4(\?|#|$)", url):
+        data = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "nix-rescue/1.0"}), timeout=600).read()
+        open(clip, "wb").write(data)
+        if len(data) < 20000:
+            raise SystemExit("  ❌ mp4 bridge returned crumbs ({} bytes) — bad link?".format(len(data)))
+        print(f"  🎬 rescue clip fetched (direct mp4): {len(data)} bytes")
+        return clip
+    subprocess.run(["pip", "install", "-q", "--upgrade", "yt-dlp"], check=True)
     # datacenter IPs trip YT's bot-check (mystery exit 1 behind -q) — try polite
     # clients, single-file formats, keep the tail visible for forensics
     attempts = [
