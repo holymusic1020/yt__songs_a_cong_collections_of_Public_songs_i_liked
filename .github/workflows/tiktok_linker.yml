@@ -2,10 +2,14 @@ name: 🔗 tiktok linker (one-shot)
 
 # WHAT THIS IS (boss): the bridge that turns your ONE authorize code into the
 # repo's TIKTOK_ACCESS_TOKEN + TIKTOK_REFRESH_TOKEN secrets. After that the
-# 24h rotation machine (already in publish.yml) keeps them alive forever.
+# 24h rotation machine (multi_post.tiktok_video, persist-fixed 2026-09-03)
+# keeps them alive forever.
 # HOW TO RUN: Actions tab → "🔗 tiktok linker" → Run workflow → paste the
 # WHOLE redirect address (the one with ?code= in it) → Run. Self-verifies and
 # prints TT_SECRET_OK=1 when secrets are live.
+# fire_draft=true (bot use): after linking, ALSO push today's vaulted short
+# (bossdrop-stage/ep030_short.mp4) into the boss's TikTok as a SELF_ONLY draft
+# — the one-tap-publish inbox proof.
 
 on:
   workflow_dispatch:
@@ -14,6 +18,10 @@ on:
         description: "paste the WHOLE redirect address OR just the code string"
         required: true
         default: ""
+      fire_draft:
+        description: "true = also fire the SELF_ONLY draft proof after linking"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -81,4 +89,29 @@ jobs:
               print("connected as:", u.get("display_name"))
           else:
               print("⚠️ TT_USERINFO_FAIL:", json.dumps(d)[:300])
+          PY
+
+      - uses: actions/checkout@v4
+        if: inputs.fire_draft == 'true'
+
+      - name: 🎬 fire first DRAFT into boss's TikTok (SELF_ONLY law)
+        if: inputs.fire_draft == 'true'
+        env:
+          TIKTOK_REFRESH_TOKEN: ""     # 🚫 rotation OFF here: fresh minted pair → use directly,
+          TIKTOK_CLIENT_KEY: ""        #    never consume the repo's refresh token outside cron
+          TIKTOK_CLIENT_SECRET: ""
+          DRAFT_URL: https://github.com/${{ github.repository }}/releases/download/bossdrop-stage/ep030_short.mp4
+        run: |
+          set -e
+          curl -sSL "$DRAFT_URL" -o /tmp/draft.mp4
+          ls -la /tmp/draft.mp4
+          export TIKTOK_ACCESS_TOKEN="$(cat /tmp/at)"
+          unset MULTIPOST_DRYRUN
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, ".")
+          from src.multi_post import tiktok_video
+          out = tiktok_video(Path("/tmp/draft.mp4"), "Nix Speech — EP.030 · first TT draft ✔ (one-tap publish)")
+          print("TT_DRAFT_RESULT:", out)
           PY

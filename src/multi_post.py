@@ -181,16 +181,18 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
                 tok = r["access_token"]
                 ght = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
                 repo = os.environ.get("GITHUB_REPOSITORY", "")
-                if ght and repo:    # rotate on-disk pair (rolling refresh law)
+                if ght and repo:    # persist the rolling pair (refresh lives 365d, we're day-rollers)
+                    # 2026-09-03 TRUTH-FIX: was a HEAD-stub that wrote NOTHING → first live
+                    # run consumed the repo's only refresh token and stranded day-2 cron.
+                    import subprocess
                     for name, val in (("TIKTOK_ACCESS_TOKEN", tok), ("TIKTOK_REFRESH_TOKEN", r.get("refresh_token", ref))):
                         try:
-                            urllib.request.urlopen(urllib.request.Request(
-                                f"https://api.github.com/repos/{repo}/actions/secrets/{name}",
-                                data=None, method="HEAD",
-                                headers={"Authorization": f"Bearer {ght}"}), timeout=15)
-                            print(f"  🔁 tt token rotated ({name} — refresh lives 365d, we're a day-roller)")
-                        except Exception:
-                            pass    # secrets-write is details, posting is hero — never block a drop on rotation bookkeeping
+                            subprocess.run(["gh", "secret", "set", name, "-R", repo, "--body", val],
+                                           check=True, capture_output=True, timeout=30,
+                                           env={**os.environ, "GH_TOKEN": ght})
+                            print(f"  🔁 {name} rotated+persisted (boss never re-auths, ever)")
+                        except Exception as _se:
+                            print(f"  (secret persist skipped for {name}: {_se} — posting continues)")
         except Exception as e:
             print(f"  (tt refresh skipped: {e} — using stale token, may soft-fail)")
     privacy = os.environ.get("TIKTOK_PRIVACY", "SELF_ONLY")  # pre-approval law
