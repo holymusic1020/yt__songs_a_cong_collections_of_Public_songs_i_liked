@@ -21,7 +21,7 @@ on:
       fire_draft:
         description: "true = also fire the SELF_ONLY draft proof after linking"
         required: false
-        default: "false"
+        default: "true"
 
 permissions:
   contents: read
@@ -55,14 +55,20 @@ jobs:
           PY
           )
           [ -n "$CODE" ] || { echo "❌ no code found in input"; exit 1; }
-          echo "code captured (${#CODE} chars) — exchanging…"
-          RESP=$(curl -sS -X POST "https://open.tiktokapis.com/v2/oauth/token/" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            --data-urlencode "client_key=$TIKTOK_CLIENT_KEY" \
-            --data-urlencode "client_secret=$TIKTOK_CLIENT_SECRET" \
-            --data-urlencode "code=$CODE" \
-            --data-urlencode "grant_type=authorization_code" \
-            --data-urlencode "redirect_uri=$REDIRECT_URI")
+          echo "code captured (${#CODE} chars) — exchanging (TTL race: up to 4 fast attempts)…"
+          RESP=""
+          for attempt in 1 2 3 4; do
+            RESP=$(curl -sS -X POST "https://open.tiktokapis.com/v2/oauth/token/" \
+              -H "Content-Type: application/x-www-form-urlencoded" \
+              --data-urlencode "client_key=$TIKTOK_CLIENT_KEY" \
+              --data-urlencode "client_secret=$TIKTOK_CLIENT_SECRET" \
+              --data-urlencode "code=$CODE" \
+              --data-urlencode "grant_type=authorization_code" \
+              --data-urlencode "redirect_uri=$REDIRECT_URI")
+            case "$RESP" in *access_token*) echo "attempt $attempt: got token" ; break;; esac
+            echo "attempt $attempt miss: $(printf '%s' "$RESP" | head -c 160)"
+            sleep 4
+          done
           RESP="$RESP" python3 <<'PY'
           import json, os, sys
           d = json.loads(os.environ["RESP"])
