@@ -1,0 +1,84 @@
+name: 🔗 tiktok linker (one-shot)
+
+# WHAT THIS IS (boss): the bridge that turns your ONE authorize code into the
+# repo's TIKTOK_ACCESS_TOKEN + TIKTOK_REFRESH_TOKEN secrets. After that the
+# 24h rotation machine (already in publish.yml) keeps them alive forever.
+# HOW TO RUN: Actions tab → "🔗 tiktok linker" → Run workflow → paste the
+# WHOLE redirect address (the one with ?code= in it) → Run. Self-verifies and
+# prints TT_SECRET_OK=1 when secrets are live.
+
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: "paste the WHOLE redirect address OR just the code string"
+        required: true
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  link:
+    name: exchange code → tokens → repo secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: exchange + persist + verify
+        env:
+          TT_CODE: ${{ inputs.code }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          REDIRECT_URI: https://www.youtube.com/channel/UCRoOiKBNbFedb183Rj2l8zg
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          # accept either the full redirect URL or the bare code
+          CODE=$(python3 <<'PY'
+          import os, re
+          from urllib.parse import unquote
+          raw = os.environ["TT_CODE"].strip().replace("&amp;", "&")
+          m = re.search(r"[?&]code=([^&\s)\]]+)", raw)
+          if m:
+              print(unquote(m.group(1)))
+          elif re.fullmatch(r"[A-Za-z0-9\-._~%!*]+", raw):
+              print(unquote(raw))
+          PY
+          )
+          [ -n "$CODE" ] || { echo "❌ no code found in input"; exit 1; }
+          echo "code captured (${#CODE} chars) — exchanging…"
+          RESP=$(curl -sS -X POST "https://open.tiktokapis.com/v2/oauth/token/" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            --data-urlencode "client_key=$TIKTOK_CLIENT_KEY" \
+            --data-urlencode "client_secret=$TIKTOK_CLIENT_SECRET" \
+            --data-urlencode "code=$CODE" \
+            --data-urlencode "grant_type=authorization_code" \
+            --data-urlencode "redirect_uri=$REDIRECT_URI")
+          RESP="$RESP" python3 <<'PY'
+          import json, os, sys
+          d = json.loads(os.environ["RESP"])
+          if "access_token" not in d:
+              print("❌ TT_EXCHANGE_FAILED:", d.get("error"), "|", d.get("error_description") or d.get("message") or d.get("log_id"))
+              sys.exit(1)
+          open("/tmp/at", "w").write(d["access_token"])
+          open("/tmp/rt", "w").write(d["refresh_token"])
+          open("/tmp/oid", "w").write(d.get("open_id", ""))
+          print(f"✅ exchange OK | access ttl {d.get('expires_in')}s | refresh ttl {d.get('refresh_expires_in')}s | scope: {d.get('scope')}")
+          PY
+          gh secret set TIKTOK_ACCESS_TOKEN  -R "$REPO" --body "$(cat /tmp/at)"
+          gh secret set TIKTOK_REFRESH_TOKEN -R "$REPO" --body "$(cat /tmp/rt)"
+          [ -s /tmp/oid ] && gh secret set TIKTOK_OPEN_ID -R "$REPO" --body "$(cat /tmp/oid)" || true
+          echo "✅ secrets written"
+          curl -sS "https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name" \
+            -H "Authorization: Bearer $(cat /tmp/at)" -o /tmp/ui.json
+          python3 - <<'PY'
+          import json
+          d = json.load(open("/tmp/ui.json"))
+          u = (d.get("data") or {}).get("user") or {}
+          if u.get("open_id"):
+              print("TT_SECRET_OK=1")
+              print("connected as:", u.get("display_name"))
+          else:
+              print("⚠️ TT_USERINFO_FAIL:", json.dumps(d)[:300])
+          PY
