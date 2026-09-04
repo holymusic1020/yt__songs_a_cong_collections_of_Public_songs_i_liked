@@ -83,7 +83,7 @@ def build_postpack(out: Path, ep: int, meta: dict, genre_key: str,
 # ─────────────────────────────── facebook reels ──────────────────────────────
 
 def fb_reel(mp4: Path, caption: str) -> dict:
-    pid, tok = os.environ.get("FB_PAGE_ID", ""), os.environ.get("FB_PAGE_TOKEN", "")
+    pid, tok = os.environ.get("FB_PAGE_ID", "").strip(), os.environ.get("FB_PAGE_TOKEN", "").strip()
     # 🧪 whole-process dry run (boss 2026-09-02): report readiness, ZERO api calls
     if os.environ.get("MULTIPOST_DRYRUN") == "1":
         size = mp4.stat().st_size if mp4 and mp4.exists() else 0
@@ -155,7 +155,7 @@ def fb_video(mp4: Path, caption: str) -> dict:
 # ──────────────────────────────── tiktok ─────────────────────────────────────
 
 def tiktok_video(mp4: Path, caption: str) -> dict:
-    tok = os.environ.get("TIKTOK_ACCESS_TOKEN", "")
+    tok = os.environ.get("TIKTOK_ACCESS_TOKEN", "").strip()
     # 🧪 whole-process dry run (boss 2026-09-02): honest readiness report, no api
     if os.environ.get("MULTIPOST_DRYRUN") == "1":
         size = mp4.stat().st_size if mp4 and mp4.exists() else 0
@@ -166,8 +166,8 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
     # 🔁 token longevity machine (2026 law): tt access tokens live 24h only.
     # With GITHUB_TOKEN + the refresh chain we rotate BEFORE every use and write
     # the fresh pair back into repo secrets — boss never re-auths, ever.
-    ref = os.environ.get("TIKTOK_REFRESH_TOKEN", "")
-    ck, cs = os.environ.get("TIKTOK_CLIENT_KEY", ""), os.environ.get("TIKTOK_CLIENT_SECRET", "")
+    ref = os.environ.get("TIKTOK_REFRESH_TOKEN", "").strip()
+    ck, cs = os.environ.get("TIKTOK_CLIENT_KEY", "").strip(), os.environ.get("TIKTOK_CLIENT_SECRET", "").strip()
     if ref and ck and cs:
         try:
             body = urllib.parse.urlencode({

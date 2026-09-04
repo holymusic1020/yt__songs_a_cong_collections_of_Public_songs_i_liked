@@ -27,6 +27,18 @@ on:
         description: "short-cut start (seconds or m:ss; empty = first minute)"
         required: false
         default: ""
+      fanout:
+        description: "comma lanes yt,fb,tt (default all; partial = rescue)"
+        required: false
+        default: ""
+      rescue_yt:
+        description: "backfill: yt long id when yt lane skipped"
+        required: false
+        default: ""
+      rescue_yt_short:
+        description: "backfill: yt short id when yt lane skipped"
+        required: false
+        default: ""
   schedule:
     - cron: "23 9 * * 5"      # Fridays — self-cleans: no-ops unless today==BOSS_DROP_DATE AND BOSSDROP_ARMED=1
 
@@ -69,6 +81,15 @@ jobs:
           BOSSDROP_TITLE: ${{ inputs.title || vars.BOSSDROP_TITLE }}
           BOSSDROP_ARTIST: ${{ inputs.artist || vars.BOSSDROP_ARTIST }}
           BOSSDROP_CUT_S: ${{ inputs.cut_s || vars.BOSSDROP_CUT_S }}
+          BOSSDROP_FANOUT: ${{ inputs.fanout || 'yt,fb,tt' }}
+          RESCUE_YT_LONG: ${{ inputs.rescue_yt }}
+          RESCUE_YT_SHORT: ${{ inputs.rescue_yt_short }}
+          TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_PRIVACY: ${{ vars.TIKTOK_PRIVACY }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}

@@ -108,7 +108,7 @@ jobs:
           rm -f incoming/next_song--drift_phonk--en.* || true
           ls -la incoming/ || true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: 🩺 Pre-flight doctor
         run: python tools/doctor.py
@@ -141,7 +141,7 @@ jobs:
           TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
           TIKTOK_PRIVACY: ${{ vars.TIKTOK_PRIVACY }}
           MULTIPOST_TT_LONG: ${{ vars.MULTIPOST_TT_LONG }}   # 1 = full vid also rides TT as blurred pillarbox (default off)    # SELF_ONLY pre-approval; PUBLIC_TO_EVERYONE one-line flip on approval day
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}         # 🔁 lets the tt refresh chain write rotated secrets back (365d rolling law)
+          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}         # 🔁 lets the tt refresh chain write rotated secrets back (365d rolling law)
           WORLD_TOUR_EVERY: ${{ vars.WORLD_TOUR_EVERY }}  # 🌍 dials (optional)
           WORLD_LANGS: ${{ vars.WORLD_LANGS }}
           POSTS_OFF: ${{ vars.POSTS_OFF }}                # 1 = silence post packs

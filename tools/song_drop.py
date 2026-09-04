@@ -225,33 +225,46 @@ def main() -> int:
         return 0
 
     # ── publish ──
-    from src import uploader
-    print("  🚀 publishing long…")
-    vid_l = uploader.upload(long_mp4, meta)                      # public now
-    print(f"  ✅ long: https://youtu.be/{vid_l}")
-    meta_short = {"title": f"{title} — {artist} (official audio short)",
-                  "description": (f"{title} — {artist}\n📺 full track: https://youtu.be/{vid_l}\n"
-                                  f"#nyxspeech #newmusic #vibes #shorts"),
-                  "tags": meta["tags"]}
-    print("  🚀 publishing short…")
-    vid_s = uploader.upload(short_mp4, meta_short)
-    print(f"  ✅ short: https://youtu.be/{vid_s}")
-    cap_fb = fb_caption(title, artist, f"https://youtu.be/{vid_l}")
-    fb = multi_post.fb_reel(short_mp4, cap_fb)            # the 60s cut as a REEL
-    print(f"  🌐 fb reel: {fb}")
-    # boss (2026-09-02): "fb only reel? fb shorts too… highest pushing limit"
-    # → the song goes EVERYWHERE: reel(short) + Page VIDEO post(full)
-    fbv = multi_post.fb_video(long_mp4, cap_fb)
-    print(f"  🌐 fb video: {fbv}")
+    fanout = {x.strip().lower() for x in os.environ.get("BOSSDROP_FANOUT", "yt,fb,tt").split(",") if x.strip()}
+    print(f"  🧭 fanout lanes: {sorted(fanout)}")
+    vid_l = os.environ.get("RESCUE_YT_LONG", "").strip()     # backfill ids on partial rescues
+    vid_s = os.environ.get("RESCUE_YT_SHORT", "").strip()
+    fb, fbv, tt = None, None, None
+    if "yt" in fanout:
+        from src import uploader
+        print("  🚀 publishing long…")
+        vid_l = uploader.upload(long_mp4, meta)                      # public now
+        print(f"  ✅ long: https://youtu.be/{vid_l}")
+        meta_short = {"title": f"{title} — {artist} (official audio short)",
+                      "description": (f"{title} — {artist}\n📺 full track: https://youtu.be/{vid_l}\n"
+                                      f"#nyxspeech #newmusic #vibes #shorts"),
+                      "tags": meta["tags"]}
+        print("  🚀 publishing short…")
+        vid_s = uploader.upload(short_mp4, meta_short)
+        print(f"  ✅ short: https://youtu.be/{vid_s}")
+    if "fb" in fanout:
+        cap_fb = fb_caption(title, artist, f"https://youtu.be/{vid_l}")
+        fb = multi_post.fb_reel(short_mp4, cap_fb)            # the 60s cut as a REEL
+        print(f"  🌐 fb reel: {fb}")
+        # boss (2026-09-02): "fb only reel? fb shorts too… highest pushing limit"
+        fbv = multi_post.fb_video(long_mp4, cap_fb)           # full song as Page VIDEO
+        print(f"  🌐 fb video: {fbv}")
+    if "tt" in fanout:
+        # boss decree (2026-09-04): "naaa dont skip tt for steel and soul" → TT lane born in song_drop
+        cap_tt = (f"{title} — {artist} · official audio\n📺 full track: https://youtu.be/{vid_l}\n"
+                  f"#steelandsoul #nyxspeech #newmusic")
+        tt = multi_post.tiktok_video(short_mp4, cap_tt)       # vertical short → private acct pre-approval law
+        print(f"  🎵 tt: {tt}")
     done[title] = {"date": "2026-09-04", "yt_long": vid_l, "yt_short": vid_s,
-                   "fb": fb, "fb_video": fbv}
+                   "fb": fb, "fb_video": fbv, "tt": tt}
     state_p.write_text(json.dumps(done, indent=2))
     from src import notify
     notify.send_telegram(tok, cid,
         f"🐐 BOSS-DROP LIVE · '{title}' — {artist}\n"
         f"🎬 long: https://youtu.be/{vid_l}\n"
         f"📱 short: https://youtu.be/{vid_s}\n"
-        f"🟦 fb reel: {fb.get('fb', fb)} · fb video: {fbv.get('fb_video', fbv)}\n"
+        f"🟦 fb reel: {(fb or {}).get('fb', fb)} · fb video: {(fbv or {}).get('fb_video', fbv)}\n"
+        f"🎵 tt: {(tt or {}).get('tt', tt)}\n"
         f"engine resumes normal daily drops tomorrow 🫡", dry=False)
     print("  🏁 boss drop complete")
     return 0
