@@ -180,7 +180,7 @@ def render_set(title: str, artist: str, wav: Path, cut_s: int):
     vr.from_images(long_imgs, dur, long_mp4, wav=wav, size=LONG)
     swav = grade_wav(wav, cut_s=cut_s, cap_s=min(60.0, dur))
     short_mp4 = OUT / "boss_short.mp4"
-    print(f"  📱 short render (720×1280 · 60s cut @{cut}s)…")
+    print(f"  📱 short render (720×1280 · 60s cut @{cut_s}s)…")
     vr.from_images(short_imgs, min(60.0, dur), short_mp4, wav=swav, size=SHORT)
     return long_mp4, short_mp4, dur
 
