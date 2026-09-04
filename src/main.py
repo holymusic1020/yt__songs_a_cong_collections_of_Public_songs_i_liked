@@ -908,10 +908,11 @@ def main() -> None:
         # it needs the rendered mp4s that housekeeping is about to wipe.
         try:
             from src import multi_post
-            multi_post.fanout(ep=ep, meta=meta, genre_key=genre_key,
-                              out=OUT, yt_vid=vid, yt_sid=sid)
+            print(f"  🌐 multi-post → {multi_post.fanout(ep=ep, meta=meta, genre_key=genre_key, out=OUT, yt_vid=vid, yt_sid=sid)}")
+            # 2026-09-03: lane results were RETURNED-but-never-printed → silent
+            # fb failures for weeks (boss: 'no vids on fb'). Truth in log, always.
         except Exception as e:
-            print(f"  🌐 multi-post skipped: {e}")
+            print(f"  🌐 multi-post CRASHED: {e}")
         # 🧲 reel-source vault (2026-09-03 bot-wall lesson): YT hard-walls
         # datacenter downloads → every render self-stashes into the release
         # so a reel-rescue NEVER needs YouTube again. Before the wipe.
