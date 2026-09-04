@@ -1,0 +1,42 @@
+name: tt_preflight
+on:
+  workflow_dispatch:
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: tt token chain dry-fire (refresh -> persist -> verify) | NO POST
+        env:
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          echo "== preflight: tiktok token chain dry-fire =="
+          resp="$(printf '%s' "$TIKTOK_REFRESH_TOKEN" | xargs -I{} curl -s -X POST 'https://open.tiktokapis.com/v2/oauth/token/' \
+            -H 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode "client_key=${TIKTOK_CLIENT_KEY}" \
+            --data-urlencode "client_secret=${TIKTOK_CLIENT_SECRET}" \
+            --data-urlencode 'grant_type=refresh_token' \
+            --data-urlencode "refresh_token={}")" || { echo 'preflight.http.fail'; exit 1; }
+          new_access="$(printf '%s' "$resp" | jq -r '.access_token // empty')"
+          new_refresh="$(printf '%s' "$resp" | jq -r '.refresh_token // empty')"
+          if [ -z "$new_refresh" ]; then
+            echo 'preflight.refresh.fail'
+            printf '%s' "$resp" | jq -r '.error, .error_description // empty' 2>/dev/null | head -2
+            printf '%s' "$resp" | head -c 300; echo
+            exit 1
+          fi
+          echo "preflight.refresh.ok (life: $(printf '%s' "$resp" | jq -r '.expires_in // "?"')s access / $(printf '%s' "$resp" | jq -r '.refresh_expires_in // "?"')s refresh)"
+          echo "== preflight: persist rotated pair via GH_TOKEN =="
+          echo "$new_access"  | gh secret set TIKTOK_ACCESS_TOKEN  --repo "$GITHUB_REPOSITORY" || { echo 'preflight.gh.fail (check GH_TOKEN Secrets:RW)'; exit 2; }
+          echo "$new_refresh" | gh secret set TIKTOK_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" || { echo 'preflight.gh.fail (check GH_TOKEN Secrets:RW)'; exit 2; }
+          echo 'preflight.gh.ok'
+          echo 'preflight.gh.list.verify'
+          gh secret list --repo "$GITHUB_REPOSITORY" | grep -Eq '^TIKTOK_ACCESS_TOKEN[[:space:]]' || { echo 'preflight.verify.fail'; exit 3; }
+          echo 'preflight.verify.ok — tt chain armed, rotation machine sealed'
