@@ -195,7 +195,7 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
                             print(f"  (secret persist skipped for {name}: {_se} — posting continues)")
         except Exception as e:
             print(f"  (tt refresh skipped: {e} — using stale token, may soft-fail)")
-    privacy = os.environ.get("TIKTOK_PRIVACY", "SELF_ONLY")  # pre-approval law
+    privacy = (os.environ.get("TIKTOK_PRIVACY") or "SELF_ONLY").strip()  # pre-approval law
     size = mp4.stat().st_size
     hdr = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}
     # 2026 direct-post truth: TT disputes un-declared auto-publishing — the
@@ -206,14 +206,19 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
     if privacy != "SELF_ONLY":
         post_info["content_preview_confirmed"] = True
         post_info["express_consent_given"] = True
-    init = json.loads(urllib.request.urlopen(urllib.request.Request(
-        "https://open.tiktokapis.com/v2/post/publish/video/init/",
-        data=json.dumps({
-            "post_info": post_info,
-            "source_info": {"source": "FILE_UPLOAD", "video_size": size,
-                            "chunk_size": min(size, 10_000_000),
-                            "total_chunk_count": 1},
-        }).encode(), headers=hdr, method="POST"), timeout=60).read())
+    try:
+        init = json.loads(urllib.request.urlopen(urllib.request.Request(
+            "https://open.tiktokapis.com/v2/post/publish/video/init/",
+            data=json.dumps({
+                "post_info": post_info,
+                "source_info": {"source": "FILE_UPLOAD", "video_size": size,
+                                "chunk_size": min(size, 10_000_000),
+                                "total_chunk_count": 1},
+            }).encode(), headers=hdr, method="POST"), timeout=60).read())
+    except urllib.error.HTTPError as e:
+        body = e.read().decode(errors="replace")[:400]     # TikTok's own diagnosis — never swallowed again
+        print(f"  ⚠️ tt init rejected {e.code}: {body}")
+        return {"tt": f"rejected {e.code}: {body[:160]}"}
     err = init.get("error", {})
     if err.get("code", "ok") not in ("ok", None):
         return {"tt": f"api error: {err.get('code')} {err.get('message', '')[:80]}"}
