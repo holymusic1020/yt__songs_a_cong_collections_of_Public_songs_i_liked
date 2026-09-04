@@ -228,6 +228,16 @@ def render_video(pack: dict, out_path: Path) -> Path | None:
                     "-c:a", "aac", "-b:a", "320k", "-ar", "48000", "-ac", "2",  # 2026-09-04 social law: 48k stereo — TikTok/FH butchers exotic rates (96k = aliasing horror on EP.030)
                     "-t", f"{L:.3f}", "-r", "25", str(out_path)]
     subprocess.run(cmd, check=True, capture_output=True)
+    try:  # 🎚 master forensics in EVERY log (boss law 2026-09-04: prove the audio, don't trust it)
+        probe = subprocess.run([shutil.which("ffmpeg"), "-hide_banner", "-i", str(out_path),
+                                "-af", "loudnorm=print_format=summary", "-f", "null", "-"],
+                               capture_output=True, text=True, timeout=120)
+        import re as _re
+        got = {k: (m.group(1).strip() if (m := _re.search(k + r":\s*(\S+)", probe.stderr)) else "?")
+               for k in ("Input Integrated", "Input True Peak", "Input LRA")}
+        print(f"  🎚 short master: {got['Input Integrated']} LUFS · TP {got['Input True Peak']} · LRA {got['Input LRA']}  (law: ≤-3dBTP, LRA>2)")
+    except Exception:
+        pass
     return out_path
 
 

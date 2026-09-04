@@ -175,9 +175,12 @@ def main():
         ver = "23.0"  # proven live earlier today; skip probe, go fast
         g = f"https://graph.facebook.com/v{ver}"
         clip = _fetch_rescue_clip(rescue)
+        _yt = rescue if ("youtube.com" in rescue or "youtu.be" in rescue) else os.environ.get("RESCUE_YT", "").strip()
         desc = os.environ.get("RESCUE_CAPTION", "").strip() or (
             os.environ.get("RESCUE_TITLE", "nyx drop").strip()
-            + "\n📺 on youtube: " + rescue + "\n#newmusic #vibes")
+            + ("\n📺 full song: " + _yt if _yt else "") + "\n#phonk #newmusic")
+        # 2026-09-04: was appending the RAW rescue URL into the caption → github
+        # release link leaked onto the public Page. Only real YT links in public text.
     else:
         ver, who = _probe(pid, tok)
         g = f"https://graph.facebook.com/v{ver}"

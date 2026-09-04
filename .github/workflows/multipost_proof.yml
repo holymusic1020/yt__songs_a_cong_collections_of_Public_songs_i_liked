@@ -11,6 +11,14 @@ on:
         description: "rescue reel caption title (optional when rescue_url set)"
         required: false
         default: ""
+      rescue_yt:
+        description: "real YouTube link for the caption (when rescue_url is a raw/vault mp4)"
+        required: false
+        default: ""
+      rescue_caption:
+        description: "FULL caption override (wins over title+link builder)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -39,4 +47,6 @@ jobs:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}
           RESCUE_URL: ${{ inputs.rescue_url }}          # set → rescue mode (collect a missed reel)
           RESCUE_TITLE: ${{ inputs.rescue_title }}
+          RESCUE_YT: ${{ inputs.rescue_yt }}            # caption's real yt link when url is vault/raw
+          RESCUE_CAPTION: ${{ inputs.rescue_caption }}  # full override
         run: python3 tools/fb_proof.py

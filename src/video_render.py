@@ -22,7 +22,7 @@ LONG = (1280, 720)
 VERT = (1080, 1920)
 XFADE_S = 0.8
 FFMPEG = shutil.which("ffmpeg") or "ffmpeg"
-LOUDNORM = "alimiter=limit=0.4:level=false,loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=limit=0.6:level=false"
+LOUDNORM = "alimiter=limit=0.4:level=false,loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=limit=0.6:level=false,treble=g=-3:f=6000"  # 2026-09-04 anti-hash law: -3dB@6k+ — boss-report EP.030 brick gave 2-sec headaches (LRA 1.3 + hash 13dB-down); level was lawful, SPECTRUM wasn't
 
 
 def _env_off(name: str) -> bool:
