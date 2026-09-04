@@ -742,7 +742,7 @@ def main() -> None:
                         "-y", "-loop", "1", "-i", str(cover),
                         "-i", str(wav), "-c:v", "libx264", "-tune",
                         "stillimage", "-af", _vr.loudnorm_filter(wav),
-                        "-c:a", "aac", "-b:a", "320k",
+                        "-c:a", "aac", "-b:a", "320k", "-ar", "48000", "-ac", "2",  # 2026-09-04 social law: 48k stereo
                         "-pix_fmt", "yuv420p", "-shortest",
                         str(OUT / f"ep{ep:03d}.mp4")],
                        check=True, capture_output=True)

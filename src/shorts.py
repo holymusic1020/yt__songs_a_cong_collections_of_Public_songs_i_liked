@@ -225,7 +225,7 @@ def render_video(pack: dict, out_path: Path) -> Path | None:
     cmd = inputs + ["-filter_complex", ";".join(fc),
                     "-map", "[vout]", "-map", "[aout]",
                     "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-                    "-c:a", "aac", "-b:a", "320k",
+                    "-c:a", "aac", "-b:a", "320k", "-ar", "48000", "-ac", "2",  # 2026-09-04 social law: 48k stereo — TikTok/FH butchers exotic rates (96k = aliasing horror on EP.030)
                     "-t", f"{L:.3f}", "-r", "25", str(out_path)]
     subprocess.run(cmd, check=True, capture_output=True)
     return out_path

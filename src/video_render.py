@@ -242,7 +242,7 @@ def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
             else ["-map", "[vout]"])
     tail = ["-t", f"{dur:.3f}", "-r", str(FPS)]
     if has_audio:
-        tail += ["-c:a", "aac", "-b:a", "320k"]
+        tail += ["-c:a", "aac", "-b:a", "320k"] + ["-ar", "48000", "-ac", "2"]  # 2026-09-04 social law: 48k stereo
     tail += ["-c:v", "libx264", "-preset", "medium", "-crf", "21", str(out)]
 
     # variant 1: xfade crossfades
@@ -340,7 +340,7 @@ def from_clip(clip: Path, dur: float, out_path: Path, wav: Path | None = None,
     maps = ["-map", "[vout]"] + (["-map", "[aout]"] if wav else [])
     tail = ["-t", f"{dur:.3f}", "-r", str(FPS)]
     if wav:
-        tail += ["-c:a", "aac", "-b:a", "320k"]
+        tail += ["-c:a", "aac", "-b:a", "320k", "-ar", "48000", "-ac", "2"] + ["-ar", "48000", "-ac", "2"]  # 2026-09-04 social law: 48k stereo
     tail += ["-c:v", "libx264", "-preset", "medium", "-crf", "21", str(out_path)]
     cmd = ["-y"] + inputs + ["-filter_complex", ";".join(fc)] + maps + tail
     _run_variants("clip-loop", [cmd])
