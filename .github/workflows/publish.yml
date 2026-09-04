@@ -139,7 +139,8 @@ jobs:
           TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
           TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
           TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
-          TIKTOK_PRIVACY: ${{ vars.TIKTOK_PRIVACY }}    # SELF_ONLY pre-approval; PUBLIC_TO_EVERYONE one-line flip on approval day
+          TIKTOK_PRIVACY: ${{ vars.TIKTOK_PRIVACY }}
+          MULTIPOST_TT_LONG: ${{ vars.MULTIPOST_TT_LONG }}   # 1 = full vid also rides TT as blurred pillarbox (default off)    # SELF_ONLY pre-approval; PUBLIC_TO_EVERYONE one-line flip on approval day
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}         # 🔁 lets the tt refresh chain write rotated secrets back (365d rolling law)
           WORLD_TOUR_EVERY: ${{ vars.WORLD_TOUR_EVERY }}  # 🌍 dials (optional)
           WORLD_LANGS: ${{ vars.WORLD_LANGS }}

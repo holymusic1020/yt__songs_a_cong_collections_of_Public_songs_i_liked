@@ -227,6 +227,27 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
     return {"tt": f"uploaded → {mode}", "tiktok_publish_id": d.get("publish_id")}
 
 
+
+# ──────────────────────── 16:9 → 9:16 regulation fix (TT longs) ─────────────────
+def _pillarbox_blur(src: Path, dst: Path) -> Path:
+    """Boss (2026-09-04): 'full vid on tt too, blur upper-lower for regulation fix'.
+    Landscape mastered-long gets a blurred enlarged clone of itself as the backdrop,
+    sharp frame fit-width in front — TikTok-vertical without cropping a pixel."""
+    import subprocess as _sp, shutil
+    ff = shutil.which("ffmpeg")
+    if not ff:
+        raise RuntimeError("ffmpeg missing")
+    W, H = 1080, 1920
+    fc = (f"[0:v]split[a][b];"
+          f"[a]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},gblur=sigma=30[bg];"
+          f"[b]scale={W}:-2[fg];"
+          f"[bg][fg]overlay=(W-w)/2:(H-h)/2,format=yuv420p[v]")
+    _sp.run([ff, "-y", "-i", str(src), "-filter_complex", fc,
+             "-map", "[v]", "-map", "0:a?", "-c:v", "libx264", "-preset", "medium", "-crf", "21",
+             "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",  # 48k-stereo social law
+             str(dst)], check=True, capture_output=True)
+    return dst
+
 # ──────────────────────────────── the gate ───────────────────────────────────
 
 def fanout(ep: int, meta: dict, genre_key: str, out: Path,
@@ -255,6 +276,14 @@ def fanout(ep: int, meta: dict, genre_key: str, out: Path,
                     results.update(fb_video(Path(long_f), pack["captions"]["fb"]))
             elif plat == "tt":
                 results.update(tiktok_video(mp4, pack["captions"]["tt"]))
+                # boss 2026-09-04: full vid may ride TT too (blurred pillarbox). Default OFF —
+                # flip repo var MULTIPOST_TT_LONG=1 (publish.yml env passes it through).
+                if os.environ.get("MULTIPOST_TT_LONG") == "1" and pack["media"].get("long"):
+                    long_p = Path(pack["media"]["long"])
+                    if long_p.exists():
+                        vert = _pillarbox_blur(long_p, Path(out) / f"ep{ep:03d}_tt_long.mp4")
+                        results.update({("tt_long" if k == "tt" else f"tt_long_{k}"): v
+                                        for k, v in tiktok_video(vert, pack["captions"]["tt"][:130] + " 🎬 full").items()})
             else:
                 results[plat] = "skipped — unknown platform"
         except Exception as e:                      # never crash a release
