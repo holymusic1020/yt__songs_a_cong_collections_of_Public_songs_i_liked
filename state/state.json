@@ -1,5 +1,5 @@
 {
-  "episode": 30,
+  "episode": 31,
   "history": [
     {
       "episode": 1,
@@ -390,6 +390,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-03T11:28:12Z",
       "at": "2026-09-03T09:49:12+00:00"
+    },
+    {
+      "episode": 31,
+      "kind": "full",
+      "youtube_id": "jVeXrTzIOmo",
+      "video_id": "jVeXrTzIOmo",
+      "short_id": "j4yht--IrNM",
+      "title": "humid asphalt \u2014 Nix Speech (official audio)",
+      "name": "humid asphalt",
+      "genre": "velvet_fang",
+      "publish_at": "2026-09-05T14:21:00Z",
+      "short_publish_at": "2026-09-05T12:53:25Z",
+      "at": "2026-09-05T09:46:03+00:00"
     }
   ]
 }
