@@ -1,0 +1,57 @@
+name: tt_status_probe
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: tt publish-status truth (status/fetch on known publish_ids + video/list)
+        env:
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          resp="$(curl -s -X POST 'https://open.tiktokapis.com/v2/oauth/token/' -H 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode "client_key=${TIKTOK_CLIENT_KEY}" --data-urlencode "client_secret=${TIKTOK_CLIENT_SECRET}" \
+            --data-urlencode 'grant_type=refresh_token' --data-urlencode "refresh_token=${TIKTOK_REFRESH_TOKEN}")"
+          tok="$(printf '%s' "$resp" | jq -r '.access_token // empty')"
+          nr="$(printf '%s' "$resp" | jq -r '.refresh_token // empty')"
+          [ -n "$tok" ] || { echo 'probe.refresh.fail'; printf '%s' "$resp" | head -c 200; exit 1; }
+          [ -n "$nr" ] && echo "$nr" | gh secret set TIKTOK_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" || true
+          [ -n "$nr" ] && echo "$tok" | gh secret set TIKTOK_ACCESS_TOKEN --repo "$GITHUB_REPOSITORY" || true
+          export TOK="$tok" GH_REPO="$GITHUB_REPOSITORY"
+          python3 - <<'PY'
+          import json, os, urllib.request
+          tok = os.environ["TOK"]
+          hdr = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}
+          ids = {"48k-repost": "v_pub_file~v2-1.7681497190116296724",
+                 "steel-and-soul": "v_pub_file~v2-1.7681722137778079762"}
+          for name, pid in ids.items():
+              try:
+                  body = {"publish_id": pid}
+                  b = urllib.request.urlopen(urllib.request.Request(
+                      "https://open.tiktokapis.com/v2/post/publish/status/fetch/",
+                      data=json.dumps(body).encode(), headers=hdr, method="POST"), timeout=40).read()
+                  j = json.loads(b)
+                  print(f"== {name}: {json.dumps(j.get('data', j))[:400]}")
+              except Exception as e:
+                  print(f"== {name}: status fetch failed: {e}")
+          try:
+              b = urllib.request.urlopen(urllib.request.Request(
+                  "https://open.tiktokapis.com/v2/video/list/",
+                  data=b'{"max_count":20}', headers={**hdr, "Content-Type": "application/json"},
+                  method="POST"), timeout=40).read()
+              j = json.loads(b)
+              vids = j.get("data", {}).get("videos", [])
+              print(f"== video/list: {len(vids)} videos returned ==")
+              for v in vids[:8]:
+                  print("  ·", v.get("create_time"), v.get("title", "")[:60], "| id:", v.get("id"))
+          except Exception as e:
+              print(f"== video/list failed: {e}")
+          PY
