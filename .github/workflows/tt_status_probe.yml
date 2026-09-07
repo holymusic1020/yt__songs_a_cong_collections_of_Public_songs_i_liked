@@ -55,3 +55,14 @@ jobs:
           except Exception as e:
               print(f"== video/list failed: {e}")
           PY
+
+      - name: lane-check (prints ON/OFF only — value never leaks)   # boss flip verifier
+        env:
+          MULTIPOST: ${{ secrets.MULTIPOST }}
+          TIKTOK_PRIVACY: ${{ vars.TIKTOK_PRIVACY }}
+        run: |
+          case ";${MULTIPOST:-none};" in
+            *";tt;"*|*",tt;"*|*";tt,"*|*",tt,"*) echo "TT-LANE: ON ✓ (daily runs will post TikTok automatically)";;
+            *) echo "TT-LANE: OFF ✗ — MULTIPOST dial still missing 'tt' → boss: set MULTIPOST secret = fb,tt";;
+          esac
+          echo "TT-PRIVACY var: ${TIKTOK_PRIVACY:-(unset → SELF_ONLY floor ✓ correct until approval)}"
