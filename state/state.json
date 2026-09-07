@@ -1,5 +1,5 @@
 {
-  "episode": 32,
+  "episode": 33,
   "history": [
     {
       "episode": 1,
@@ -416,6 +416,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-06T14:49:16Z",
       "at": "2026-09-06T13:11:26+00:00"
+    },
+    {
+      "episode": 33,
+      "kind": "short",
+      "youtube_id": "JxDslrOtP_Q",
+      "video_id": null,
+      "short_id": "JxDslrOtP_Q",
+      "title": "aluminum blinds \u2014 Nix Speech (official audio)",
+      "name": "aluminum blinds",
+      "genre": "templestep",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-07T18:24:06Z",
+      "at": "2026-09-07T15:22:55+00:00"
     }
   ]
 }
