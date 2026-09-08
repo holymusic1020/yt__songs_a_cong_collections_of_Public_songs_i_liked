@@ -1,5 +1,5 @@
 {
-  "episode": 33,
+  "episode": 34,
   "history": [
     {
       "episode": 1,
@@ -429,6 +429,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-07T18:24:06Z",
       "at": "2026-09-07T15:22:55+00:00"
+    },
+    {
+      "episode": 34,
+      "kind": "full",
+      "youtube_id": "tRhFrei33ik",
+      "video_id": "tRhFrei33ik",
+      "short_id": "JlQsQCg3Ijw",
+      "title": "humid headlights \u2014 Nix Speech (official audio)",
+      "name": "humid headlights",
+      "genre": "lastjuly",
+      "publish_at": "2026-09-08T18:09:53Z",
+      "short_publish_at": "2026-09-08T15:40:56Z",
+      "at": "2026-09-08T13:58:55+00:00"
     }
   ]
 }
