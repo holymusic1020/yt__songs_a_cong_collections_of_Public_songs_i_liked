@@ -1,5 +1,5 @@
 {
-  "episode": 34,
+  "episode": 35,
   "history": [
     {
       "episode": 1,
@@ -442,6 +442,19 @@
       "publish_at": "2026-09-08T18:09:53Z",
       "short_publish_at": "2026-09-08T15:40:56Z",
       "at": "2026-09-08T13:58:55+00:00"
+    },
+    {
+      "episode": 35,
+      "kind": "short",
+      "youtube_id": "JUgmvyca6QA",
+      "video_id": null,
+      "short_id": "JUgmvyca6QA",
+      "title": "phoenix commute \u2014 Nix Speech (official audio)",
+      "name": "phoenix commute",
+      "genre": "ashrise",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-09T16:13:52Z",
+      "at": "2026-09-09T14:04:33+00:00"
     }
   ]
 }
