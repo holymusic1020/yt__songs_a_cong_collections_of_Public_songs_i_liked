@@ -1,5 +1,5 @@
 {
-  "episode": 35,
+  "episode": 36,
   "history": [
     {
       "episode": 1,
@@ -455,6 +455,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-09T16:13:52Z",
       "at": "2026-09-09T14:04:33+00:00"
+    },
+    {
+      "episode": 36,
+      "kind": "short",
+      "youtube_id": "zVY1fsDOPWM",
+      "video_id": null,
+      "short_id": "zVY1fsDOPWM",
+      "title": "wet asphalt haze \u2014 Nix Speech (official audio)",
+      "name": "wet asphalt haze",
+      "genre": "brazilian_phonk",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-10T16:13:33Z",
+      "at": "2026-09-10T13:57:10+00:00"
     }
   ]
 }
