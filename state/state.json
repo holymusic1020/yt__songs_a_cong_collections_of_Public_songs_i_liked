@@ -1,5 +1,5 @@
 {
-  "episode": 37,
+  "episode": 38,
   "history": [
     {
       "episode": 1,
@@ -481,6 +481,19 @@
       "publish_at": "2026-09-11T15:46:06Z",
       "short_publish_at": "2026-09-11T17:12:05Z",
       "at": "2026-09-11T13:55:49+00:00"
+    },
+    {
+      "episode": 38,
+      "kind": "short",
+      "youtube_id": "GxeCrDR5Umk",
+      "video_id": null,
+      "short_id": "GxeCrDR5Umk",
+      "title": "tiled hallway hum \u2014 Nix Speech (official audio)",
+      "name": "tiled hallway hum",
+      "genre": "indie_waves",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-12T14:54:17Z",
+      "at": "2026-09-12T13:11:09+00:00"
     }
   ]
 }
