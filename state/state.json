@@ -1,5 +1,5 @@
 {
-  "episode": 38,
+  "episode": 39,
   "history": [
     {
       "episode": 1,
@@ -494,6 +494,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-12T14:54:17Z",
       "at": "2026-09-12T13:11:09+00:00"
+    },
+    {
+      "episode": 39,
+      "kind": "short",
+      "youtube_id": "G4IPElCP2UY",
+      "video_id": null,
+      "short_id": "G4IPElCP2UY",
+      "title": "linoleum frost \u2014 Nix Speech (official audio)",
+      "name": "linoleum frost",
+      "genre": "lambs_teeth",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-13T16:42:28Z",
+      "at": "2026-09-13T14:05:16+00:00"
     }
   ]
 }
