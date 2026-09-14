@@ -1,5 +1,5 @@
 {
-  "episode": 39,
+  "episode": 40,
   "history": [
     {
       "episode": 1,
@@ -507,24 +507,32 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-13T16:42:28Z",
       "at": "2026-09-13T14:05:16+00:00"
+    },
+    {
+      "episode": 40,
+      "kind": "full",
+      "youtube_id": "pnIuriTyu80",
+      "video_id": "pnIuriTyu80",
+      "short_id": "kBY5AP9ju3Y",
+      "title": "deep voice amen — Nix Speech (official audio)",
+      "name": "deep voice amen",
+      "genre": "god_in_the_bass",
+      "publish_at": "2026-09-14T20:25:41Z",
+      "short_publish_at": "2026-09-14T19:19:30Z",
+      "at": "2026-09-14T16:11:54+00:00"
     }
   ],
   "receipts": [
     {
       "date": "2026-09-14",
       "episode": 40,
-      "mode": "dry_run",
+      "mode": "publish",
       "kind": "full",
       "genre": "god_in_the_bass",
-      "track": "harbor diesel",
-      "multipost_dial": "fb,tt,ig",
+      "track": "deep voice amen",
+      "multipost_dial": "fb",
       "lanes": {
-        "fb": "render-only — would post reel ~6.6 MB (credentialed ✓): harbor diesel — Nix Speech (official audio) 🌙 \n#lyrics #vibe…",
-        "fb_video": "render-only — would post video ~17.3 MB",
-        "tt": "render-only — would upload ~6.6 MB (SELF_ONLY law): harbor diesel — Nix Speech (official audio) #lyrics #vibes #…",
-        "ig": "render-only — would post REEL ~6.6 MB to @unknown until the live run (30.9s ✓ )",
-        "ig_video": "render-only — would post feed VIDEO ~17.3 MB",
-        "ig_photo": "render-only — would post the cover art (~1641 KB → JPEG 1080×1350)"
+        "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"Aevm2nzJn8dNvWll0kBKJmO8_0n0sxDsXXennv6YZutBVd25VrBniFlskgtjgZziv7WYRo9ISY_mqhkRGsMc"
       }
     }
   ]
