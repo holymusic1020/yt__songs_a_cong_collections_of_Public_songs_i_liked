@@ -1082,6 +1082,18 @@ def main() -> None:
     # they expire (410 Gone) — so the run itself commits its own truth into the
     # repo. Readable by anyone, forever, with zero credentials:
     #   state/receipts/latest.md · state/receipts/<date>-epNNN.json · history.json
+    # 🩺 AUTHORITATIVE lane audit (2026-09-14, run #99): tools/doctor.py already runs
+    # this, but its step (`🩺 Pre-flight doctor`) has NO `env:` block in publish.yml, so
+    # GitHub hands it an empty environment and the audit reported "MULTIPOST is empty"
+    # and "tt rotation chain not armed" while both were fine. Re-running it HERE — the
+    # last thing before the receipt — sees every secret the release actually used and
+    # overwrites out/lane_audit.json, so the public receipt can never carry the guess.
+    try:
+        from src import lane_audit as _la
+        _la.run(print_it=False)
+    except Exception as _lae:                     # never fatal — it is a diagnostic
+        print(f"  🩺 authoritative lane audit skipped: {_lae}")
+
     # Laws: never raises, text-only, NEVER commits state/state.json (the
     # workflow's own 'Commit state' step owns that file — racing it caused the
     # duplicate-episode bug class), credentials masked at the door.

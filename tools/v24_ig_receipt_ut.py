@@ -240,14 +240,21 @@ def main():
               "TIKTOK_REFRESH_TOKEN", "TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET",
               "LANE_AUDIT_NET", "MULTIPOST_DRYRUN", "PUBLISH_OFF"):
         os.environ.pop(v, None)
+    os.environ["GEMINI_API_KEY"] = "gem" + "m" * 30      # keep the env non-bare
     rep = lane_audit.audit(net=False)
     chk(rep.get("net_probes") is False, "net=False → offline audit")
     chk(not netmail, "offline audit touched zero network")
+    chk("creds" in rep, "offline audit still returned the credential table")
+    # (a credential must be visible or the bare-env guard rightly refuses to probe —
+    #  that guard is tested on its own in section 0️⃣9️⃣)
+    os.environ["FB_PAGE_TOKEN"] = "EAA" + "k" * 40
     os.environ["LANE_AUDIT_NET"] = "0"
     chk(lane_audit.audit().get("net_probes") is False, "LANE_AUDIT_NET=0 opts out")
     os.environ.pop("LANE_AUDIT_NET")
-    chk(lane_audit.audit().get("net_probes") is True,
+    _r_def = lane_audit.audit()
+    chk(_r_def.get("net_probes") is True,
         "probes are ON by default (no variable needed)")
+    chk(_r_def.get("authoritative") is True, "with a credential present the report is authoritative")
     os.environ.update({"FB_PAGE_ID": "123", "FB_PAGE_TOKEN": "EAAkgxDUMMYVALUE123456"})
     # NOTE: the probes swallow their own exceptions by design (law #1), so the sentry's
     # AssertionError never propagates — but it still RECORDS every attempt in netmail.
@@ -301,6 +308,57 @@ def main():
     md2 = (tmp / "state/receipts/latest.md").read_text()
     chk("🩺 lane audit" in md2, "latest.md carries the audit section")
     chk("MULTIPOST dial" in md2, "latest.md names the dial")
+
+    print("\n0️⃣9️⃣  REGRESSION: the audit cried wolf in a step with no env (run #99, 2026-09-14)")
+    from src import lane_audit as _la
+    _saved = dict(os.environ)
+    _canaries = list(_la._CRED_CANARIES) + ["MULTIPOST_DRYRUN", "TIKTOK_PRIVACY", "LANE_AUDIT_NET"]
+    try:
+        # ── A) bare env: exactly what the `🩺 Pre-flight doctor` step gets ──
+        for k in _canaries:
+            os.environ.pop(k, None)
+        chk(_la._bare_env(), "bare env detected when no credential is visible")
+        rep = _la.audit()
+        chk(rep.get("authoritative") is False, "report flagged NOT authoritative")
+        joined = " ".join(rep.get("verdicts", []))
+        chk("MULTIPOST is empty" not in joined, "no false 'MULTIPOST is empty' alarm")
+        chk("rotation chain" not in joined, "no false 'tt chain not armed' alarm")
+        chk("NOT AUTHORITATIVE" in joined, "says honestly that it could not see anything")
+        chk(rep.get("net_probes") is False, "no live probes fired without credentials")
+        md = _la.to_markdown(rep)
+        chk("NOT AUTHORITATIVE" in md, "and the receipt markdown carries the banner")
+
+        # ── B) populated env: the real release step ──
+        os.environ.update({"MULTIPOST": "fb,tt,ig", "FB_PAGE_ID": "123",
+                           "FB_PAGE_TOKEN": "EAA" + "x" * 40, "TIKTOK_ACCESS_TOKEN": "act.ia" + "y" * 20,
+                           "TIKTOK_REFRESH_TOKEN": "rft." + "z" * 20, "TIKTOK_CLIENT_KEY": "ck",
+                           "TIKTOK_CLIENT_SECRET": "cs", "YT_REFRESH_TOKEN": "1//0" + "q" * 30,
+                           "MULTIPOST_DRYRUN": "1"})
+        chk(not _la._bare_env(), "populated env is NOT bare")
+        rep2 = _la.audit()
+        chk(rep2.get("authoritative") is True, "authoritative when secrets are present")
+        j2 = " ".join(rep2.get("verdicts", []))
+        chk("MULTIPOST is empty" not in j2, "dial fb,tt,ig → no empty-dial alarm")
+        chk("rotation chain" not in j2, "all four TT creds present → chain reported armed")
+        chk(_la._lanes_wanted() == ["fb", "tt", "ig"], f"lanes parsed: {_la._lanes_wanted()}")
+        chk("MULTIPOST_DRYRUN=1" in j2, "dry-run law still announced")
+        chk(rep2["dials"]["MULTIPOST"] == "fb,tt,ig", "dial value surfaced verbatim")
+        for k, v in rep2["creds"].items():
+            if v.get("set"):
+                chk(v.get("chars", 0) > 0 and "…" in (v.get("fp") or "short") or v.get("fp") == "short",
+                    f"cred {k} masked (fp only)")
+        blob2 = json.dumps(rep2)
+        chk("EAA" + "x" * 40 not in blob2, "the FB token value never appears in the report")
+        chk("act.ia" + "y" * 20 not in blob2, "the TT token value never appears in the report")
+
+        # ── C) the release step must actually call it (else the wolf returns) ──
+        mn = (Path(__file__).resolve().parents[1] / "src" / "main.py").read_text()
+        i_aud, i_rec = mn.index("AUTHORITATIVE lane audit"), mn.index("from src import receipt")
+        chk(i_aud < i_rec, "main.py runs the audit BEFORE the receipt reads out/lane_audit.json")
+        chk("_la.run(print_it=False)" in mn, "and it re-runs the full audit, overwriting the doctor's copy")
+    finally:
+        os.environ.clear()
+        os.environ.update(_saved)
 
     print("\n1️⃣3️⃣  REGRESSION: the 24-wheel queue-cook hole (EP.039 log, 2026-09-14)")
     from src import main as _main, metadata as _md, composer as _cp

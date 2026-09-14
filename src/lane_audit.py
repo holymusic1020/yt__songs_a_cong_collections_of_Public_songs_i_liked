@@ -76,6 +76,25 @@ def _lanes_wanted() -> list:
     return [p.strip().lower() for p in _env("MULTIPOST").split(",") if p.strip()]
 
 
+# 🙈 BARE-ENV GUARD (2026-09-14, found on run #99):
+# The `🩺 Pre-flight doctor` step in publish.yml has NO `env:` block — GitHub therefore
+# hands it an empty environment. The audit dutifully reported "🔴 MULTIPOST is empty →
+# ALL cross-posting OFF" and "🟡 tt rotation chain NOT armed" while the real run had
+# MULTIPOST=fb,tt,ig and all four TIKTOK_* secrets present. A diagnostic that cries wolf
+# is worse than no diagnostic: it sends the boss hunting a secret that is already set.
+# So: if NOT ONE credential/dial is visible, this report is not authoritative and the
+# scary verdicts are replaced by one honest "I could not see anything from here" line.
+_CRED_CANARIES = ("MULTIPOST", "FB_PAGE_TOKEN", "FB_PAGE_ID", "TIKTOK_ACCESS_TOKEN",
+                  "TIKTOK_REFRESH_TOKEN", "YT_REFRESH_TOKEN", "GH_TOKEN", "GITHUB_TOKEN",
+                  "SUNO_API_KEY", "KAGGLE_USERNAME", "GEMINI_API_KEY", "HF_TOKEN",
+                  "TELEGRAM_BOT_TOKEN", "PUBLISH_OFF")
+
+
+def _bare_env() -> bool:
+    """True when the process can see no credentials at all → the step has no env block."""
+    return not any(_env(k) for k in _CRED_CANARIES)
+
+
 def _net_ok() -> bool:
     """Read-only probes are ON by default (2026-09-13) so the boss never has to
     add a variable just to find out why nothing posted. Opt OUT with
@@ -240,6 +259,7 @@ def audit(net: bool | None = None, publish_ids: list | None = None) -> dict:
                 "HF_TOKEN": _present("HF_TOKEN"),
             },
             "ig_account_cache": None,
+            "authoritative": not _bare_env(),
             "verdicts": [],
         }
         cache = Path("state/ig_account.json")
@@ -250,6 +270,18 @@ def audit(net: bool | None = None, publish_ids: list | None = None) -> dict:
                 rep["ig_account_cache"] = "unreadable"
 
         # ---- verdicts: the "why didn't it post" answers, computed offline ----
+        if not rep["authoritative"]:
+            rep["verdicts"].append(
+                "🙈 NOT AUTHORITATIVE — this audit ran in a step that received NO environment "
+                "(no credentials visible at all, e.g. the `🩺 Pre-flight doctor` step, which has "
+                "no `env:` block in publish.yml). Everything below is a guess. The authoritative "
+                "copy is re-run at the END of the release step, where the secrets are present, "
+                "and it overwrites out/lane_audit.json before the receipt is committed.")
+            # still emit the dial snapshot (harmless) but skip every "missing" alarm
+            # and skip the live probes too — with no credentials they can only fail.
+            rep["net_probes"] = False
+            rep["fb_token"] = {"probed": False, "why": "bare env — step received no credentials"}
+            return rep
         if not wanted:
             rep["verdicts"].append(
                 "🔴 MULTIPOST is empty → fb, tt AND ig are ALL off. This is the #1 cause of "
@@ -276,6 +308,15 @@ def audit(net: bool | None = None, publish_ids: list | None = None) -> dict:
         if _env("MULTIPOST_DRYRUN") == "1":
             rep["verdicts"].append("🟡 MULTIPOST_DRYRUN=1 → lanes render only, ZERO api calls (intentional test mode).")
 
+        return _finish(rep, do_net, publish_ids)
+
+    except Exception as e:                        # never fatal — it is a diagnostic
+        return {"schema": 1, "error": f"{type(e).__name__}: {e}"}
+
+
+def _finish(rep: dict, do_net: bool, publish_ids: list | None = None) -> dict:
+    """Live probes (if allowed) → write out/lane_audit.json → return the report."""
+    try:
         if do_net:
             rep["fb_token"] = probe_fb_token()
             rep["fb_page"] = probe_fb_page()
@@ -297,7 +338,17 @@ def audit(net: bool | None = None, publish_ids: list | None = None) -> dict:
             rep["verdicts"].append("✅ no obvious blocker found from inside the run.")
         return rep
     except Exception as e:                                   # noqa: BLE001 — law #1
-        return {"schema": 1, "error": f"lane audit failed: {type(e).__name__}: {e}"}
+        # 🩹 (2026-09-14) do NOT throw the offline half away. Run #99 proved the cost:
+        # one NameError inside the probe block replaced the entire report with
+        # {"schema":1,"error":…}, so the receipt lost the dial table AND the credential
+        # table — i.e. the diagnostic died exactly when it was needed. Keep everything
+        # computed so far and just note what broke.
+        rep["error"] = f"live probes failed: {type(e).__name__}: {e}"
+        rep["net_probes"] = False
+        rep.setdefault("verdicts", []).append(
+            f"🟡 the live probes crashed ({type(e).__name__}) — the offline dial/credential "
+            "audit above is still valid, but nothing was verified against Meta/TikTok this run.")
+        return rep
 
 
 def to_markdown(rep: dict) -> str:
@@ -330,8 +381,11 @@ def to_markdown(rep: dict) -> str:
             + (f"- checkpoint canary: {json.dumps(rep.get('fb_checkpoint'))[:300]}\n"
                if rep.get("fb_checkpoint") else "")
         )
+    auth = "" if rep.get("authoritative", True) else (
+        "\n> 🙈 **NOT AUTHORITATIVE** — the step that produced this saw no environment. "
+        "Trust the copy committed by the release step instead.\n")
     return (
-        f"# 🩺 lane audit · {rep.get('at')}\n\n"
+        f"# 🩺 lane audit · {rep.get('at')}\n{auth}\n"
         f"## dials\n\n| dial | value |\n|---|---|\n"
         + "\n".join(f"| {k} | `{v}` |" for k, v in d.items())
         + f"\n\n## lanes wanted\n\n`{', '.join(rep.get('lanes_wanted') or [])}`\n"
