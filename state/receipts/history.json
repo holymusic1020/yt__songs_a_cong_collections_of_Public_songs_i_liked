@@ -1,0 +1,26 @@
+[
+  {
+    "date": "2026-09-14",
+    "episode": 40,
+    "mode": "dry_run",
+    "kind": "full",
+    "genre": "god_in_the_bass",
+    "track": "harbor diesel",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 992.7,
+    "youtube": {
+      "video_id": null,
+      "short_id": null,
+      "watch": null,
+      "short": null
+    },
+    "lanes": {
+      "fb": "render-only — would post reel ~6.6 MB (credentialed ✓): harbor diesel — Nix Speech (official audio) 🌙 \n#lyrics #vibe…",
+      "fb_video": "render-only — would post video ~17.3 MB",
+      "tt": "render-only — would upload ~6.6 MB (SELF_ONLY law): harbor diesel — Nix Speech (official audio) #lyrics #vibes #…",
+      "ig": "render-only — would post REEL ~6.6 MB to @unknown until the live run (30.9s ✓ )",
+      "ig_video": "render-only — would post feed VIDEO ~17.3 MB",
+      "ig_photo": "render-only — would post the cover art (~1641 KB → JPEG 1080×1350)"
+    }
+  }
+]

@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "at": "2026-09-14T03:28:21Z",
+  "date": "2026-09-14",
+  "episode": 40,
+  "mode": "dry_run",
+  "kind": "full",
+  "genre": "god_in_the_bass",
+  "track": "harbor diesel",
+  "bpm": 70,
+  "key": "***",
+  "youtube": {
+    "video_id": null,
+    "short_id": null,
+    "watch": null,
+    "short": null
+  },
+  "multipost_dial": "fb,tt,ig",
+  "lanes": {
+    "fb": "render-only — would post reel ~6.6 MB (credentialed ✓): harbor diesel — Nix Speech (official audio) 🌙 \n#lyrics #vibe…",
+    "fb_video": "render-only — would post video ~17.3 MB",
+    "tt": "render-only — would upload ~6.6 MB (SELF_ONLY law): harbor diesel — Nix Speech (official audio) #lyrics #vibes #…",
+    "ig": "render-only — would post REEL ~6.6 MB to @unknown until the live run (30.9s ✓ )",
+    "ig_video": "render-only — would post feed VIDEO ~17.3 MB",
+    "ig_photo": "render-only — would post the cover art (~1641 KB → JPEG 1080×1350)"
+  },
+  "seconds": 992.7,
+  "run_id": "34801715133",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/34801715133",
+  "sha": "793e185",
+  "errors": [],
+  "lane_audit_file": "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/lane_audit.json",
+  "queue_lane": "0",
+  "vocal_everyday": "1",
+  "require_vocals": "1",
+  "lane_audit": {
+    "schema": 1,
+    "at": "2026-09-14T03:11:48Z",
+    "net_probes": true,
+    "dials": {
+      "MULTIPOST": "(empty → ALL cross-posting OFF)",
+      "MULTIPOST_DRYRUN": "0",
+      "MULTIPOST_TT_LONG": "0",
+      "MULTIPOST_IG_LONG": "0",
+      "MULTIPOST_IG_PHOTO": "1 (default on)",
+      "PUBLISH_OFF": "0",
+      "BOSS_DROP_DATE": "(unset)",
+      "TIKTOK_PRIVACY": "SELF_ONLY (default)",
+      "REQUIRE_VOCALS": "0",
+      "VOCAL_EVERYDAY": "0",
+      "KAGGLE_FIRST": "0",
+      "SUNO_OFF": "0"
+    },
+    "lanes_wanted": [
+      "(none)"
+    ],
+    "creds": {
+      "FB_PAGE_ID": {
+        "set": false
+      },
+      "FB_PAGE_TOKEN": "***",
+      "TIKTOK_ACCESS_TOKEN": "***",
+      "TIKTOK_REFRESH_TOKEN": "***",
+      "TIKTOK_CLIENT_KEY": "***",
+      "TIKTOK_CLIENT_SECRET": "***",
+      "GH_TOKEN/GITHUB_TOKEN": "***",
+      "TELEGRAM_BOT_TOKEN": "***",
+      "YT_REFRESH_TOKEN": "***",
+      "SUNO_API_KEY": "***",
+      "KAGGLE_USERNAME": {
+        "set": false
+      },
+      "GEMINI_API_KEY": "***",
+      "HF_TOKEN": "***"
+    },
+    "ig_account_cache": null,
+    "verdicts": [
+      "🔴 MULTIPOST is empty → fb, tt AND ig are ALL off. This is the #1 cause of 'nothing posted'. Repo → Settings → Secrets → MULTIPOST → value `fb,tt,ig`.",
+      "🟡 the tt 24h-token rotation chain is NOT fully armed (needs REFRESH_TOKEN + CLIENT_KEY + CLIENT_SECRET) → tt will start failing 24h after the last rotation."
+    ],
+    "fb_token": "***",
+    "fb_page": {
+      "probed": false,
+      "why": "FB_PAGE_ID/FB_PAGE_TOKEN not set"
+    },
+    "fb_checkpoint": {
+      "probed": false,
+      "why": "FB_PAGE_ID/FB_PAGE_TOKEN not set"
+    },
+    "tt_status": {
+      "probed": false,
+      "why": "TIKTOK_ACCESS_TOKEN not set"
+    }
+  }
+}
