@@ -19,6 +19,7 @@ import random
 import re
 import shutil
 import subprocess
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -310,13 +311,36 @@ def _vault_release_asset(paths: list) -> list:
                 _u.urlopen(_u.Request(
                     f"https://api.github.com/repos/{repo}/releases/assets/{a['id']}",
                     method="DELETE", headers={"Authorization": f"Bearer {tok}"}), timeout=60)
-        req = _u.Request(
-            f"https://uploads.github.com/repos/{repo}/releases/{rid}/assets?name={name}",
-            data=p.read_bytes(), method="POST",
-            headers={"Authorization": f"Bearer {tok}", "Content-Type": "video/mp4"})
-        up = _j.loads(_u.urlopen(req, timeout=600).read())
-        out.append(up.get("browser_download_url", ""))
-        print(f"  🧲 vaulted: {name}")
+        # 🔁 retry law (2026-09-14): the EP.039 log showed a one-shot death —
+        #   "(reel vault skipped: <urlopen error EOF occurred in violation of
+        #    protocol (_ssl.c:2427)>)"
+        # A transient runner-side SSL EOF killed the whole vault step, which means
+        # no rescue copy AND no public URL for the Instagram lane (Meta fetches the
+        # video from a public URL, so the vault IS the ig host). Retries + backoff.
+        blob = p.read_bytes()
+        url = ""
+        for attempt in range(1, 4):
+            try:
+                req = _u.Request(
+                    f"https://uploads.github.com/repos/{repo}/releases/{rid}/assets?name={name}",
+                    data=blob, method="POST",
+                    headers={"Authorization": f"Bearer {tok}", "Content-Type": "video/mp4"})
+                up = _j.loads(_u.urlopen(req, timeout=600).read())
+                url = up.get("browser_download_url", "")
+                if url:
+                    break
+                print(f"  🧲 vault: no browser_download_url on attempt {attempt}")
+            except Exception as ve:
+                print(f"  🧲 vault attempt {attempt}/3 failed for {name}: "
+                      f"{type(ve).__name__}: {str(ve)[:120]}")
+                if attempt < 3:
+                    time.sleep(4 * attempt)
+        if url:
+            out.append(url)
+            print(f"  🧲 vaulted: {name}")
+        else:
+            print(f"  🧲 vault FAILED for {name} after 3 attempts — rescue copy and "
+                  f"any ig post for this file are unavailable this run")
     return out
 
 
@@ -421,6 +445,8 @@ def _take_external_song(ep: int, cur_genre: str):
 
 
 def main() -> None:
+    _run_started = time.time()          # 📋 receipt clock (2026-09-13)
+    _fanout_result: dict = {}           # 📋 captured for the public receipt
     p = argparse.ArgumentParser()
     p.add_argument("--genre", default="auto",
                    choices=["auto"] + list(composer.GENRES))
@@ -908,7 +934,9 @@ def main() -> None:
         # it needs the rendered mp4s that housekeeping is about to wipe.
         try:
             from src import multi_post
-            print(f"  🌐 multi-post → {multi_post.fanout(ep=ep, meta=meta, genre_key=genre_key, out=OUT, yt_vid=vid, yt_sid=sid)}")
+            _fanout_result = multi_post.fanout(ep=ep, meta=meta, genre_key=genre_key,
+                                               out=OUT, yt_vid=vid, yt_sid=sid)
+            print(f"  🌐 multi-post → {_fanout_result}")
             # 2026-09-03: lane results were RETURNED-but-never-printed → silent
             # fb failures for weeks (boss: 'no vids on fb'). Truth in log, always.
         except Exception as e:
@@ -944,8 +972,18 @@ def main() -> None:
             queue_left = inc.is_dir() and any(inc.glob("next_song*"))
             if not queue_left:            # only cook when the queue is empty
                 from src import music_space, music_suno
-                keys = list(composer.GENRES)
-                nxt_genre = keys[(keys.index(genre_key) + 1) % len(keys)]
+                # 🕳 HOLE FIX (2026-09-14, found in the EP.039 log):
+                #   "(queue cook skipped: 'lambs_teeth' is not in list …)"
+                # This indexed composer.GENRES — but that dict only holds the NINE
+                # offline-engine recipes, while the live wheel is the 24-cell
+                # GENRE_ROTATION. So for 15 of 24 genres .index() raised ValueError
+                # and tomorrow's song was NEVER pre-cooked into the artifact
+                # hand-off → every run has had to cook live inside its own job.
+                # Same table-hole class as the EP.028 KeyError (2026-09-01), one
+                # floor down. Fixed + guarded so it can never hard-fail again.
+                keys = list(GENRE_ROTATION)
+                nxt_genre = (keys[(keys.index(genre_key) + 1) % len(keys)]
+                             if genre_key in keys else keys[(ep + 1) % len(keys)])
                 nxt_lang = _pick_lang(ep + 1)
                 nxt_lyc = None
                 try:
@@ -953,7 +991,8 @@ def main() -> None:
                     print(f"  ✍️  Gemini songwriting "
                           f"({lyrics.LANGS[nxt_lang]['label']})…")
                     nxt_lyc = _ca.song_lyrics(
-                        {"name": "(untitled)", "genre": GENRE_LABEL[nxt_genre]},
+                        {"name": "(untitled)",
+                         "genre": GENRE_LABEL.get(nxt_genre, nxt_genre.replace("_", " "))},
                         nxt_lang, max(150, dur))
                 except Exception as e:
                     print(f"  (songwriting: {e} — bank lyrics tonight)")
@@ -994,7 +1033,9 @@ def main() -> None:
         if os.environ.get("MULTIPOST_DRYRUN") == "1":
             try:
                 from src import multi_post
-                print(f"  🧪 multipost dry lanes → {multi_post.fanout(ep=ep, meta=meta, genre_key=genre_key, out=OUT, yt_vid=None, yt_sid=None)}")
+                _fanout_result = multi_post.fanout(ep=ep, meta=meta, genre_key=genre_key,
+                                                   out=OUT, yt_vid=None, yt_sid=None)
+                print(f"  🧪 multipost dry lanes → {_fanout_result}")
             except Exception as _me:
                 print(f"  🧪 multipost dry lane skipped: {_me}")
         # 📨 dry-run = drop today's renders in the owner's Telegram instead of
@@ -1037,6 +1078,28 @@ def main() -> None:
             print(f"  📨 telegram preview failed ({_e}) — dry-run unaffected")
 
     _write_summary(OUT / "summary.md", meta, sched, video_today, vid, sid)
+    # 📋 PUBLIC RECEIPT (2026-09-13): run logs need admin rights to download and
+    # they expire (410 Gone) — so the run itself commits its own truth into the
+    # repo. Readable by anyone, forever, with zero credentials:
+    #   state/receipts/latest.md · state/receipts/<date>-epNNN.json · history.json
+    # Laws: never raises, text-only, NEVER commits state/state.json (the
+    # workflow's own 'Commit state' step owns that file — racing it caused the
+    # duplicate-episode bug class), credentials masked at the door.
+    try:
+        from src import receipt as _receipt
+        _receipt.record(
+            ep=ep, meta=meta, genre_key=genre_key,
+            kind=("full" if video_today else "short"),
+            vid=vid, sid=sid, fanout=_fanout_result, started_at=_run_started,
+            mode=("dry_run" if args.dry_run else "publish" if args.publish else "auto"),
+            root=ROOT,
+            extra={"errors": errors[:6],
+                   "lane_audit_file": str(ROOT / "out" / "lane_audit.json"),
+                   "queue_lane": str(os.environ.get("KAGGLE_FIRST", "")),
+                   "vocal_everyday": str(os.environ.get("VOCAL_EVERYDAY", "")),
+                   "require_vocals": str(os.environ.get("REQUIRE_VOCALS", ""))})
+    except Exception as _re:
+        print(f"  📋 receipt skipped: {_re}")
     if errors:
         # state is already saved above — exiting red only exists so the
         # failure alert fires with the real error in the log tail

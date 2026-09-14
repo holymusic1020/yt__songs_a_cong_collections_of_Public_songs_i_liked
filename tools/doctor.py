@@ -54,6 +54,19 @@ if st_path.exists():
     print(f"  📚 state: episode={st.get('episode')} "
           f"history={len(st.get('history', []))} "
           f"weights={'yes' if st.get('genre_weights') else 'no'}")
+# 🩺 LANE AUDIT (2026-09-13): every cross-posting mystery so far ("nothing on tt",
+# "fb silent for weeks", "the drop succeeded in 27s but posted nothing") had the
+# same root cause — the truth only existed inside a run log, and logs need an admin
+# token to download (403) and expire (410 Gone). So the audit prints here AND
+# writes out/lane_audit.json, which the receipt step commits to state/receipts/.
+# Readable by anyone, forever, with zero credentials.
+try:
+    sys.path.insert(0, str(ROOT))
+    from src import lane_audit
+    lane_audit.run()
+except Exception as _lae:                       # never fatal — it is a diagnostic
+    print(f"  🩺 lane audit skipped: {_lae}")
+
 print("  quota math: ~3,200 of 10,000 daily units per release — comfy")
 print("  🩺 reminder: videos stuck private after publish time? → YouTube API")
 print("     compliance audit (free): https://support.google.com/youtube/contact/yt_api_form")
