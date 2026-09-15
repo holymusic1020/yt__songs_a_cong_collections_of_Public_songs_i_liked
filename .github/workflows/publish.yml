@@ -115,6 +115,17 @@ jobs:
 
       - name: Compose + render + upload episode
         env:
+          # 🧲 (2026-09-15) The reel vault uploads release ASSETS over the REST API, which
+          # needs a bearer token in the environment. `GH_TOKEN` (secret, 2026-09-04) can read
+          # the public release but cannot write assets — run #101 proved it:
+          #   🧲 vault GH_TOKEN attempt 1/3 → HTTP 403 "Resource not accessible by personal access token"
+          #   🔑 vault: GH_TOKEN lacks contents:write — rotating to the next token
+          #   🧲 vault FAILED … with every token      ← there WAS no next token in the env
+          # GITHUB_TOKEN is NOT a default runner env var, and actions/checkout only wires it
+          # into git's http.extraheader (which is why the receipt's `git push` works but a raw
+          # API call does not). This job already grants `permissions: contents: write`, so
+          # mapping it here gives src.multi_post.vault_tokens() the second token it rotates to.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
