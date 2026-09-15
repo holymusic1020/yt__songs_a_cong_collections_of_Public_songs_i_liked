@@ -279,6 +279,29 @@ def _gh_json(url: str, tok: str, data: bytes | None = None,
     return json.loads(urllib.request.urlopen(req, timeout=300).read())
 
 
+def vault_tokens() -> list:
+    """[(label, token), …] in priority order, de-duplicated.
+
+    🔑 ROTATION LAW (2026-09-15, found in the run #100 log):
+        🧲 vault attempt 1/3 failed for ep040_short.mp4: URLError: <urlopen error EOF …>
+        🧲 vault attempt 2/3 failed for ep040_short.mp4: HTTPError: HTTP Error 403: Forbidden
+        🧲 vault attempt 3/3 failed for ep040_short.mp4: HTTPError: HTTP Error 403: Forbidden
+        🧲 vault FAILED for ep040.mp4 after 3 attempts
+    Both files died on **403**, not on the network. The `GH_TOKEN` secret (last updated
+    2026-09-04) can READ the public release but cannot WRITE an asset — while the
+    workflow's own `GITHUB_TOKEN` is granted `permissions: contents: write` and could.
+    The old code was `GH_TOKEN or GITHUB_TOKEN`, so the dead-ish secret shadowed the
+    good one forever, and retrying the SAME token 3× on a permission error is pointless.
+    Now: rotate on 401/403, retry only transient errors.
+    """
+    out = []
+    for name in ("GH_TOKEN", "GITHUB_TOKEN"):
+        v = (os.environ.get(name) or "").strip()
+        if v and v not in [t for _, t in out]:
+            out.append((name, v))
+    return out
+
+
 def _vault_public_url(path: Path) -> str:
     """Park one file in the public 'bossdrop-stage' release → return its URL.
 
@@ -286,7 +309,8 @@ def _vault_public_url(path: Path) -> str:
     place). Creates the release on first ever use so a fresh repo still works.
     Raises on any problem — the caller soft-fails, a release never dies here.
     """
-    tok = (os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or "").strip()
+    toks = vault_tokens()
+    tok = toks[0][1] if toks else ""
     repo = os.environ.get("GITHUB_REPOSITORY", "").strip()
     if not (tok and repo):
         raise RuntimeError("no GH_TOKEN/GITHUB_REPOSITORY — cannot host the file "
@@ -312,21 +336,29 @@ def _vault_public_url(path: Path) -> str:
     # 🔁 retry law (2026-09-14): EP.039's vault step died on a transient runner-side
     # SSL EOF. Meta FETCHES the video from this URL, so a flaky upload = no ig post.
     blob = path.read_bytes()
+    up_url = (f"https://uploads.github.com/repos/{repo}/releases/{rel['id']}/assets"
+              f"?name={urllib.parse.quote(path.name)}")
     last = ""
-    for attempt in range(1, 4):
-        try:
-            up = _gh_json(f"https://uploads.github.com/repos/{repo}/releases/{rel['id']}/assets"
-                          f"?name={urllib.parse.quote(path.name)}", tok, data=blob,
-                          headers={"Content-Type": ctype})
-            url = up.get("browser_download_url", "")
-            if url:
-                return url
-            last = f"no browser_download_url: {str(up)[:120]}"
-        except Exception as e:
-            last = f"{type(e).__name__}: {str(e)[:140]}"
-        if attempt < 3:
-            time.sleep(4 * attempt)
-    raise RuntimeError(f"vault upload failed 3× for {path.name} — {last}")
+    for label, t in toks:                      # 🔑 rotate tokens on permission errors
+        for attempt in range(1, 4):
+            try:
+                up = _gh_json(up_url, t, data=blob, headers={"Content-Type": ctype})
+                url = up.get("browser_download_url", "")
+                if url:
+                    if label != "GH_TOKEN":
+                        print(f"  🔑 vault: {label} did the upload (GH_TOKEN was refused)")
+                    return url
+                last = f"no browser_download_url: {str(up)[:120]}"
+            except urllib.error.HTTPError as he:
+                last = f"{label} HTTP {he.code}: {he.read().decode()[:110]}"
+                if he.code in (401, 403):      # permission failure — retrying is pointless
+                    print(f"  🔑 vault: {label} refused ({he.code}) — trying the next token")
+                    break
+            except Exception as e:
+                last = f"{label} {type(e).__name__}: {str(e)[:120]}"
+            if attempt < 3:
+                time.sleep(3 * attempt)
+    raise RuntimeError(f"vault upload failed for {path.name} with every token — {last}")
 
 
 def _probe_seconds(path: Path):

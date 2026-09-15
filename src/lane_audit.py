@@ -230,7 +230,37 @@ def probe_tt_status(publish_ids: list | None = None) -> dict:
     return out
 
 
-def audit(net: bool | None = None, publish_ids: list | None = None) -> dict:
+def _checkpoint_evidence(fanout) -> str:
+    """🔎 GROUND TRUTH (2026-09-15, run #100).
+
+    The receipt said, verbatim:
+        ✅ the Page has NO identity checkpoint right now — fb/ig publishing is unblocked
+    …on the very same run whose fb lane result was:
+        failed softly: fb api «video_reels» rejected: {"code":368,
+        "message":"Confirm your identity before you can publish as this Page."}
+
+    So the read-only canary is a FALSE NEGATIVE: Meta does not expose the checkpoint on
+    any readable node, it only enforces it on the write. A diagnostic that says "you are
+    unblocked" while the post is being rejected is worse than silence — it tells the boss
+    to stop doing the one thing that would fix it. So the real fanout result of THIS run
+    now outranks the canary, always.
+    """
+    if not fanout:
+        return ""
+    try:
+        blob = fanout if isinstance(fanout, str) else json.dumps(fanout, ensure_ascii=False)
+    except Exception:
+        blob = str(fanout)
+    # normalise: json.dumps escapes the inner quotes of a nested error body
+    # (\\"code\\":368), and Meta's own spacing varies — flatten both before matching.
+    low = blob.lower().replace("\\", "").replace(" ", "")
+    if '"code":368' in low or "code368" in low or "confirmyouridentity" in low:
+        return "code 368 / 'Confirm your identity' appeared on a real publish attempt this run"
+    return ""
+
+
+def audit(net: bool | None = None, publish_ids: list | None = None,
+          fanout=None) -> dict:
     """Build the full report. Never raises."""
     try:
         # Law #3 is absolute: MULTIPOST_DRYRUN=1 means ZERO api calls, even when a
@@ -260,6 +290,7 @@ def audit(net: bool | None = None, publish_ids: list | None = None) -> dict:
             },
             "ig_account_cache": None,
             "authoritative": not _bare_env(),
+            "checkpoint_evidence": _checkpoint_evidence(fanout),
             "verdicts": [],
         }
         cache = Path("state/ig_account.json")
@@ -308,13 +339,14 @@ def audit(net: bool | None = None, publish_ids: list | None = None) -> dict:
         if _env("MULTIPOST_DRYRUN") == "1":
             rep["verdicts"].append("🟡 MULTIPOST_DRYRUN=1 → lanes render only, ZERO api calls (intentional test mode).")
 
-        return _finish(rep, do_net, publish_ids)
+        return _finish(rep, do_net, publish_ids, fanout)
 
     except Exception as e:                        # never fatal — it is a diagnostic
         return {"schema": 1, "error": f"{type(e).__name__}: {e}"}
 
 
-def _finish(rep: dict, do_net: bool, publish_ids: list | None = None) -> dict:
+def _finish(rep: dict, do_net: bool, publish_ids: list | None = None,
+            fanout=None) -> dict:
     """Live probes (if allowed) → write out/lane_audit.json → return the report."""
     try:
         if do_net:
@@ -330,10 +362,31 @@ def _finish(rep: dict, do_net: bool, publish_ids: list | None = None) -> dict:
                 if (rep.get(k) or {}).get("boss_action"):
                     rep["verdicts"].append(rep[k]["boss_action"])
             if (rep.get("fb_checkpoint") or {}).get("ok") is True:
-                rep["verdicts"].append("✅ the Page has NO identity checkpoint right now — fb/ig publishing is unblocked on Meta's side.")
+                rep["verdicts"].append(
+                    "🟡 the read-only canary saw no checkpoint flag — but it CANNOT prove you are "
+                    "unblocked (run #100: clean canary, real post still rejected with code 368). "
+                    "Trust the fb lane result in this receipt, not this line.")
             rep["tt_status"] = probe_tt_status(publish_ids)
         else:
             rep["fb_token"] = {"probed": False, "why": "LANE_AUDIT_NET!=1 (or dry run) — offline audit only"}
+        # 🥇 GROUND TRUTH beats the canary, and it is OFFLINE evidence — it comes from
+        # what actually happened on this run's lanes, not from a probe. So it applies even
+        # when the live probes are off (dry run / LANE_AUDIT_NET=0). See _checkpoint_evidence().
+        _ev = rep.get("checkpoint_evidence") or ""
+        if _ev:
+            rep["verdicts"] = [v for v in rep["verdicts"]
+                               if "NO identity checkpoint" not in v
+                               and "CANNOT prove you are unblocked" not in v]
+            rep["verdicts"].append(
+                "🔴 FACEBOOK IDENTITY CHECKPOINT IS ACTIVE — " + _ev + ". A read-only canary "
+                "cannot see this (Meta only enforces it on writes), so ignore any ✅ or 🟡 it "
+                "printed. FIX: Facebook **phone app** → ☰ → your Nix Speech Page → "
+                "'Confirm your identity' banner → follow it. Until then EVERY fb and ig post is "
+                "rejected with code 368 and nothing you change in the code or the tokens helps.")
+            rep["fb_checkpoint"] = dict(rep.get("fb_checkpoint") or {})
+            rep["fb_checkpoint"]["boss_action"] = (
+                "Confirm your identity in the Facebook phone app (Page → banner). "
+                "This is blocking fb AND ig.")
         if not rep["verdicts"]:
             rep["verdicts"].append("✅ no obvious blocker found from inside the run.")
         return rep
@@ -408,9 +461,9 @@ def write(rep: dict, path: Path | str = OUT_PATH) -> Path | None:
 
 
 def run(print_it: bool = True, net: bool | None = None,
-        publish_ids: list | None = None) -> dict:
-    """audit() + write() + a readable print. Called by tools/doctor.py."""
-    rep = audit(net=net, publish_ids=publish_ids)
+        publish_ids: list | None = None, fanout=None) -> dict:
+    """audit() + write() + a readable print. Called by tools/doctor.py and main.py."""
+    rep = audit(net=net, publish_ids=publish_ids, fanout=fanout)
     if print_it:
         try:
             print(to_markdown(rep))

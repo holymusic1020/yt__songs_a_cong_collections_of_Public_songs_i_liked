@@ -294,13 +294,28 @@ def _vault_release_asset(paths: list) -> list:
     (asset per file, replaced in place)."""
     import json as _j
     import urllib.request as _u
-    tok = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    try:
+        from src.multi_post import vault_tokens as _vtoks
+        toks = _vtoks()
+    except Exception:
+        toks = [(n, os.environ[n]) for n in ("GH_TOKEN", "GITHUB_TOKEN")
+                if (os.environ.get(n) or "").strip()]
     repo = os.environ.get("GITHUB_REPOSITORY", "")
-    if not (tok and repo):
-        print("  (reel vault: no GH_TOKEN — skipped)"); return []
-    rel = _j.loads(_u.urlopen(_u.Request(
-        f"https://api.github.com/repos/{repo}/releases/tags/bossdrop-stage",
-        headers={"Authorization": f"Bearer {tok}"}), timeout=60).read())
+    if not (toks and repo):
+        print("  (reel vault: no GH_TOKEN/GITHUB_TOKEN — skipped)"); return []
+    # the release itself is public — read it with whichever token answers, or with none
+    rel, rid = None, 0
+    for _lbl, _t in toks + [("(anon)", "")]:
+        try:
+            _h = {"Authorization": f"Bearer {_t}"} if _t else {}
+            rel = _j.loads(_u.urlopen(_u.Request(
+                f"https://api.github.com/repos/{repo}/releases/tags/bossdrop-stage",
+                headers=_h), timeout=60).read())
+            break
+        except Exception as _re:
+            print(f"  🧲 vault: release read via {_lbl} failed: {type(_re).__name__}")
+    if not rel:
+        print("  (reel vault: cannot read the bossdrop-stage release — skipped)"); return []
     rid, assets = rel["id"], rel.get("assets", [])
     out = []
     for p in paths:
@@ -308,9 +323,15 @@ def _vault_release_asset(paths: list) -> list:
         name = p.name
         for a in assets:
             if a["name"] == name:                       # self-clean by name
-                _u.urlopen(_u.Request(
-                    f"https://api.github.com/repos/{repo}/releases/assets/{a['id']}",
-                    method="DELETE", headers={"Authorization": f"Bearer {tok}"}), timeout=60)
+                for _lbl, _t in toks:                   # never fatal — a stale asset is cosmetic
+                    try:
+                        _u.urlopen(_u.Request(
+                            f"https://api.github.com/repos/{repo}/releases/assets/{a['id']}",
+                            method="DELETE", headers={"Authorization": f"Bearer {_t}"}), timeout=60)
+                        break
+                    except Exception as _de:
+                        print(f"  🧲 vault: delete old {name} via {_lbl} failed "
+                              f"({type(_de).__name__}) — continuing")
         # 🔁 retry law (2026-09-14): the EP.039 log showed a one-shot death —
         #   "(reel vault skipped: <urlopen error EOF occurred in violation of
         #    protocol (_ssl.c:2427)>)"
@@ -319,27 +340,42 @@ def _vault_release_asset(paths: list) -> list:
         # video from a public URL, so the vault IS the ig host). Retries + backoff.
         blob = p.read_bytes()
         url = ""
-        for attempt in range(1, 4):
-            try:
-                req = _u.Request(
-                    f"https://uploads.github.com/repos/{repo}/releases/{rid}/assets?name={name}",
-                    data=blob, method="POST",
-                    headers={"Authorization": f"Bearer {tok}", "Content-Type": "video/mp4"})
-                up = _j.loads(_u.urlopen(req, timeout=600).read())
-                url = up.get("browser_download_url", "")
-                if url:
-                    break
-                print(f"  🧲 vault: no browser_download_url on attempt {attempt}")
-            except Exception as ve:
-                print(f"  🧲 vault attempt {attempt}/3 failed for {name}: "
-                      f"{type(ve).__name__}: {str(ve)[:120]}")
+        for _lbl, _t in toks:                  # 🔑 rotate on 401/403, retry only transient
+            for attempt in range(1, 4):
+                try:
+                    req = _u.Request(
+                        f"https://uploads.github.com/repos/{repo}/releases/{rid}/assets?name={name}",
+                        data=blob, method="POST",
+                        headers={"Authorization": f"Bearer {_t}", "Content-Type": "video/mp4"})
+                    up = _j.loads(_u.urlopen(req, timeout=600).read())
+                    url = up.get("browser_download_url", "")
+                    if url:
+                        if _lbl != "GH_TOKEN":
+                            print(f"  🔑 vault: {_lbl} did the upload (GH_TOKEN was refused)")
+                        break
+                    print(f"  🧲 vault: no browser_download_url on attempt {attempt}")
+                except _u.HTTPError as he:
+                    body = ""
+                    try:
+                        body = he.read().decode()[:100]
+                    except Exception:
+                        pass
+                    print(f"  🧲 vault {_lbl} attempt {attempt}/3 → HTTP {he.code} for {name} {body}")
+                    if he.code in (401, 403):
+                        print(f"  🔑 vault: {_lbl} lacks contents:write — rotating to the next token")
+                        break
+                except Exception as ve:
+                    print(f"  🧲 vault {_lbl} attempt {attempt}/3 failed for {name}: "
+                          f"{type(ve).__name__}: {str(ve)[:110]}")
                 if attempt < 3:
-                    time.sleep(4 * attempt)
+                    time.sleep(3 * attempt)
+            if url:
+                break
         if url:
             out.append(url)
             print(f"  🧲 vaulted: {name}")
         else:
-            print(f"  🧲 vault FAILED for {name} after 3 attempts — rescue copy and "
+            print(f"  🧲 vault FAILED for {name} with every token — rescue copy and "
                   f"any ig post for this file are unavailable this run")
     return out
 
@@ -1090,7 +1126,8 @@ def main() -> None:
     # overwrites out/lane_audit.json, so the public receipt can never carry the guess.
     try:
         from src import lane_audit as _la
-        _la.run(print_it=False)
+        # pass the REAL fanout result so a live code-368 outranks the read-only canary
+        _la.run(print_it=False, fanout=_fanout_result)
     except Exception as _lae:                     # never fatal — it is a diagnostic
         print(f"  🩺 authoritative lane audit skipped: {_lae}")
 

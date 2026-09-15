@@ -22,6 +22,7 @@ Run:  python tools/v24_ig_receipt_ut.py
 """
 import json
 import os
+import urllib.error
 import sys
 import tempfile
 from pathlib import Path
@@ -355,7 +356,8 @@ def main():
         mn = (Path(__file__).resolve().parents[1] / "src" / "main.py").read_text()
         i_aud, i_rec = mn.index("AUTHORITATIVE lane audit"), mn.index("from src import receipt")
         chk(i_aud < i_rec, "main.py runs the audit BEFORE the receipt reads out/lane_audit.json")
-        chk("_la.run(print_it=False)" in mn, "and it re-runs the full audit, overwriting the doctor's copy")
+        chk("_la.run(print_it=False, fanout=_fanout_result)" in mn,
+            "and it re-runs the full audit WITH the real fanout result, overwriting the doctor's copy")
     finally:
         os.environ.clear()
         os.environ.update(_saved)
@@ -397,6 +399,80 @@ def main():
     labels = set(_re.findall(r'"([A-Za-z_\x27]+)"\s*:', src_txt[i:j + 1]))
     chk(not (wheel - labels), f"GENRE_LABEL covers all 24 (holes: {sorted(wheel - labels)})")
     chk("GENRE_LABEL.get(nxt_genre" in src_txt, "and the lookup is a .get() now, never a [] KeyError")
+
+    print("\n1️⃣5️⃣  REGRESSION: the vault 403 — GH_TOKEN shadowed GITHUB_TOKEN (run #100)")
+    from src import main as _mn
+    toks = multi_post.vault_tokens.__doc__ or ""
+    chk("ROTATION LAW" in toks, "the rotation law is documented where the next reader will see it")
+    _saved2 = dict(os.environ)
+    try:
+        os.environ.update({"GH_TOKEN": "dead-token", "GITHUB_TOKEN": "good-token",
+                           "GITHUB_REPOSITORY": "o/r"})
+        got = multi_post.vault_tokens()
+        chk([l for l, _ in got] == ["GH_TOKEN", "GITHUB_TOKEN"], f"priority order: {[l for l,_ in got]}")
+        os.environ["GH_TOKEN"] = "good-token"
+        chk(len(multi_post.vault_tokens()) == 1, "identical tokens are de-duplicated")
+        os.environ.update({"GH_TOKEN": "dead-token"})
+
+        seen = []
+
+        def vault_urlopen(req, timeout=None):
+            u = req.full_url if hasattr(req, "full_url") else str(req)
+            auth = (req.get_header("Authorization") or "")
+            seen.append((u.split("?")[0][-34:], auth[-11:]))
+            if "releases/tags/bossdrop-stage" in u:
+                return FakeResp({"id": 77, "assets": []})
+            if "uploads.github.com" in u:
+                if "dead-token" in auth:
+                    raise urllib.error.HTTPError(u, 403, "Forbidden", {}, None)
+                return FakeResp({"browser_download_url":
+                                 "https://github.com/o/r/releases/download/bossdrop-stage/ep040_short.mp4"})
+            return FakeResp({})
+        real_u = urllib.request.urlopen
+        real_sleep = _mn.time.sleep
+        urllib.request.urlopen = vault_urlopen
+        _mn.time.sleep = lambda s: None
+        try:
+            f = tmp / "ep040_short.mp4"
+            f.write_bytes(b"x" * 2048)
+            urls = _mn._vault_release_asset([f])
+            chk(len(urls) == 1 and urls[0].endswith("ep040_short.mp4"),
+                f"upload succeeded after rotating off the 403 token: {urls}")
+            toks_used = [a for _, a in seen if "uploads" not in a]
+            chk(any("dead-token" in a for _, a in seen), "GH_TOKEN was tried first")
+            chk(any("good-token" in a for _, a in seen), "then rotated to GITHUB_TOKEN")
+            n403 = sum(1 for _, a in seen if "dead-token" in a and "uploads" in _)
+            chk(sum(1 for u2, a in seen if "dead-token" in a) <= 2,
+                "a 403 is NOT retried 3× on the same token (that was the waste)")
+        finally:
+            urllib.request.urlopen = real_u
+            _mn.time.sleep = real_sleep
+
+        print("\n1️⃣6️⃣  REGRESSION: the 368 canary lied (run #100 receipt vs its own fb lane)")
+        from src import lane_audit as _la2
+        ev = _la2._checkpoint_evidence({"fb": 'failed softly: {"code":368,"message":"Confirm your identity"}'})
+        chk(bool(ev), f"368 detected in a fanout dict: {ev[:44]}")
+        chk(bool(_la2._checkpoint_evidence('{"code": 368}')), "detected with a space after the colon")
+        chk(bool(_la2._checkpoint_evidence("Confirm your identity before you can publish")),
+            "detected from the message alone")
+        chk(_la2._checkpoint_evidence({"fb": "posted ok"}) == "", "no false positive on a clean fanout")
+        chk(_la2._checkpoint_evidence(None) == "", "and on no fanout at all")
+        os.environ.update({"MULTIPOST": "fb,tt", "FB_PAGE_ID": "1", "FB_PAGE_TOKEN": "EAA" + "b" * 40,
+                           "MULTIPOST_DRYRUN": "1", "TIKTOK_ACCESS_TOKEN": "act.ia" + "c" * 20,
+                           "TIKTOK_REFRESH_TOKEN": "rft." + "d" * 20, "TIKTOK_CLIENT_KEY": "ck",
+                           "TIKTOK_CLIENT_SECRET": "cs"})
+        r368 = _la2.audit(fanout={"fb": 'rejected: {"code":368}'})   # dry-run env: probes off
+        j3 = " ".join(r368.get("verdicts", []))
+        chk("FACEBOOK IDENTITY CHECKPOINT IS ACTIVE" in j3, "ground truth emits the 🔴")
+        chk("NO identity checkpoint" not in j3, "and the canary's ✅ is REMOVED, not just outvoted")
+        chk("phone app" in j3, "the verdict tells him exactly what to do")
+        chk(r368.get("checkpoint_evidence"), "evidence recorded in the JSON too")
+        r_ok = _la2.audit(fanout={"fb": "posted ok"})
+        j4 = " ".join(r_ok.get("verdicts", []))
+        chk("FACEBOOK IDENTITY CHECKPOINT IS ACTIVE" not in j4, "clean fanout → no 🔴")
+        chk("FACEBOOK IDENTITY CHECKPOINT" not in j4, "clean fanout → no checkpoint 🔴")
+    finally:
+        os.environ.clear(); os.environ.update(_saved2)
 
     print("\n1️⃣4️⃣  REGRESSION: the vault retry law (EP.039 died on one SSL EOF)")
     mp_src = (Path(__file__).resolve().parents[1] / "src" / "multi_post.py").read_text()
