@@ -90,18 +90,41 @@ def _chunk_lines(lines: list[str], L: float) -> list[str]:
     return chunks
 
 
-def _sfx_marks(seg: np.ndarray, sr: int, card_times: list) -> np.ndarray:
+def _sfx_marks(seg: np.ndarray, sr: int, card_times: list, ep: int = 0) -> np.ndarray:
     """Percussive ticks at every card change + small riser into the final
-    card's bait. The eye changes, the ear confirms it — tactile weight."""
+    card's bait. The eye changes, the ear confirms it — tactile weight.
+
+    🔇 SHORT_SFX (2026-09-15, boss: "every single song, when it starts… it starts
+    with a single sound"):
+      0 (DEFAULT) = off. The song plays untouched.
+      1           = the legacy behaviour, byte-for-byte, for A/B comparison.
+      2           = tactile cuts WITHOUT the opening artefact — nothing before
+                    2.0 s, amplitude halved, and the noise seeds vary per episode.
+
+    Why this was audible on every release: card_times[0][0] is the first lyric
+    timestamp inside the hook window, typically 0.0–1.0 s, and the old guard only
+    skipped a <= 0.05. So a 55 ms 2600 Hz descending chirp at amplitude 0.16 landed
+    in the first second of EVERY Short — and because the RNG seeds were hard-coded
+    (7 and 11) it was the *identical* sample in all 41 videos. Shorts are also the
+    only thing TikTok and Reels ever receive, so that click was the channel's
+    first impression every single day.
+    """
+    mode = (os.environ.get("SHORT_SFX", "0") or "0").strip()
+    if mode == "0":
+        return seg
+    guard = 2.0 if mode == "2" else 0.05
+    amp = 0.08 if mode == "2" else 0.16
+    click_amp = 0.035 if mode == "2" else 0.07
+    seed_t, seed_r = (7 + (ep % 13), 11 + (ep % 7)) if mode == "2" else (7, 11)
     out = seg.copy()
     n_tick = int(0.055 * sr)
     t = np.arange(n_tick) / sr
     chirp = np.sin(2 * np.pi * (2600 - 26000 * t) * t).astype(np.float32)
-    tick = chirp * np.exp(-t * 60) * 0.16
-    click = (np.random.default_rng(7).standard_normal(n_tick)
-             * np.exp(-t * 220) * 0.07).astype(np.float32)
+    tick = chirp * np.exp(-t * 60) * amp
+    click = (np.random.default_rng(seed_t).standard_normal(n_tick)
+             * np.exp(-t * 220) * click_amp).astype(np.float32)
     for i, (a, b) in enumerate(card_times):
-        if a <= 0.05:
+        if a <= guard:
             continue
         s = int(a * sr)
         if s + n_tick < len(out):
@@ -114,9 +137,9 @@ def _sfx_marks(seg: np.ndarray, sr: int, card_times: list) -> np.ndarray:
     n_r = min(n_r, len(out) - s)
     if n_r > sr // 4:
         tr = np.arange(n_r) / n_r
-        noise = np.random.default_rng(11).standard_normal(n_r)
+        noise = np.random.default_rng(seed_r).standard_normal(n_r)
         noise = np.convolve(noise, np.ones(25) / 25, mode="same")
-        out[s:s + n_r] += (noise * tr ** 2 * 0.05).astype(np.float32)
+        out[s:s + n_r] += (noise * tr ** 2 * (0.025 if mode == "2" else 0.05)).astype(np.float32)
     return out
 
 
@@ -331,7 +354,7 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
         per = (L - 0.45) / len(cards)            # beat of air before the loop
         card_times = [(i * per, (i + 1) * per) for i in range(len(cards))]
 
-    seg = _sfx_marks(seg, sr, card_times)         # ticks + riser = tactile cuts
+    seg = _sfx_marks(seg, sr, card_times, ep=ep)  # 🔇 SHORT_SFX=0 (default) → untouched
     from src.composer import write_wav
     short_wav = write_wav(out_dir / f"ep{ep:03d}_short.wav", seg)
 
