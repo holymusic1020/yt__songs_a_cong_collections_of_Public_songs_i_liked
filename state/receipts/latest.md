@@ -1,20 +1,20 @@
-# 📋 receipt · EP.041 · 2026-09-15
+# 📋 receipt · EP.042 · 2026-09-15
 
 | | |
 |---|---|
-| track | **subway charcoal** (anime_titan) |
+| track | **lobby telephone** (disco_house) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/y2HsLPgxBWA |
+| youtube | — · short: https://youtu.be/OH8O1JSnEtQ |
 | multipost dial | `fb,tt` |
-| took | 1083.2 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/34940084658 @ 08ecb8f |
+| took | 961.6 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/34981112142 @ 808393b |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | fb | failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {"error":{"message":"Confirm your identity before you can publish as this Page. |
-| tiktok_publish_id | v_pub_file~v2-1.7685656162372536340 |
+| tiktok_publish_id | v_pub_file~v2-1.7685768192277252117 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit

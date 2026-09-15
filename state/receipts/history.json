@@ -38,5 +38,26 @@
       "tt": "uploaded → DRAFT (boss publishes in-app)",
       "tiktok_publish_id": "v_pub_file~v2-1.7685656162372536340"
     }
+  },
+  {
+    "date": "2026-09-15",
+    "episode": 42,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "disco_house",
+    "track": "lobby telephone",
+    "multipost_dial": "fb,tt",
+    "seconds": 961.6,
+    "youtube": {
+      "video_id": null,
+      "short_id": "OH8O1JSnEtQ",
+      "watch": null,
+      "short": "https://youtu.be/OH8O1JSnEtQ"
+    },
+    "lanes": {
+      "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"Aeuu4m4c08xsxgsNBQqaWCzaxxWpBo1GynHE1MWRX41ILPMdmicrsmAMzRt24fx-dKOKauF_zApDVvD1UFQo",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7685768192277252117"
+    }
   }
 ]
