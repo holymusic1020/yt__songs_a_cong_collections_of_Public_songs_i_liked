@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy — Nix Speech</title>
+<meta name="description" content="Privacy Policy for the Nix Speech TikTok integration.">
+<style>
+:root{--bg:#0b0d12;--card:#141824;--ink:#e8ecf5;--dim:#93a0b8;--acc:#7c5cff;--line:#232a3a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:56px 22px 80px}
+header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:34px}
+.logo{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--ink)}
+.moon{width:42px;height:42px;border-radius:50%;flex:0 0 auto;
+ background:radial-gradient(circle at 34% 32%,#c9b8ff,#7c5cff 58%,#3b2a86)}
+h1{font-size:26px;margin:0;letter-spacing:-.2px}
+.sub{color:var(--dim);font-size:14px;margin:4px 0 0}
+h2{font-size:19px;margin:34px 0 10px;letter-spacing:-.1px}
+p,li{color:#cfd6e6}
+a{color:#a994ff}
+.eff{display:inline-block;color:var(--dim);font-size:13px;border:1px solid var(--line);
+ border-radius:999px;padding:4px 12px;margin-bottom:22px}
+ol,ul{padding-left:22px}
+li{margin:9px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:14px 0}
+nav.foot{margin-top:48px;padding-top:22px;border-top:1px solid var(--line);
+ color:var(--dim);font-size:14px;display:flex;gap:18px;flex-wrap:wrap}
+nav.foot a{color:var(--dim);text-decoration:none}
+nav.foot a:hover{color:var(--ink)}
+code{background:#0f1420;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:14px}
+strong{color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="logo" href="./index.html">
+    <span class="moon"></span>
+    <span><h1>Nix Speech</h1><p class="sub">original music, released daily</p></span>
+  </a>
+</header>
+
+<span class="eff">Effective: 3 September 2026</span>
+<h2>Privacy Policy</h2>
+<p>The <strong>Nix Speech</strong> TikTok integration exists for a single purpose:
+posting short music videos, created by the account owner, to <strong>the owner's own
+TikTok account</strong> via the TikTok Content Posting API.</p>
+<h2>Data we access</h2>
+<ul>
+<li><code>user.info.basic</code> &mdash; open id, display name and avatar of the
+owner's TikTok account.</li>
+<li><code>video.upload</code> / <code>video.publish</code> &mdash; publish permission
+only. We never read the videos, analytics or personal data of any other user.</li>
+</ul>
+<h2>Data we store</h2>
+<ul>
+<li>OAuth refresh and access tokens for the owner's own account, stored as encrypted
+secrets in a private GitHub Actions secret store and rotated automatically.</li>
+<li>No cookies, no tracking, no analytics on TikTok users, and no sale or sharing of
+any data with third parties.</li>
+</ul>
+<h2>Third parties</h2>
+<ul>
+<li><strong>TikTok for Developers</strong> (OAuth + Content Posting API) &mdash; the
+only processing counterpart. No other third-party SDKs are used.</li>
+<li><strong>GitHub Actions</strong> &mdash; runs the publishing pipeline on a schedule.</li>
+</ul>
+<h2>Owner rights</h2>
+<p>The operator (the account owner, and the only data subject) may revoke access at any
+time from the TikTok app &rarr; Settings &rarr; Privacy &rarr; Apps, or by deleting this
+app in the TikTok developer portal. All stored secrets are destroyed on deletion.</p>
+<h2>Data retention</h2>
+<p>Tokens are retained only while the integration is active, and are replaced
+automatically on each rotation. No personal data is retained beyond what the API returns
+for the owner's own account.</p>
+<h2>Contact</h2>
+<p>Via the YouTube channel's business contact link:
+<a href="https://www.youtube.com/@nixspeech">youtube.com/@nixspeech</a>.</p>
+
+<nav class="foot">
+  <a href="./index.html">Home</a>
+  <a href="./terms.html">Terms of Service</a>
+  <a href="./privacy.html">Privacy Policy</a>
+  <a href="https://www.youtube.com/@nixspeech">YouTube</a>
+</nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terms of Service — Nix Speech</title>
+<meta name="description" content="Terms of Service for the Nix Speech TikTok integration.">
+<style>
+:root{--bg:#0b0d12;--card:#141824;--ink:#e8ecf5;--dim:#93a0b8;--acc:#7c5cff;--line:#232a3a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:56px 22px 80px}
+header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:34px}
+.logo{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--ink)}
+.moon{width:42px;height:42px;border-radius:50%;flex:0 0 auto;
+ background:radial-gradient(circle at 34% 32%,#c9b8ff,#7c5cff 58%,#3b2a86)}
+h1{font-size:26px;margin:0;letter-spacing:-.2px}
+.sub{color:var(--dim);font-size:14px;margin:4px 0 0}
+h2{font-size:19px;margin:34px 0 10px;letter-spacing:-.1px}
+p,li{color:#cfd6e6}
+a{color:#a994ff}
+.eff{display:inline-block;color:var(--dim);font-size:13px;border:1px solid var(--line);
+ border-radius:999px;padding:4px 12px;margin-bottom:22px}
+ol,ul{padding-left:22px}
+li{margin:9px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:14px 0}
+nav.foot{margin-top:48px;padding-top:22px;border-top:1px solid var(--line);
+ color:var(--dim);font-size:14px;display:flex;gap:18px;flex-wrap:wrap}
+nav.foot a{color:var(--dim);text-decoration:none}
+nav.foot a:hover{color:var(--ink)}
+code{background:#0f1420;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:14px}
+strong{color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="logo" href="./index.html">
+    <span class="moon"></span>
+    <span><h1>Nix Speech</h1><p class="sub">original music, released daily</p></span>
+  </a>
+</header>
+
+<span class="eff">Effective: 3 September 2026</span>
+<h2>Terms of Service</h2>
+<ol>
+<li><strong>Service.</strong> The Nix Speech TikTok integration lets its owner upload
+and schedule short original music videos to the owner's own TikTok account using the
+TikTok Content Posting API.</li>
+<li><strong>Ownership.</strong> All media posted is original work owned by this
+account's operator, and is its sole responsibility.</li>
+<li><strong>Access.</strong> The integration acts only with OAuth consent granted by
+the owner, and stops acting the moment that consent is revoked.</li>
+<li><strong>Prohibited use.</strong> No spam, no scraping, and no posting on behalf of
+other users. The service is used by the owner, on the owner's account only.</li>
+<li><strong>Availability.</strong> The service is automated and provided on a
+best-effort basis; schedules may slip due to quota or platform-side limits without notice.</li>
+<li><strong>Liability.</strong> The legality of posted content is the operator's own
+matter; the automation provides the pipeline as-is.</li>
+<li><strong>Revocation.</strong> Disconnect at any time from TikTok
+(Settings &rarr; Privacy &rarr; Apps). All stored tokens then become useless and are removed.</li>
+</ol>
+<h2>Scope of the TikTok integration</h2>
+<div class="card">
+<p style="margin:0 0 8px">This app requests exactly three permissions:</p>
+<ul style="margin:0">
+<li><code>user.info.basic</code> &mdash; to confirm which account is being connected</li>
+<li><code>video.upload</code> &mdash; to deliver a video to that account</li>
+<li><code>video.publish</code> &mdash; to publish that delivered video</li>
+</ul>
+</div>
+<p>Only one TikTok account is ever connected: the artist's own.</p>
+
+<nav class="foot">
+  <a href="./index.html">Home</a>
+  <a href="./terms.html">Terms of Service</a>
+  <a href="./privacy.html">Privacy Policy</a>
+  <a href="https://www.youtube.com/@nixspeech">YouTube</a>
+</nav>
+</div>
+</body>
+</html>
