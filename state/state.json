@@ -1,5 +1,5 @@
 {
-  "episode": 40,
+  "episode": 41,
   "history": [
     {
       "episode": 1,
@@ -520,6 +520,19 @@
       "publish_at": "2026-09-14T20:25:41Z",
       "short_publish_at": "2026-09-14T19:19:30Z",
       "at": "2026-09-14T16:11:54+00:00"
+    },
+    {
+      "episode": 41,
+      "kind": "short",
+      "youtube_id": "y2HsLPgxBWA",
+      "video_id": null,
+      "short_id": "y2HsLPgxBWA",
+      "title": "subway charcoal — Nix Speech (official audio)",
+      "name": "subway charcoal",
+      "genre": "anime_titan",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-15T09:17:15Z",
+      "at": "2026-09-15T07:14:39+00:00"
     }
   ],
   "receipts": [
@@ -533,6 +546,20 @@
       "multipost_dial": "fb",
       "lanes": {
         "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"Aevm2nzJn8dNvWll0kBKJmO8_0n0sxDsXXennv6YZutBVd25VrBniFlskgtjgZziv7WYRo9ISY_mqhkRGsMc"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "episode": 41,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "anime_titan",
+      "track": "subway charcoal",
+      "multipost_dial": "fb,tt",
+      "lanes": {
+        "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AetK9UTawmtia4Z-ndPgQ92RtIeWzf9KK9ZBbz3Ci0KVCvQIRB66IU1yMkrkezz3qcLipXe2YKWpe7uF6_Q-",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7685656162372536340"
       }
     }
   ]
