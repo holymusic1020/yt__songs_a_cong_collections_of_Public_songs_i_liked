@@ -44,7 +44,12 @@ jobs:
           TT_CODE: ${{ inputs.code }}
           TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
           TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
-          REDIRECT_URI: https://www.youtube.com/channel/UCRoOiKBNbFedb183Rj2l8zg
+          # (2026-09-16) must match the Login Kit Redirect URI registered in the TikTok
+          # portal EXACTLY, or the authorize call is rejected. Moved off the
+          # youtube.com/channel/… URI because every URL in the app configuration has to
+          # pass TikTok's URL-ownership verification, and nobody can verify a domain
+          # they do not own. The github.io page is ours and is verified.
+          REDIRECT_URI: https://holymusic1020.github.io/yt__songs_a_cong_collections_of_Public_songs_i_liked/auth.html
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
