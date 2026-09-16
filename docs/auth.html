@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nix Speech — connected to TikTok</title>
+<meta name="description" content="Authorization complete for the Nix Speech TikTok integration.">
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#0b0d12;--card:#141824;--ink:#e8ecf5;--dim:#93a0b8;--acc:#7c5cff;--line:#232a3a;--ok:#3ddc97}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;align-items:center;
+ justify-content:center;padding:28px;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.card{max-width:520px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;
+ padding:40px 34px;text-align:center}
+.tick{width:74px;height:74px;border-radius:50%;margin:0 auto 22px;display:flex;align-items:center;
+ justify-content:center;background:rgba(61,220,151,.13);border:2px solid var(--ok)}
+.tick svg{width:36px;height:36px;stroke:var(--ok);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.moon{width:34px;height:34px;border-radius:50%;margin:0 auto 14px;
+ background:radial-gradient(circle at 34% 32%,#c9b8ff,#7c5cff 58%,#3b2a86)}
+h1{font-size:23px;margin:0 0 10px;letter-spacing:-.2px}
+p{color:#cfd6e6;margin:0 0 8px}
+.small{color:var(--dim);font-size:13.5px;margin-top:20px}
+a{color:#a994ff}
+code{background:#0f1420;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="tick">
+    <svg viewBox="0 0 24 24"><polyline points="4 12.5 9.5 18 20 6.5"></polyline></svg>
+  </div>
+  <div class="moon"></div>
+  <h1>Nix Speech is connected</h1>
+  <p>TikTok authorization completed successfully.</p>
+  <p>You can close this tab and return to the app.</p>
+  <p class="small">
+    This integration posts only the artist's own original music, only to the artist's own
+    TikTok account. Nothing is read from any other user, and access can be revoked at any
+    time from TikTok &rarr; Settings &rarr; Privacy &rarr; Apps.
+  </p>
+  <p class="small">
+    <a href="./index.html">Nix Speech home</a> &nbsp;·&nbsp;
+    <a href="./privacy.html">Privacy Policy</a>
+  </p>
+  <p class="small"><code>state</code> and <code>code</code> parameters on this URL are consumed
+  by the publishing pipeline and are never stored in the browser.</p>
+</div>
+</body>
+</html>
