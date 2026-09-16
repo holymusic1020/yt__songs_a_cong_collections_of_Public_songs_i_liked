@@ -1,20 +1,20 @@
-# 📋 receipt · EP.042 · 2026-09-15
+# 📋 receipt · EP.043 · 2026-09-16
 
 | | |
 |---|---|
-| track | **lobby telephone** (disco_house) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/OH8O1JSnEtQ |
+| track | **antenna haze** (skyline_anthem) |
+| mode | publish · full |
+| youtube | https://youtu.be/MJJrPh2TdGs · short: https://youtu.be/CQJ37-rVBcY |
 | multipost dial | `fb,tt` |
-| took | 961.6 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/34981112142 @ 808393b |
+| took | 1093.1 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35107134830 @ 4bdc66c |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | fb | failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {"error":{"message":"Confirm your identity before you can publish as this Page. |
-| tiktok_publish_id | v_pub_file~v2-1.7685768192277252117 |
+| tiktok_publish_id | v_pub_file~v2-1.7686137968751233044 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
