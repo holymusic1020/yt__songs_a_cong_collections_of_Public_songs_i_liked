@@ -1,5 +1,5 @@
 {
-  "episode": 42,
+  "episode": 43,
   "history": [
     {
       "episode": 1,
@@ -546,6 +546,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-15T17:52:11Z",
       "at": "2026-09-15T14:27:38+00:00"
+    },
+    {
+      "episode": 43,
+      "kind": "full",
+      "youtube_id": "MJJrPh2TdGs",
+      "video_id": "MJJrPh2TdGs",
+      "short_id": "CQJ37-rVBcY",
+      "title": "antenna haze — Nix Speech (official audio)",
+      "name": "antenna haze",
+      "genre": "skyline_anthem",
+      "publish_at": "2026-09-16T16:03:13Z",
+      "short_publish_at": "2026-09-16T17:35:21Z",
+      "at": "2026-09-16T14:22:23+00:00"
     }
   ],
   "receipts": [
@@ -587,6 +600,20 @@
         "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"Aeuu4m4c08xsxgsNBQqaWCzaxxWpBo1GynHE1MWRX41ILPMdmicrsmAMzRt24fx-dKOKauF_zApDVvD1UFQo",
         "tt": "uploaded → DRAFT (boss publishes in-app)",
         "tiktok_publish_id": "v_pub_file~v2-1.7685768192277252117"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "episode": 43,
+      "mode": "publish",
+      "kind": "full",
+      "genre": "skyline_anthem",
+      "track": "antenna haze",
+      "multipost_dial": "fb,tt",
+      "lanes": {
+        "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AevoxI2julP2z9VMIQqoYG6hmYYkakSxvWvsGppvN9Qe_JKcUbSJiHWGin9e_Cs6vRIOdp8SiDGCvoF6610y",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7686137968751233044"
       }
     }
   ]
