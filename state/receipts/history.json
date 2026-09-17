@@ -80,5 +80,26 @@
       "tt": "uploaded → DRAFT (boss publishes in-app)",
       "tiktok_publish_id": "v_pub_file~v2-1.7686137968751233044"
     }
+  },
+  {
+    "date": "2026-09-17",
+    "episode": 44,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "baroque_waltz",
+    "track": "porcelain frost",
+    "multipost_dial": "fb,tt",
+    "seconds": 2082.3,
+    "youtube": {
+      "video_id": null,
+      "short_id": "NuzlCO5tKMI",
+      "watch": null,
+      "short": "https://youtu.be/NuzlCO5tKMI"
+    },
+    "lanes": {
+      "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AeswHCulHVVfk_I8PwBYns2WqXwz0YNvsfxd22MnfUH70kK6Q-QXtDEbqE0TORi1LYzwh9-CtIVwwGNiNeeZ",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7686513300670122004"
+    }
   }
 ]

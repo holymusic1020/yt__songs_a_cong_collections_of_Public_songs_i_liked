@@ -1,20 +1,20 @@
-# 📋 receipt · EP.043 · 2026-09-16
+# 📋 receipt · EP.044 · 2026-09-17
 
 | | |
 |---|---|
-| track | **antenna haze** (skyline_anthem) |
-| mode | publish · full |
-| youtube | https://youtu.be/MJJrPh2TdGs · short: https://youtu.be/CQJ37-rVBcY |
+| track | **porcelain frost** (baroque_waltz) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/NuzlCO5tKMI |
 | multipost dial | `fb,tt` |
-| took | 1093.1 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35107134830 @ 4bdc66c |
+| took | 2082.3 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35232842494 @ 49fd6e8 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | fb | failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {"error":{"message":"Confirm your identity before you can publish as this Page. |
-| tiktok_publish_id | v_pub_file~v2-1.7686137968751233044 |
+| tiktok_publish_id | v_pub_file~v2-1.7686513300670122004 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
