@@ -1,5 +1,5 @@
 {
-  "episode": 44,
+  "episode": 45,
   "history": [
     {
       "episode": 1,
@@ -572,6 +572,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-17T16:54:59Z",
       "at": "2026-09-17T14:38:50+00:00"
+    },
+    {
+      "episode": 45,
+      "kind": "short",
+      "youtube_id": "HVdwxKDDd2g",
+      "video_id": null,
+      "short_id": "HVdwxKDDd2g",
+      "title": "wet asphalt steam — Nix Speech (official audio)",
+      "name": "wet asphalt steam",
+      "genre": "dark_ambient",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-18T14:47:12Z",
+      "at": "2026-09-18T13:46:48+00:00"
     }
   ],
   "receipts": [
@@ -646,16 +659,16 @@
     {
       "date": "2026-09-18",
       "episode": 45,
-      "mode": "dry_run",
+      "mode": "publish",
       "kind": "short",
       "genre": "dark_ambient",
-      "track": "basement dial tone",
+      "track": "wet asphalt steam",
       "multipost_dial": "fb,tt,ig",
       "lanes": {
-        "fb": "render-only — would post reel ~6.6 MB (credentialed ✓): basement dial tone — Nix Speech (official audio) 🌙 \n#lyrics …",
-        "tt": "render-only — would upload ~6.6 MB (SELF_ONLY law): basement dial tone — Nix Speech (official audio) #lyrics #vi…",
-        "ig": "render-only — would post REEL ~6.6 MB to @unknown until the live run (32.0s ✓ )",
-        "ig_photo": "render-only — would post the cover art (~1545 KB → JPEG 1080×1350)"
+        "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AevuNQiRcQFe5D2iU5mY8to49H1xzJjqYuosXMQp7n891ZRG4LPqJoawWfmT_HopRUAmRlqm1CxpQVGoCdlq",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7686871279869642759",
+        "ig": "failed softly: ig container still POLL_ERROR after 420s (progress None)"
       }
     }
   ]
