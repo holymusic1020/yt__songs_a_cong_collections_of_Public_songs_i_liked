@@ -2,26 +2,25 @@
 
 | | |
 |---|---|
-| track | **basement dial tone** (dark_ambient) |
-| mode | dry_run · short |
-| youtube | — · short: — |
+| track | **wet asphalt steam** (dark_ambient) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/HVdwxKDDd2g |
 | multipost dial | `fb,tt,ig` |
-| took | 344.4 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35325982345 @ 0940d59 |
+| took | 1424.7 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35351560179 @ 888b05e |
 
 ## lanes
 
 | lane | result |
 |---|---|
-| fb | render-only — would post reel ~6.6 MB (credentialed ✓): basement dial tone — Nix Speech (official audio) 🌙 
-#lyrics … |
-| ig | render-only — would post REEL ~6.6 MB to @unknown until the live run (32.0s ✓ ) |
-| ig_photo | render-only — would post the cover art (~1545 KB → JPEG 1080×1350) |
-| tt | render-only — would upload ~6.6 MB (SELF_ONLY law): basement dial tone — Nix Speech (official audio) #lyrics #vi… |
+| fb | failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {"error":{"message":"Confirm your identity before you can publish as this Page. |
+| ig | failed softly: ig container still POLL_ERROR after 420s (progress None) |
+| tiktok_publish_id | v_pub_file~v2-1.7686871279869642759 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
 MULTIPOST dial: `fb,tt,ig` · lanes wanted: `fb, tt, ig`
 
 - 🟡 tt posts as SELF_ONLY (pre-approval law) → they land PRIVATE on the account (🔒 on the profile, invisible to everyone else). That is expected until TikTok approves the app, then flip repo var TIKTOK_PRIVACY=PUBLIC_TO_EVERYONE.
-- 🟡 MULTIPOST_DRYRUN=1 → lanes render only, ZERO api calls (intentional test mode).
+- 🔴 FACEBOOK IDENTITY CHECKPOINT IS ACTIVE — code 368 / 'Confirm your identity' appeared on a real publish attempt this run. A read-only canary cannot see this (Meta only enforces it on writes), so ignore any ✅ or 🟡 it printed. FIX: Facebook **phone app** → ☰ → your Nix Speech Page → 'Confirm your identity' banner → follow it. Until then EVERY fb and ig post is rejected with code 368 and nothing you change in the code or the tokens helps.

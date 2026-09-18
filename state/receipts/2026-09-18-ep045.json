@@ -1,31 +1,31 @@
 {
   "schema": 1,
-  "at": "2026-09-18T08:51:54Z",
+  "at": "2026-09-18T14:04:40Z",
   "date": "2026-09-18",
   "episode": 45,
-  "mode": "dry_run",
+  "mode": "publish",
   "kind": "short",
   "genre": "dark_ambient",
-  "track": "basement dial tone",
+  "track": "wet asphalt steam",
   "bpm": 60,
   "key": "***",
   "youtube": {
     "video_id": null,
-    "short_id": null,
+    "short_id": "HVdwxKDDd2g",
     "watch": null,
-    "short": null
+    "short": "https://youtu.be/HVdwxKDDd2g"
   },
   "multipost_dial": "fb,tt,ig",
   "lanes": {
-    "fb": "render-only — would post reel ~6.6 MB (credentialed ✓): basement dial tone — Nix Speech (official audio) 🌙 \n#lyrics …",
-    "tt": "render-only — would upload ~6.6 MB (SELF_ONLY law): basement dial tone — Nix Speech (official audio) #lyrics #vi…",
-    "ig": "render-only — would post REEL ~6.6 MB to @unknown until the live run (32.0s ✓ )",
-    "ig_photo": "render-only — would post the cover art (~1545 KB → JPEG 1080×1350)"
+    "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AevuNQiRcQFe5D2iU5mY8to49H1xzJjqYuosXMQp7n891ZRG4LPqJoawWfmT_HopRUAmRlqm1CxpQVGoCdlq",
+    "tt": "uploaded → DRAFT (boss publishes in-app)",
+    "tiktok_publish_id": "v_pub_file~v2-1.7686871279869642759",
+    "ig": "failed softly: ig container still POLL_ERROR after 420s (progress None)"
   },
-  "seconds": 344.4,
-  "run_id": "35325982345",
-  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35325982345",
-  "sha": "0940d59",
+  "seconds": 1424.7,
+  "run_id": "35351560179",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35351560179",
+  "sha": "888b05e",
   "errors": [],
   "lane_audit_file": "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/lane_audit.json",
   "queue_lane": "0",
@@ -33,11 +33,11 @@
   "require_vocals": "1",
   "lane_audit": {
     "schema": 1,
-    "at": "2026-09-18T08:51:54Z",
-    "net_probes": false,
+    "at": "2026-09-18T14:04:38Z",
+    "net_probes": true,
     "dials": {
       "MULTIPOST": "fb,tt,ig",
-      "MULTIPOST_DRYRUN": "1",
+      "MULTIPOST_DRYRUN": "0",
       "MULTIPOST_TT_LONG": "0",
       "MULTIPOST_IG_LONG": "0",
       "MULTIPOST_IG_PHOTO": "1 (default on)",
@@ -77,13 +77,41 @@
       "GEMINI_API_KEY": "***",
       "HF_TOKEN": "***"
     },
-    "ig_account_cache": null,
+    "ig_account_cache": {
+      "id": "17841421462783079",
+      "username": "nixspeech",
+      "page_id": "1294240837106632",
+      "found_at": "2026-09-18T13:47:05Z"
+    },
     "authoritative": true,
-    "checkpoint_evidence": "",
+    "checkpoint_evidence": "code 368 / 'Confirm your identity' appeared on a real publish attempt this run",
     "verdicts": [
       "🟡 tt posts as SELF_ONLY (pre-approval law) → they land PRIVATE on the account (🔒 on the profile, invisible to everyone else). That is expected until TikTok approves the app, then flip repo var TIKTOK_PRIVACY=PUBLIC_TO_EVERYONE.",
-      "🟡 MULTIPOST_DRYRUN=1 → lanes render only, ZERO api calls (intentional test mode)."
+      "🔴 FACEBOOK IDENTITY CHECKPOINT IS ACTIVE — code 368 / 'Confirm your identity' appeared on a real publish attempt this run. A read-only canary cannot see this (Meta only enforces it on writes), so ignore any ✅ or 🟡 it printed. FIX: Facebook **phone app** → ☰ → your Nix Speech Page → 'Confirm your identity' banner → follow it. Until then EVERY fb and ig post is rejected with code 368 and nothing you change in the code or the tokens helps."
     ],
-    "fb_token": "***"
+    "fb_token": "***",
+    "fb_page": {
+      "probed": true,
+      "ok": true,
+      "id": "1294240837106632",
+      "name": "Nix Speech",
+      "is_published": true,
+      "instagram_linked": true,
+      "instagram": {
+        "id": "17841421462783079",
+        "username": "nixspeech"
+      }
+    },
+    "fb_checkpoint": {
+      "probed": true,
+      "ok": true,
+      "readable_posts": 1,
+      "note": "page reads fine → no identity checkpoint right now",
+      "boss_action": "Confirm your identity in the Facebook phone app (Page → banner). This is blocking fb AND ig."
+    },
+    "tt_status": {
+      "probed": false,
+      "why": "no publish_ids to check (set TT_PROBE_ID_1/2)"
+    }
   }
 }
