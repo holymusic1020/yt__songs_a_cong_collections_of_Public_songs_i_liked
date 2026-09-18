@@ -1,0 +1,113 @@
+name: 🔐 fb mint (one-shot, self-deleting)
+
+# WHY THIS EXISTS (2026-09-17)
+# The boss's Graph-Explorer user token lives ~2h and cannot be made permanent without the
+# Meta APP SECRET, which must never appear in chat or in my sandbox. So the conversion happens
+# entirely inside this runner: it reads two secrets, mints the permanent Page token, writes it
+# straight back into the FB_PAGE_TOKEN secret, and prints ONLY non-secret confirmations.
+# Nothing token-shaped is ever echoed. Delete this workflow after it succeeds.
+
+on:
+  workflow_dispatch:
+
+permissions: {}          # no repo access needed; everything is Graph API + secrets API via GH_TOKEN
+
+concurrency:
+  group: fb-mint
+  cancel-in-progress: false
+
+jobs:
+  mint:
+    runs-on: ubuntu-latest
+    env:
+      APP_SECRET: ${{ secrets.FB_APP_SECRET }}
+      USER_TOKEN: ${{ secrets.FB_MINT_USER }}
+      GH_TOKEN:   ${{ secrets.GH_TOKEN }}
+      PAGE_ID:    ${{ secrets.FB_PAGE_ID }}
+      APP_ID:     "2569308010183802"
+    steps:
+      - name: make sure pynacl exists on the runner
+        run: python3 -c "import nacl" 2>/dev/null || pip install --quiet pynacl
+
+      - name: mint the permanent page token and seal it into FB_PAGE_TOKEN
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, time, base64, urllib.request, urllib.parse
+          import urllib.error
+
+          APP_ID     = os.environ["APP_ID"]
+          APP_SECRET = os.environ.get("APP_SECRET", "").strip()
+          USER_TOKEN = os.environ.get("USER_TOKEN", "").strip()
+          GH_TOKEN   = os.environ.get("GH_TOKEN", "").strip()
+          PAGE_ID    = os.environ.get("PAGE_ID", "").strip()
+          REPO       = "holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked"
+
+          def die(msg):
+              print(f"  ❌ {msg}"); sys.exit(1)
+
+          if not APP_SECRET: die("FB_APP_SECRET secret is empty — boss hasn't added it yet")
+          if not USER_TOKEN: die("FB_MINT_USER secret is empty")
+
+          def get(url):
+              try:
+                  with urllib.request.urlopen(url, timeout=40) as r:
+                      return json.loads(r.read())
+              except urllib.error.HTTPError as e:
+                  body = e.read().decode()[:300]
+                  die(f"HTTP {e.code} on {url.split('?')[0]} → {body}")
+
+          # 1 ── short-lived user token → 60-day user token
+          q = urllib.parse.urlencode({"grant_type": "fb_exchange_token", "client_id": APP_ID,
+                                      "client_secret": APP_SECRET, "fb_exchange_token": USER_TOKEN})
+          d = get(f"https://graph.facebook.com/v26.0/oauth/access_token?{q}")
+          long_user = d.get("access_token") or die("exchange returned no token")
+          print(f"  ✅ step 1/4 — exchanged to a long-lived user token ({len(long_user)} chars)")
+
+          # 2 ── long-lived user token → permanent Page token
+          d = get(f"https://graph.facebook.com/v26.0/{PAGE_ID}"
+                  f"?fields=access_token&access_token={urllib.parse.quote(long_user)}")
+          page_tok = d.get("access_token") or die("page node returned no access_token")
+          print(f"  ✅ step 2/4 — obtained the Page token ({len(page_tok)} chars)")
+
+          # 3 ── prove it is permanent and carries the Instagram scopes
+          d = get(f"https://graph.facebook.com/v26.0/debug_token"
+                  f"?input_token={urllib.parse.quote(page_tok)}&access_token={urllib.parse.quote(long_user)}")
+          info = d.get("data") or die("debug_token returned nothing")
+          exp = info.get("expires_at", 0)
+          scopes = set(info.get("scopes", []))
+          need = {"instagram_basic", "instagram_content_publish", "pages_manage_posts",
+                  "pages_read_engagement", "pages_show_list"}
+          print(f"  ✅ step 3/4 — valid={info.get('is_valid')} type={info.get('type')} "
+                f"expires={'NEVER' if exp == 0 else exp}")
+          if exp != 0: die("page token is NOT permanent — aborting, nothing was written")
+          missing = need - scopes
+          if missing: die(f"page token missing scopes: {sorted(missing)}")
+          print(f"          scopes verified: {', '.join(sorted(need))}")
+
+          # 3b ── prove the Instagram account is still linked to the Page
+          d = get(f"https://graph.facebook.com/v26.0/{PAGE_ID}"
+                  f"?fields=instagram_business_account%7Bid,username%7D&access_token={urllib.parse.quote(page_tok)}")
+          iga = d.get("instagram_business_account") or {}
+          print(f"          ig link: @{iga.get('username')} (id {iga.get('id')})"
+                if iga else "          ⚠️ no instagram_business_account on the Page!")
+
+          # 4 ── seal it into FB_PAGE_TOKEN via the secrets API (GH_TOKEN has secrets:write)
+          req = urllib.request.Request(f"https://api.github.com/repos/{REPO}/actions/secrets/public-key",
+                                       headers={"Authorization": f"Bearer {GH_TOKEN}",
+                                                "Accept": "application/vnd.github+json"})
+          pk = json.loads(urllib.request.urlopen(req, timeout=30).read())
+          from nacl import public as npub
+          box = npub.SealedBox(npub.PublicKey(base64.b64decode(pk["key"])))
+          body = json.dumps({"encrypted_value": base64.b64encode(box.encrypt(page_tok.encode())).decode(),
+                             "key_id": pk["key_id"]}).encode()
+          rq = urllib.request.Request(f"https://api.github.com/repos/{REPO}/actions/secrets/FB_PAGE_TOKEN",
+                                      data=body, method="PUT",
+                                      headers={"Authorization": f"Bearer {GH_TOKEN}",
+                                               "Content-Type": "application/json",
+                                               "Accept": "application/vnd.github+json"})
+          urllib.request.urlopen(rq, timeout=30)
+          print("  ✅ step 4/4 — FB_PAGE_TOKEN secret replaced with the PERMANENT token")
+          print()
+          print("  🎉 MINT COMPLETE. FB + IG lanes now have a never-expiring credential.")
+          print("  🧹 boss: delete this workflow file and the FB_MINT_USER + FB_APP_SECRET secrets.")
+          PY
