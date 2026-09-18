@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "at": "2026-09-18T08:51:54Z",
+  "date": "2026-09-18",
+  "episode": 45,
+  "mode": "dry_run",
+  "kind": "short",
+  "genre": "dark_ambient",
+  "track": "basement dial tone",
+  "bpm": 60,
+  "key": "***",
+  "youtube": {
+    "video_id": null,
+    "short_id": null,
+    "watch": null,
+    "short": null
+  },
+  "multipost_dial": "fb,tt,ig",
+  "lanes": {
+    "fb": "render-only — would post reel ~6.6 MB (credentialed ✓): basement dial tone — Nix Speech (official audio) 🌙 \n#lyrics …",
+    "tt": "render-only — would upload ~6.6 MB (SELF_ONLY law): basement dial tone — Nix Speech (official audio) #lyrics #vi…",
+    "ig": "render-only — would post REEL ~6.6 MB to @unknown until the live run (32.0s ✓ )",
+    "ig_photo": "render-only — would post the cover art (~1545 KB → JPEG 1080×1350)"
+  },
+  "seconds": 344.4,
+  "run_id": "35325982345",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35325982345",
+  "sha": "0940d59",
+  "errors": [],
+  "lane_audit_file": "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/lane_audit.json",
+  "queue_lane": "0",
+  "vocal_everyday": "1",
+  "require_vocals": "1",
+  "lane_audit": {
+    "schema": 1,
+    "at": "2026-09-18T08:51:54Z",
+    "net_probes": false,
+    "dials": {
+      "MULTIPOST": "fb,tt,ig",
+      "MULTIPOST_DRYRUN": "1",
+      "MULTIPOST_TT_LONG": "0",
+      "MULTIPOST_IG_LONG": "0",
+      "MULTIPOST_IG_PHOTO": "1 (default on)",
+      "PUBLISH_OFF": "0",
+      "BOSS_DROP_DATE": "2026-09-04",
+      "TIKTOK_PRIVACY": "SELF_ONLY (default)",
+      "REQUIRE_VOCALS": "1",
+      "VOCAL_EVERYDAY": "1",
+      "KAGGLE_FIRST": "0",
+      "SUNO_OFF": "0"
+    },
+    "lanes_wanted": [
+      "fb",
+      "tt",
+      "ig"
+    ],
+    "creds": {
+      "FB_PAGE_ID": {
+        "set": true,
+        "chars": 16,
+        "fp": "129…632"
+      },
+      "FB_PAGE_TOKEN": "***",
+      "TIKTOK_ACCESS_TOKEN": "***",
+      "TIKTOK_REFRESH_TOKEN": "***",
+      "TIKTOK_CLIENT_KEY": "***",
+      "TIKTOK_CLIENT_SECRET": "***",
+      "GH_TOKEN/GITHUB_TOKEN": "***",
+      "TELEGRAM_BOT_TOKEN": "***",
+      "YT_REFRESH_TOKEN": "***",
+      "SUNO_API_KEY": "***",
+      "KAGGLE_USERNAME": {
+        "set": true,
+        "chars": 10,
+        "fp": "short"
+      },
+      "GEMINI_API_KEY": "***",
+      "HF_TOKEN": "***"
+    },
+    "ig_account_cache": null,
+    "authoritative": true,
+    "checkpoint_evidence": "",
+    "verdicts": [
+      "🟡 tt posts as SELF_ONLY (pre-approval law) → they land PRIVATE on the account (🔒 on the profile, invisible to everyone else). That is expected until TikTok approves the app, then flip repo var TIKTOK_PRIVACY=PUBLIC_TO_EVERYONE.",
+      "🟡 MULTIPOST_DRYRUN=1 → lanes render only, ZERO api calls (intentional test mode)."
+    ],
+    "fb_token": "***"
+  }
+}

@@ -101,5 +101,27 @@
       "tt": "uploaded → DRAFT (boss publishes in-app)",
       "tiktok_publish_id": "v_pub_file~v2-1.7686513300670122004"
     }
+  },
+  {
+    "date": "2026-09-18",
+    "episode": 45,
+    "mode": "dry_run",
+    "kind": "short",
+    "genre": "dark_ambient",
+    "track": "basement dial tone",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 344.4,
+    "youtube": {
+      "video_id": null,
+      "short_id": null,
+      "watch": null,
+      "short": null
+    },
+    "lanes": {
+      "fb": "render-only — would post reel ~6.6 MB (credentialed ✓): basement dial tone — Nix Speech (official audio) 🌙 \n#lyrics …",
+      "tt": "render-only — would upload ~6.6 MB (SELF_ONLY law): basement dial tone — Nix Speech (official audio) #lyrics #vi…",
+      "ig": "render-only — would post REEL ~6.6 MB to @unknown until the live run (32.0s ✓ )",
+      "ig_photo": "render-only — would post the cover art (~1545 KB → JPEG 1080×1350)"
+    }
   }
 ]
