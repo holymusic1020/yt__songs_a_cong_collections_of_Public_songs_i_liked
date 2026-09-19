@@ -10,13 +10,21 @@ HONEST ENGINEERING (why this implementation and not real "8D"):
     gently around centre. No phase games, so mono survives.
   · A per-angle mono compensation keeps the mono sum *exactly* dry for mono
     material, and within ~1 dB for real stereo material. Verified by UT-29.
-  · Depth is modest (±~28°) and the rate slow (~one orbit / 5.5 s): perceptible
+  · Depth is modest (±20°) and the rate slow (~one orbit / 5.5 s): perceptible
     on earbuds as "the song opened up", never a gimmick swirl.
   · Edges are 0.6 s cosine crossfades — no click, no seam.
 
 Window choice: the loudest 12 s after the first fifth of the track (the drop /
 second hook), computed per song from its own energy — so every track's moment
 lands in a different musical place. Uniqueness law respected.
+
+2026-09-19 FIX (found by the first live dry-run with the dial ON, EP.047 lofi):
+the old code tested ONLY the single loudest window against the vocal gate, so a
+sung lofi track refused the moment outright — "every loud window is sung" — and
+the feature never fired on exactly the genres it was allowed on. Now the picker
+walks the loudest ~12 candidates and takes the first INSTRUMENTAL one: the
+moment lands on the track's own break/interlude instead of never happening.
+Still never touches a sung window; still never raises; still per-song unique.
 
 Dial: SPIN=1 enables — and 1 is now the DEFAULT (boss 2026-09-19: "turn on the
 dimensional movement… only in the needy songs, not all songs"). SPIN=0 disables
@@ -44,26 +52,45 @@ EDGE_S = 0.6          # crossfade at both edges
 MIN_DUR_S = 20.0      # never spin a clip shorter than this
 
 
-def _pick_window(x: np.ndarray, sr: int) -> tuple[int, int] | None:
+MAX_CANDIDATES = 6      # distinct sections the vocal gate may weigh (non-overlapping)
+
+
+def _candidates(x: np.ndarray, sr: int) -> list[tuple[float, int, int]]:
+    """Loudest candidate windows, best first: [(score, a, b), …]."""
     n = len(x)
     if n < MIN_DUR_S * sr:
-        return None
+        return []
     hop = sr // 2
     mono = x.mean(axis=1) if x.ndim > 1 else x
     frames = np.lib.stride_tricks.sliding_window_view(mono, hop)[::hop]
     rms = np.sqrt((frames ** 2).mean(axis=1))
     if rms.size < 8:
-        return None
+        return []
     win = int(WIN_S / 0.5)
     lo = int(rms.size * 0.20)                 # skip the first fifth
     hi = max(lo + 1, int(rms.size * 0.80) - win)
     if hi <= lo:
-        return None
+        return []
     scores = np.array([rms[i:i + win].mean() for i in range(lo, hi)])
-    start_f = lo + int(np.argmax(scores))
-    a = start_f * hop
-    b = min(n, a + int(WIN_S * sr))
-    return a, b
+    # Greedy non-overlapping spread: the 12 loudest *positions* of one drop are the
+    # same musical moment. Take distinct sections instead (drop, break, outro…) so
+    # the vocal gate has real alternatives to choose from, not one drop six times.
+    out = []
+    for k in np.argsort(scores)[::-1]:
+        a = (lo + int(k)) * hop
+        b = min(n, a + int(WIN_S * sr))
+        if any(not (b <= aa or a >= bb) for _s, aa, bb in out):
+            continue
+        out.append((float(scores[k]), a, b))
+        if len(out) >= MAX_CANDIDATES:
+            break
+    return out
+
+
+def _pick_window(x: np.ndarray, sr: int) -> tuple[int, int] | None:
+    """Loudest window (energy only). Kept for UT-29 + the no-lyrics path."""
+    c = _candidates(x, sr)
+    return (c[0][1], c[0][2]) if c else None
 
 
 def _orbit(x: np.ndarray, sr: int, a: int, b: int) -> np.ndarray:
@@ -125,15 +152,27 @@ def apply(path, genre_key: str = "", sung_starts=()) -> object:
             print("  🌀 spin: not 16-bit stereo — skipped")
             return p
         x = np.frombuffer(raw, dtype=np.int16).astype(np.float32).reshape(n, 2) / 32768.0
-        win = _pick_window(x, sr)
-        if not win:
+        cands = _candidates(x, sr)
+        if not cands:
             print("  🌀 spin: track too short for a moment — skipped")
             return p
-        a, b = win
-        vf = _vocal_fraction(win, sr, sung_starts)
-        if vf > VOCAL_MAX:
-            print(f"  🌀 spin: skipped — window is {vf:.0%} sung; the voice stays centre")
+        # gate-aware pick: loudest window that ISN'T a vocal window. If the top
+        # one is sung we don't give up — we walk down to the track's own break.
+        pick = None
+        loudest_vf = _vocal_fraction((cands[0][1], cands[0][2]), sr, sung_starts)
+        for _score, ca, cb in cands:
+            vf = _vocal_fraction((ca, cb), sr, sung_starts)
+            if vf <= VOCAL_MAX:
+                pick = (ca, cb, vf)
+                break
+        if pick is None:
+            print(f"  🌀 spin: skipped — all {len(cands)} loud windows are sung "
+                  f"(loudest {loudest_vf:.0%}); the voice stays centre")
             return p
+        a, b, vf = pick
+        if len(cands) > 1 and (a, b) != (cands[0][1], cands[0][2]):
+            print(f"  🌀 spin: loudest window was {loudest_vf:.0%} sung → moment moved "
+                  f"to the track's own break @ {a/sr:.1f}s")
         x = _orbit(x, sr, a, b)
         pcm = (np.clip(x, -0.999, 0.999) * 32767.0).astype(np.int16)
         with wave.open(str(p), "wb") as w:

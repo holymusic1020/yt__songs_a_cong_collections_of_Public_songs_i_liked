@@ -20,7 +20,9 @@ def changed(p):
 p = Path("/tmp/ut30.wav")
 write(p); spin.apply(p, genre_key="disco_house", sung_starts=[]);      assert not changed(p); print("  ✅ disco_house refused")
 write(p); spin.apply(p, genre_key="drift_phonk", sung_starts=[]);      assert not changed(p); print("  ✅ drift_phonk refused")
-write(p); spin.apply(p, genre_key="dark_ambient", sung_starts=[24.5, 27.0, 29.5, 32.0]); assert not changed(p); print("  ✅ sung window refused (voice stays centre)")
+# 2026-09-19: the gate is now WINDOW-aware — a partly-sung track gets its moment in its own
+# instrumental break (UT-32). Refusal now requires the WHOLE track to be sung.
+write(p); spin.apply(p, genre_key="dark_ambient", sung_starts=[float(i) for i in range(0, 40, 2)]); assert not changed(p); print("  ✅ fully-sung track refused (voice stays centre)")
 write(p); spin.apply(p, genre_key="dark_ambient", sung_starts=[2.0, 6.0]);               assert changed(p);     print("  ✅ instrumental ambient window accepted")
 write(p); spin.apply(p, genre_key="lofi", sung_starts=[]);                               assert changed(p);     print("  ✅ lofi accepted")
 print("\nUT-30 PASS · 3 of 5 refused — the moment stays rare")
