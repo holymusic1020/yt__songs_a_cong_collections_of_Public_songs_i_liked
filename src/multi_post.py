@@ -454,7 +454,10 @@ def _ig_wait(cid: str, tok: str, timeout_s: int = 420, every: int = 6) -> dict:
         try:
             last = json.loads(urllib.request.urlopen(
                 f"https://graph.facebook.com/{_GRAPH_V}/{cid}"
-                f"?fields=status_code,progress,status&access_token={tok}", timeout=60).read())
+                # 2026-09-19 ROOT CAUSE: `progress` no longer exists on ig containers in v26 —
+                # Meta 400s the whole poll (#100 nonexisting field) and we burned 420 s per run
+                # mistaking our own error for "still transcoding". Field list trimmed to what exists.
+                f"?fields=status_code,status&access_token={tok}", timeout=60).read())
         except Exception as e:
             last = {"status_code": "POLL_ERROR", "status": str(e)[:160]}
             if not getattr(_ig_wait, "_warned", False):   # 2026-09-18: EP.045 died with the

@@ -73,9 +73,25 @@ jobs:
               print(f"  🔴 container CREATE rejected → {err}"); raise SystemExit
           cid = r.get("id")
           print(f"  🟢 container created: {cid}")
-          r, err = call(f"/{cid}?fields=status_code,progress,status&access_token={TOK}")
+          r, err = call(f"/{cid}?fields=status_code,status&access_token={TOK}")
           if err:
-              print(f"  🔴 container POLL rejected → {err}")
+              print(f"  🔴 container POLL rejected → {err}"); raise SystemExit
+          import time as _t
+          for _ in range(70):
+              code = (r.get("status_code") or "").upper()
+              print(f"  … container {code} progress={r.get('status')}")
+              if code == "FINISHED": break
+              if code in ("ERROR", "FAILED", "EXPIRED"):
+                  print(f"  🔴 container died: {json.dumps(r)}"); raise SystemExit
+              _t.sleep(6)
+              r, err = call(f"/{cid}?fields=status_code,status&access_token={TOK}")
+              if err: print(f"  🔴 poll rejected → {err}"); raise SystemExit
+          if (r.get("status_code") or "").upper() != "FINISHED":
+              print(f"  🔴 not finished after wait: {json.dumps(r)}"); raise SystemExit
+          print("  🟢 container FINISHED — publishing the demo reel")
+          r2, err2 = call(f"/{ig['id']}/media_publish", {"creation_id": cid, "access_token": TOK})
+          if err2:
+              print(f"  🔴 PUBLISH rejected → {err2}")
           else:
-              print(f"  🟢 container poll → {json.dumps(r)}")
+              print(f"  🎉 IG REEL LIVE → https://www.instagram.com/reel/{r2.get('id')}/")
           PY
