@@ -1,0 +1,146 @@
+# 🎛 CONTROL PANEL — every switch in the machine
+
+Boss asked (2026-09-19): *"give me a clue whenever I have to turn something on or off."*
+This is that clue. Every dial, what it does, where it lives, and the exact one-line change.
+
+**Two ways to flip almost anything:**
+
+- **Way A — no code, 30 seconds (recommended):** GitHub → repo `yt-auto` → **Settings** →
+  **Secrets and variables** → **Actions** → **Variables** tab → *New repository variable* →
+  name + value. A Variable always beats the code default. Delete the Variable → back to default.
+- **Way B — code:** open the file, **Ctrl+F the search string given below**, change one number,
+  commit. Takes effect on the next run.
+
+Nothing in this file needs a rebuild, a reinstall, or a restart. The engine re-reads everything
+at the start of each daily run.
+
+---
+
+## 🌀 1. The dimensional moment (spin) — **ON**, but only for needy songs
+
+What it does: one 12-second window of the song slowly orbits left↔right (±20°), crossfaded at
+both edges. Earbuds hear "the song opened up". Phone speakers hear nothing wrong (mono-safe,
+measured 0.52 dB worst case).
+
+**The taste gate is what keeps it rare** — it fires only when BOTH are true:
+1. the song's genre is on the allow-list, and
+2. the chosen window is almost entirely instrumental (the voice stays dead centre, always).
+
+| Want to… | Where | Do this |
+|---|---|---|
+| **Turn it OFF forever** | Way A (no code) | New Variable `SPIN` = `0` |
+| Turn it OFF for **one run only** | Actions → *publish* → Run workflow | field **spin** = `0` |
+| Turn it back ON | Way A | delete the `SPIN` Variable (or set `1`) |
+| Change the **default in code** | `.github/workflows/publish.yml` ~line 170 — search `SPIN: "${{ vars.SPIN` | last number `1` → `0` |
+| **Which genres** may orbit | `src/spin.py` ~line 89 — search `ALLOW_GENRES` | add/remove a name: `{"dark_ambient", "lofi", "orbit_trap"}` |
+| **How strict** about vocals | `src/spin.py` ~line 90 — search `VOCAL_MAX` | `0.25` = strict · `0.10` = stricter · `0.40` = looser |
+| **How strong** the orbit is | `src/spin.py` ~line 39 — search `DEPTH =` | `0.25` gentle · **`0.35` current** · `0.45` obvious. **Do not go past 0.50** — the phone-speaker test fails above that |
+| **How long** the moment lasts | `src/spin.py` ~line 42 — search `WIN_S` | seconds, `12.0` current |
+| How fast it orbits | `src/spin.py` ~line 41 — search `RATE` | Hz, `0.18` = one circle per ~5.5 s |
+
+**Proof in the daily log** — one of these lines always prints:
+```
+🌀 spin: this one earns it — dimensional moment 19.5s → 31.5s (lofi, 0% sung, ±20° orbit)
+🌀 spin: skipped — disco_house doesn't earn an orbit (vocal-driven)
+🌀 spin: skipped — window is 58% sung; the voice stays centre
+```
+
+---
+
+## 🔉 2. Loudness match — **ON**
+Every song lands at **-14 LUFS / -1 dB true-peak** (YouTube/Spotify/TikTok standard), so nothing
+sounds quieter than the next video. Level only — tone and structure untouched.
+
+- **OFF:** Way A → Variable `LOUDNORM` = `0` (or `publish.yml` ~line 171, search `LOUDNORM: "${{ vars.LOUDNORM`, last `1` → `0`).
+- **ON again:** delete the Variable.
+- Log proof: `🔉 loudness: -14.0 LUFS · TP -1.0 dB` per song.
+
+## 🔔 3. The opening "ting-tong" chime — **OFF (killed)**
+The 0.75 s station chime at the head of every video is dead by default (`CHIME_OFF=1`).
+
+- **Bring it back:** Way A → Variable `CHIME_OFF` = `0`.
+- **Kill again:** `CHIME_OFF` = `1`.
+- Log proof: `🔔 sonic logo stamped` appears only when it's on.
+
+## 🎤 4. Vocals required — **ON, hardwired**
+A real release **refuses to publish an instrumental**. `publish.yml` ~line 137 — search
+`REQUIRE_VOCALS`. Leave it at `"1"`. Setting `"0"` would allow voiceless songs through; don't.
+
+## 🎬 5. Shorts: the hook window must be a **sung** window — **ON, no dial**
+Fixed 2026-09-19 after your report ("subtitles, no vocals"). The short's 30 s are now picked
+where the karaoke map says singing actually happens, so caption cards always quote lines you hear.
+- Log proof: `🎤 hook vocal coverage: 78% (best available in track: 84%)`
+- If that number is ever low, tell me — that's the alarm bell.
+
+---
+
+## 🛑 6. MASTER SWITCH — parks everything
+Variable `PUBLISH_OFF` = `1` → the daily cron still runs, renders and reports, but **uploads
+nothing** (YouTube, Facebook, TikTok, Instagram all parked). Delete the Variable → live again.
+This is the "stop the machine today" button. No code change ever needed.
+
+## 🌐 7. Which platforms post (lane list)
+Secret **or** Variable `MULTIPOST`, value = comma list.
+- Current: `fb,tt,ig` (Facebook reel · TikTok draft · Instagram reel + cover photo)
+- Drop TikTok only → `fb,ig` · Everything off → delete/empty it.
+- Extra lanes, all **OFF** by default, each its own Variable:
+  - `MULTIPOST_TT_LONG=1` → the full 16:9 video also rides TikTok (blurred pillarbox)
+  - `MULTIPOST_IG_LONG=1` → the full video also posts to the Instagram feed
+  - `MULTIPOST_IG_PHOTO=0` → stop the Instagram cover-photo post (it's ON today)
+
+## 🧪 8. Test mode — render only, zero API calls
+Variable `MULTIPOST_DRYRUN` = `1` → every platform lane renders the file and reports what it
+*would* post, but calls nothing. Delete → real posting resumes. Use it whenever you want to watch
+a full pipeline run without anything going public.
+
+## ▶ 9. The Run-workflow button (manual runs)
+Actions → **📀 publish** → *Run workflow*:
+- **run_mode** = `dry_run` (nothing uploads, you get a preview on Telegram) or `publish` (real release)
+- **multipost_override** = e.g. `fb,tt` for that one run
+- **multipost_dryrun** = `1` for that one run
+- **spin** = `0` to skip the orbit for that one run
+
+---
+
+## 📅 10. Daily time — **16:00 BDT**
+`.github/workflows/publish.yml` ~line 27 — search `cron:`. It reads `0 10 * * *` (UTC).
+Dhaka is UTC+6, so `10` = 16:00. Want 18:00 BDT → `0 12 * * *`. Want 09:00 BDT → `0 3 * * *`.
+Formula: **UTC hour = BDT hour − 6.**
+
+## 🐐 11. Your own song drops
+Two Variables together: `BOSS_DROP_DATE` = a date like `2026-09-26` and `BOSSDROP_ARMED` = `1`.
+That day the engine parks its own slot and the boss-drop workflow takes over. Clear the date →
+engine resumes normal duty.
+
+## 🌍 12. Small extras (all optional, all OFF unless set)
+- `POSTS_OFF=1` → silence the YouTube community post packs
+- `WORLD_TOUR_EVERY=N` → every Nth episode ships a foreign-language version; `WORLD_LANGS` = list
+- `SHORT_SFX=1` → chirp sound effects on short caption flips (**OFF** by your order, 2026-09-15)
+- `LOOP_OFF=1` → no seamless loop-back tail on shorts · `MASCOT_OFF=1` → no NYX on the cover
+
+---
+
+## ✅ How to check you broke nothing
+After any code edit, run these three from the repo root — all must say PASS:
+```
+python3 tools/v29_spin_ut.py      # orbit stays mono-safe
+python3 tools/v30_spin_gate_ut.py # gate still refuses 3 of 5 songs
+python3 tools/v31_vocal_hook_ut.py# shorts still land on sung windows
+python3 tools/yamlcheck.py        # workflow files still valid
+```
+Or the lazy version: dispatch a **dry_run** from the Actions button. It renders the whole thing,
+posts nothing, and sends you the checklist on Telegram. If the checklist arrives green, you're fine.
+
+## 📋 Current state of every dial (2026-09-19)
+| Dial | State |
+|---|---|
+| 🌀 SPIN dimensional moment | **ON** — gated to dark_ambient / lofi / orbit_trap, instrumental windows only |
+| 🔉 LOUDNORM | **ON** (-14 LUFS / -1 dBTP) |
+| 🔔 CHIME_OFF | **ON = chime dead** |
+| 🎤 REQUIRE_VOCALS | **ON** (hardwired) |
+| 🎬 vocal-aware short hook | **ON** (no dial) |
+| 🛑 PUBLISH_OFF | not set = **live** |
+| 🌐 MULTIPOST | `fb,tt,ig` |
+| 🧪 MULTIPOST_DRYRUN | not set = **real posting** |
+| 📅 schedule | **16:00 BDT daily** |
+| 🔇 SHORT_SFX / LOOP_OFF / MASCOT_OFF / POSTS_OFF | all **OFF** |

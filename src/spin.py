@@ -18,7 +18,10 @@ Window choice: the loudest 12 s after the first fifth of the track (the drop /
 second hook), computed per song from its own energy — so every track's moment
 lands in a different musical place. Uniqueness law respected.
 
-Dial: SPIN=1 enables. Default 0 until the boss ear-tests a preview.
+Dial: SPIN=1 enables — and 1 is now the DEFAULT (boss 2026-09-19: "turn on the
+dimensional movement… only in the needy songs, not all songs"). SPIN=0 disables
+everything. "Only the needy songs" is enforced by the taste gate below, not by
+the dial: the dial decides IF the feature exists, the gate decides WHO gets it.
 
 THE TASTE GATE (boss 2026-09-19: "only the song that really needs it — on most
 songs it feels awkward"):
@@ -105,7 +108,10 @@ def apply(path, genre_key: str = "", sung_starts=()) -> object:
     from pathlib import Path
     import wave
     p = Path(path)
-    if os.environ.get("SPIN", "0").strip() != "1":
+    # 🌀 DEFAULT ON (boss verdict 2026-09-19: "turn on the dimensional movement,
+    #    but only in the needy songs"). SPIN=0 kills it for every run. The
+    #    taste gate right below is what makes "only the needy songs" true.
+    if os.environ.get("SPIN", "1").strip() != "1":
         return p
     if genre_key and genre_key not in ALLOW_GENRES:
         print(f"  🌀 spin: skipped — {genre_key} doesn't earn an orbit (vocal-driven)")

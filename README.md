@@ -116,6 +116,8 @@ python -m src.main --dry-run --genre drift_phonk --length 60
 
 ## Tuning knobs
 
+> **🎛 Every on/off switch in one place → [`docs/CONTROL-PANEL.md`](docs/CONTROL-PANEL.md)** (boss's dial map: what each switch does, where it lives, the exact one-line flip, and the log line that proves it fired.)
+
 | Want | Where |
 |---|---|
 | Different post frequency | `cron:` in `.github/workflows/publish.yml` |
