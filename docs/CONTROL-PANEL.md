@@ -107,17 +107,37 @@ Actions → **📀 publish** → *Run workflow*:
 
 ---
 
-## 📅 10. Daily time — **16:00 BDT**
+## 🔁 10. One release per day — **automatic, no dial**
+If a real release already went out today (your clock, BDT) — a manual run, a rescue, a boss drop —
+the evening cron **parks itself** and ships nothing. Log line:
+```
+🔁 EP.46 already published today (BDT) — one release per day, so the cron demotes itself to a dry-run.
+```
+Why it exists: GitHub's scheduler fires this cron **3–6 hours late** most days (measured over 10
+runs), so a midday release used to leave the evening slot free to ship a second episode — two
+uploads, two TikToks, two reels in one day. Your Run-workflow button is never blocked by this:
+that's your own hand.
+
+## 📅 11. Daily time — **16:00 BDT (requested)** · lands ~19:30–22:00 BDT in practice
 `.github/workflows/publish.yml` ~line 27 — search `cron:`. It reads `0 10 * * *` (UTC).
 Dhaka is UTC+6, so `10` = 16:00. Want 18:00 BDT → `0 12 * * *`. Want 09:00 BDT → `0 3 * * *`.
 Formula: **UTC hour = BDT hour − 6.**
 
-## 🐐 11. Your own song drops
+⚠️ **Honest measurement (2026-09-19):** GitHub does not run crons on the minute. The last 10
+scheduled runs were set for 09:23 UTC and actually started at 12:55, 13:38, 13:40, 13:46, 13:49,
+14:14, 14:19, 14:21, 15:55 UTC — i.e. **3 h 32 m to 6 h 32 m late, average 4 h 39 m**. That is
+GitHub's queue, not our code, and it cannot be turned off. So the real upload times have been
+**~19:30–22:00 BDT**, not 16:00.
+If you want the video to actually *appear* near 16:00 BDT, set the cron to
+`0 5 * * *` (05:00 UTC = 11:00 BDT) and the usual delay lands it at ~15:30–17:30 BDT.
+Say the word and I'll move it; until then it stays at the time you asked for.
+
+## 🐐 12. Your own song drops
 Two Variables together: `BOSS_DROP_DATE` = a date like `2026-09-26` and `BOSSDROP_ARMED` = `1`.
 That day the engine parks its own slot and the boss-drop workflow takes over. Clear the date →
 engine resumes normal duty.
 
-## 🌍 12. Small extras (all optional, all OFF unless set)
+## 🌍 13. Small extras (all optional, all OFF unless set)
 - `POSTS_OFF=1` → silence the YouTube community post packs
 - `WORLD_TOUR_EVERY=N` → every Nth episode ships a foreign-language version; `WORLD_LANGS` = list
 - `SHORT_SFX=1` → chirp sound effects on short caption flips (**OFF** by your order, 2026-09-15)
@@ -132,6 +152,7 @@ python3 tools/v29_spin_ut.py      # orbit stays mono-safe
 python3 tools/v30_spin_gate_ut.py # gate still refuses 3 of 5 songs
 python3 tools/v31_vocal_hook_ut.py# shorts still land on sung windows
 python3 tools/v32_spin_window_ut.py # moment lands on the break, never the hook
+python3 tools/v33_daily_dedupe_ut.py # never two releases in one day
 python3 tools/yamlcheck.py        # workflow files still valid
 ```
 Or the lazy version: dispatch a **dry_run** from the Actions button. It renders the whole thing,
@@ -148,5 +169,6 @@ posts nothing, and sends you the checklist on Telegram. If the checklist arrives
 | 🛑 PUBLISH_OFF | not set = **live** |
 | 🌐 MULTIPOST | `fb,tt,ig` |
 | 🧪 MULTIPOST_DRYRUN | not set = **real posting** |
-| 📅 schedule | **16:00 BDT daily** |
+| 🔁 one release per day | **ON** (automatic) |
+| 📅 schedule | cron says 16:00 BDT · GitHub fires it ~19:30–22:00 BDT |
 | 🔇 SHORT_SFX / LOOP_OFF / MASCOT_OFF / POSTS_OFF | all **OFF** |
