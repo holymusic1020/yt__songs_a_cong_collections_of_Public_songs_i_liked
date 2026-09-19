@@ -457,6 +457,9 @@ def _ig_wait(cid: str, tok: str, timeout_s: int = 420, every: int = 6) -> dict:
                 f"?fields=status_code,progress,status&access_token={tok}", timeout=60).read())
         except Exception as e:
             last = {"status_code": "POLL_ERROR", "status": str(e)[:160]}
+            if not getattr(_ig_wait, "_warned", False):   # 2026-09-18: EP.045 died with the
+                _ig_wait._warned = True                   # reason hidden — surface it once
+                print(f"  ⚠️ ig poll exception (first): {str(e)[:200]}")
         code = (last.get("status_code") or "").upper()
         if code == "FINISHED":
             return last
@@ -464,7 +467,7 @@ def _ig_wait(cid: str, tok: str, timeout_s: int = 420, every: int = 6) -> dict:
             raise RuntimeError(f"ig container {code}: {json.dumps(last)[:240]}")
         time.sleep(every)
     raise RuntimeError(f"ig container still {last.get('status_code', '?')} after {timeout_s}s "
-                       f"(progress {last.get('progress')})")
+                       f"(progress {last.get('progress')}) last={json.dumps(last)[:240]}")
 
 
 def _ig_publish(igid: str, tok: str, cid: str) -> str:
