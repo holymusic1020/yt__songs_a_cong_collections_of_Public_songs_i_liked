@@ -1,5 +1,5 @@
 {
-  "episode": 45,
+  "episode": 46,
   "history": [
     {
       "episode": 1,
@@ -585,6 +585,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-18T14:47:12Z",
       "at": "2026-09-18T13:46:48+00:00"
+    },
+    {
+      "episode": 46,
+      "kind": "full",
+      "youtube_id": "YVu8GvCqxXY",
+      "video_id": "YVu8GvCqxXY",
+      "short_id": "RFl1xDI4ea0",
+      "title": "orbit receipt — Nix Speech (official audio)",
+      "name": "orbit receipt",
+      "genre": "orbit_trap",
+      "publish_at": "2026-09-19T07:56:46Z",
+      "short_publish_at": "2026-09-19T09:43:57Z",
+      "at": "2026-09-19T06:29:18+00:00"
     }
   ],
   "receipts": [
@@ -674,12 +687,15 @@
     {
       "date": "2026-09-19",
       "episode": 46,
-      "mode": "dry_run",
+      "mode": "publish",
       "kind": "full",
       "genre": "orbit_trap",
-      "track": "receiver rain",
+      "track": "orbit receipt",
       "multipost_dial": "fb,ig",
-      "lanes": {}
+      "lanes": {
+        "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AeurgI7c7nNslug7guZhdTxAfqpoDL-w-45eMmzSPz60i9bOOFM_fSJddeSLvh7j9SgjXfUxJc2iWXbM_Y0o",
+        "ig": "failed softly: ig container still POLL_ERROR after 420s (progress None) last={\"status_code\": \"POLL_ERROR\", \"status\": \"HTTP Error 400: Bad Request\"}"
+      }
     }
   ]
 }
