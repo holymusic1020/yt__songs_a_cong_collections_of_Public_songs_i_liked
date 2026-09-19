@@ -1,0 +1,81 @@
+name: 🛰️ meta probe (silent, self-deleting)
+
+# WHY: two open questions that only a WRITE attempt can answer (Meta enforces 368 on writes only,
+# and the ig container poll returns a bare HTTP 400 whose BODY we have never seen).
+#   · FB  — is code 368 cleared after the boss's phone verification?
+#   · IG  — what exactly does Meta say when we poll a container?
+# This probe posts a tiny text post to the Page and DELETES it immediately (nothing stays public),
+# and creates ONE ig container from the newest vaulted reel, polls it once, and prints Meta's FULL
+# error body. No video is published to Instagram. ~1 minute, zero public footprint.
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      TOK:    ${{ secrets.FB_PAGE_TOKEN }}
+      PAGE:   ${{ secrets.FB_PAGE_ID }}
+      REPO:   holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked
+    steps:
+      - name: probe fb + ig and print the truth
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse, urllib.error
+          TOK  = os.environ["TOK"]; PAGE = os.environ["PAGE"]; REPO = os.environ["REPO"]
+          G = "https://graph.facebook.com/v26.0"
+
+          def call(path, data=None, method=None):
+              url = f"{G}{path}"
+              body = urllib.parse.urlencode(data).encode() if data else None
+              req = urllib.request.Request(url, data=body, method=method or ("POST" if data else "GET"))
+              try:
+                  return json.loads(urllib.request.urlopen(req, timeout=60).read()), None
+              except urllib.error.HTTPError as e:
+                  return None, f"HTTP {e.code}: {e.read().decode(errors='replace')[:400]}"
+
+          print("════════ FACEBOOK PROBE ════════")
+          r, err = call(f"/{PAGE}/feed", {"message": "🛰️ Nix Speech connectivity probe — safe to ignore",
+                                          "access_token": TOK})
+          if err:
+              print(f"  🔴 FB WRITE BLOCKED → {err}")
+          else:
+              pid = r.get("id")
+              print(f"  🟢 FB WRITE OK — post {pid}")
+              r2, err2 = call(f"/{pid}", {"access_token": TOK}, method="DELETE")
+              print(f"  🧹 probe post deleted: {not err2}" + (f" ({err2})" if err2 else ""))
+
+          print("════════ INSTAGRAM PROBE ════════")
+          r, err = call(f"/{PAGE}?fields=instagram_business_account%7Bid,username%7D&access_token={TOK}")
+          if err or not r or not r.get("instagram_business_account"):
+              print(f"  🔴 no ig account visible → {err or r}"); raise SystemExit
+          ig = r["instagram_business_account"]
+          print(f"  ig account: @{ig.get('username')} ({ig.get('id')})")
+
+          # newest vaulted reel (public release asset)
+          with urllib.request.urlopen(f"https://api.github.com/repos/{REPO}/releases/tags/bossdrop-stage",
+                                      timeout=40) as resp:
+              assets = json.loads(resp.read()).get("assets", [])
+          vids = [a for a in assets if a["name"].endswith("_short.mp4")]
+          vids.sort(key=lambda a: a["updated_at"])
+          if not vids:
+              print("  🔴 no vaulted reel found"); raise SystemExit
+          vurl = vids[-1]["browser_download_url"]
+          print(f"  reel source: {vids[-1]['name']} ({vids[-1]['size']/1e6:.1f} MB)")
+
+          r, err = call(f"/{ig['id']}/media", {"media_type": "REELS", "video_url": vurl,
+                                               "caption": "🛰️ probe container — not published",
+                                               "access_token": TOK})
+          if err:
+              print(f"  🔴 container CREATE rejected → {err}"); raise SystemExit
+          cid = r.get("id")
+          print(f"  🟢 container created: {cid}")
+          r, err = call(f"/{cid}?fields=status_code,progress,status&access_token={TOK}")
+          if err:
+              print(f"  🔴 container POLL rejected → {err}")
+          else:
+              print(f"  🟢 container poll → {json.dumps(r)}")
+          PY
