@@ -46,28 +46,55 @@ def _link(vid: str | None) -> str:
     return f"https://youtu.be/{vid}" if vid else "(link in run summary)"
 
 
+def _lane_state(val: str) -> str:
+    """Map a fanout lane result string to ✅ posted / ❌ failed / ➖ off."""
+    v = (val or "").lower()
+    if any(k in v for k in ("published", "uploaded", "draft")):
+        return "✅"
+    if any(k in v for k in ("failed", "rejected", "crashed", "refused")):
+        return "❌"
+    return "➖"
+
+
 def build_message(status: str, manifest: dict | None,
                   run_url: str, log_tail: str) -> str:
-    """Plain-text message (Discord). Telegram version escapes via _tg()."""
+    """ONE compact message. Boss 2026-09-19: no log dumps in Telegram, no media
+    spam — a platform checklist with ✅/❌, the URLs, and the log link ONLY when
+    something actually failed."""
     if status.lower() == "success" and manifest:
         m = manifest.get("meta", {})
         sched = manifest.get("schedule", {})
         vid, sid = manifest.get("video_id"), manifest.get("short_id")
+        lanes = manifest.get("lanes") or {}
         lines = [
-            f"✅ Nix Speech · EP.{manifest.get('episode', 0):03d} released",
-            f"🎵 {m.get('name', '?')} ({m.get('genre', '?')} · {m.get('bpm', '?')} bpm · {m.get('key', '?')})",
+            f"✅ EP.{manifest.get('episode', 0):03d} · {m.get('name', '?')}",
+            f"🎵 {m.get('genre', '?')} · {m.get('bpm', '?')} bpm · {m.get('key', '?')}",
+            "─" * 22,
         ]
         if manifest.get("video_today"):
-            lines.append(f"🎬 video · {_link(vid)} · live {_bdt(sched.get('video_publish_at'))}")
-        lines.append(f"⚡ short · {_link(sid)} · live {_bdt(sched.get('short_publish_at'))}")
-        lines.append(f"🔗 log + files: {run_url}")
+            lines.append(f"🎬 YouTube video  ✅ {_link(vid)}")
+        lines.append(f"⚡ YouTube short  ✅ {_link(sid)}")
+        for key, label in (("fb", "📘 Facebook"), ("tt", "🎵 TikTok"),
+                           ("ig", "📸 Instagram"), ("ig_photo", "🖼️ IG photo")):
+            if key in lanes:
+                st = _lane_state(str(lanes.get(key, "")))
+                extra = ""
+                if key == "ig" and lanes.get("ig_permalink"):
+                    extra = f" {lanes['ig_permalink']}"
+                lines.append(f"{label:<15} {st}{extra}")
+        bad = [k for k in lanes if _lane_state(str(lanes[k])) == "❌"]
+        lines.append("─" * 22)
+        if bad:
+            lines.append(f"❌ not posted: {', '.join(bad)}")
+            lines.append(f"🔗 log: {run_url}")
+        else:
+            lines.append("🟢 all lanes clear")
         return "\n".join(lines)
 
-    # failure / cancelled / no manifest
+    # failure / cancelled / no manifest — link only, NEVER the log body
     ep = (manifest or {}).get("episode")
-    head = f"🚨 yt-auto run {status.upper()}" + (f" — EP.{ep:03d} was in progress" if ep else "")
-    tail = (log_tail or "").strip()[-600:] or "(no log captured)"
-    return f"{head}\n📋 last log lines:\n```\n{tail}\n```\n🔗 full log: {run_url}"
+    head = f"🚨 run {status.upper()}" + (f" · EP.{ep:03d} was in progress" if ep else "")
+    return f"{head}\n🔗 log: {run_url}"
 
 
 def _post(url: str, data: bytes, headers: dict) -> str:

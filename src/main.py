@@ -949,6 +949,7 @@ def main() -> None:
         # refresh manifest with real upload IDs so notify/alerts can link them
         manifest["video_id"] = vid
         manifest["short_id"] = sid
+        manifest["lanes"] = _fanout_result      # 📣 2026-09-19: the Telegram checklist
         (OUT / "latest.json").write_text(json.dumps(manifest, indent=2))
         if sid and vid:
             try:
@@ -1104,7 +1105,8 @@ def main() -> None:
                     f"when a vocal lane lands.", dry=False)
                 print(f"  📨 telegram: instrumental demo withheld ({_sos})")
             else:
-                for _f in (short_mp4, twin_mp4, long_mp4):
+                for _f in (short_mp4,):          # 2026-09-19 boss: telegram was floating
+                                              # with media — ONE preview, never three
                     if _f and Path(_f).exists():
                         print(f"  📨 telegram: {_notify.send_telegram_video(_tok, _cid, str(_f), _cap)}")
                         _any = True

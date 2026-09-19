@@ -52,6 +52,8 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: friday gate (cron path only)
+        env:
+          CHIME_OFF: ${{ vars.CHIME_OFF }}
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             TODAY="$(date -u +%F)"
