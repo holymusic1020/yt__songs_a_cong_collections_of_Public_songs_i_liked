@@ -1,0 +1,36 @@
+name: 🩺 fb diag (read-only)
+# Read-only look at the Nix Speech Page: is can_post false? is there a checkpoint NOTIFICATION
+# with an actionable link? what does Meta's own Page state say? Prints nothing secret.
+on:
+  workflow_dispatch:
+permissions: {}
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    env:
+      TOK:  ${{ secrets.FB_PAGE_TOKEN }}
+      PAGE: ${{ secrets.FB_PAGE_ID }}
+    steps:
+      - run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse, urllib.error
+          TOK=os.environ["TOK"]; PAGE=os.environ["PAGE"]; G="https://graph.facebook.com/v26.0"
+          def get(path):
+              try:
+                  with urllib.request.urlopen(f"{G}{path}", timeout=60) as r: return json.loads(r.read()), None
+              except urllib.error.HTTPError as e: return None, f"HTTP {e.code}: {e.read().decode(errors='replace')[:300]}"
+          print("═══ PAGE STATE ═══")
+          r,e = get(f"/{PAGE}?fields=id,name,can_post,is_published,verification_status,category,link,followers_count&access_token={TOK}")
+          print("  ", json.dumps(r) if r else e)
+          print("═══ PAGE NOTIFICATIONS (checkpoint invites live here) ═══")
+          r,e = get(f"/{PAGE}/notifications?limit=12&access_token={TOK}")
+          if e: print("  ", e)
+          else:
+              for n in r.get("data",[]):
+                  print(f"   · [{n.get('created_time','')[:10]}] {n.get('title','')[:110]}")
+                  print(f"     link: {n.get('link','')[:160]}")
+          print("═══ PAGE QUALITY-ISH FIELDS ═══")
+          for f in ("is_eligible_for_branded_content","can_check_in","has_whatsapp_business_profile","engagement"):
+              r,e = get(f"/{PAGE}?fields={f}&access_token={TOK}")
+              print(f"   {f}: {json.dumps(r) if r else e}")
+          PY
