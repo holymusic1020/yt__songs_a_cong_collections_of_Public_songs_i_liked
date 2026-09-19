@@ -727,6 +727,10 @@ def main() -> None:
     # Level only — never tone/structure. LOUDNORM=0 kills it. Never raises.
     from src import loudness as _loud
     wav = _loud.normalize_wav(wav)
+    # 🌀 2026-09-19 boss: one dimensional moment per song (earbuds), mono-safe,
+    #    window = the track's own loudest 12 s. SPIN=1 after his ear-test.
+    from src import spin as _spin
+    _spin.apply(wav)
     if lrc_entries:                                    # 🎵 v16 musical captions
         # boss 2026-08-31: "lines isnt matching… dont make ALL the lines
         # matching — feels lame". Snap every flip to the drum grid (recovered

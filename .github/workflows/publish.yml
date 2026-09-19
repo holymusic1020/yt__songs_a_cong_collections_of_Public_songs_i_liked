@@ -163,6 +163,7 @@ jobs:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}  # EAA page token
           PUBLISH_OFF: ${{ vars.PUBLISH_OFF }}                               # 🛑 MASTER SWITCH — 1 demotes cron runs to dry-run (YT+FB both parked; boss interlude 2026-09-02)
           BOSS_DROP_DATE: ${{ vars.BOSS_DROP_DATE }}                           # 🐐 set to a date (e.g. 2026-09-04) → that day's engine slot is parked for the boss's own song
+          SPIN: "${{ inputs.spin || vars.SPIN || 0 }}"                     # 🌀 dimensional moment; 1 after boss ear-test
           LOUDNORM: "${{ vars.LOUDNORM || 1 }}"                              # 🔉 -14 LUFS / -1 dBTP per song; var=0 off
           CHIME_OFF: "${{ vars.CHIME_OFF || 1 }}"   # default 1 = chime dead (boss 2026-09-19 ting-tong); var CHIME_OFF=0 brings it back                                  # 🔔 1 = kill the 0.75s station chime (boss 2026-09-19: "ting tong on every video")
           MULTIPOST_DRYRUN: ${{ inputs.multipost_dryrun || vars.MULTIPOST_DRYRUN }}  # 🧪 1 = lanes render-only, zero API calls
