@@ -28,13 +28,13 @@ def read(p):
 dry = Path("/tmp/ut29_dry.wav"); write(dry, x)
 
 os.environ["SPIN"] = "0"
-spin.apply(dry)
+spin.apply(dry, genre_key='dark_ambient')
 assert np.allclose(read(dry), x, atol=1e-3), "dial OFF must leave the file bit-quiet"
 print("  ✅ SPIN=0 → untouched")
 
 os.environ["SPIN"] = "1"
 wet_p = Path("/tmp/ut29_wet.wav"); write(wet_p, x)
-spin.apply(wet_p)
+spin.apply(wet_p, genre_key='dark_ambient', sung_starts=[])
 wet = read(wet_p)
 
 mono_dry = x.mean(axis=1); mono_wet = wet.mean(axis=1)

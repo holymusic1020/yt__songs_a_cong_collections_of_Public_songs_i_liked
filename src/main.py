@@ -730,7 +730,8 @@ def main() -> None:
     # 🌀 2026-09-19 boss: one dimensional moment per song (earbuds), mono-safe,
     #    window = the track's own loudest 12 s. SPIN=1 after his ear-test.
     from src import spin as _spin
-    _spin.apply(wav)
+    _spin.apply(wav, genre_key=genre_key,
+              sung_starts=[t for t, _ in (lrc_entries or [])])
     if lrc_entries:                                    # 🎵 v16 musical captions
         # boss 2026-08-31: "lines isnt matching… dont make ALL the lines
         # matching — feels lame". Snap every flip to the drum grid (recovered

@@ -19,6 +19,14 @@ second hook), computed per song from its own energy — so every track's moment
 lands in a different musical place. Uniqueness law respected.
 
 Dial: SPIN=1 enables. Default 0 until the boss ear-tests a preview.
+
+THE TASTE GATE (boss 2026-09-19: "only the song that really needs it — on most
+songs it feels awkward"):
+  · genre allow-list only (dark_ambient / lofi / orbit_trap) — driving vocal
+    genres (phonk, disco, anthem, pop) never orbit;
+  · the window must be INSTRUMENTAL: if sung lines occupy >25% of it, skip.
+    Real mixing law: the lead voice stays centre; a circling voice is uncanny.
+  So most episodes skip it and print why. The moment stays special.
 """
 from __future__ import annotations
 
@@ -75,12 +83,32 @@ def _orbit(x: np.ndarray, sr: int, a: int, b: int) -> np.ndarray:
     return x
 
 
-def apply(path) -> object:
+ALLOW_GENRES = {"dark_ambient", "lofi", "orbit_trap"}
+VOCAL_MAX = 0.25          # fraction of the window that may be sung
+
+
+def _vocal_fraction(win: tuple[int, int], sr: int, sung_starts) -> float:
+    a, b = win[0] / sr, win[1] / sr
+    ss = sorted(float(t) for t in (sung_starts or []))
+    if not ss:
+        return 0.0
+    spans = [(ss[i], ss[i + 1] if i + 1 < len(ss) else ss[i] + 4.0)
+             for i in range(len(ss))]
+    ov = 0.0
+    for s0, s1 in spans:
+        ov += max(0.0, min(b, s1) - max(a, s0))
+    return ov / max(1e-6, b - a)
+
+
+def apply(path, genre_key: str = "", sung_starts=()) -> object:
     """Spin one window of the wav in place. Never raises; dial-gated."""
     from pathlib import Path
     import wave
     p = Path(path)
     if os.environ.get("SPIN", "0").strip() != "1":
+        return p
+    if genre_key and genre_key not in ALLOW_GENRES:
+        print(f"  🌀 spin: skipped — {genre_key} doesn't earn an orbit (vocal-driven)")
         return p
     try:
         with wave.open(str(p), "rb") as w:
@@ -96,13 +124,17 @@ def apply(path) -> object:
             print("  🌀 spin: track too short for a moment — skipped")
             return p
         a, b = win
+        vf = _vocal_fraction(win, sr, sung_starts)
+        if vf > VOCAL_MAX:
+            print(f"  🌀 spin: skipped — window is {vf:.0%} sung; the voice stays centre")
+            return p
         x = _orbit(x, sr, a, b)
         pcm = (np.clip(x, -0.999, 0.999) * 32767.0).astype(np.int16)
         with wave.open(str(p), "wb") as w:
             w.setnchannels(2); w.setsampwidth(2); w.setframerate(sr)
             w.writeframes(pcm.tobytes())
-        print(f"  🌀 spin: dimensional moment {a/sr:.1f}s → {b/sr:.1f}s "
-              f"(±{np.degrees(DEPTH):.0f}° orbit, mono-safe)")
+        print(f"  🌀 spin: this one earns it — dimensional moment {a/sr:.1f}s → "
+              f"{b/sr:.1f}s ({genre_key or '?'}, {vf:.0%} sung, ±{np.degrees(DEPTH):.0f}° orbit)")
     except Exception as e:
         print(f"  🌀 spin: skipped ({e}) — original kept")
     return p
