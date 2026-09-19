@@ -23,8 +23,13 @@ both edges. Earbuds hear "the song opened up". Phone speakers hear nothing wrong
 measured 0.52 dB worst case).
 
 **The taste gate is what keeps it rare** — it fires only when BOTH are true:
-1. the song's genre is on the allow-list, and
-2. the chosen window is almost entirely instrumental (the voice stays dead centre, always).
+1. the song's genre is on the allow-list (`dark_ambient`, `lofi`, `orbit_trap`), and
+2. the window is almost entirely instrumental (≤25% sung) — the voice stays dead centre, always.
+
+It weighs the song's **distinct loud sections** (the drop, the break, the outro) and takes the first
+instrumental one. So on a lofi track with a sung hook, the moment lands on the track's own **break**
+instead of never happening at all. If every loud section is sung, that song gets no orbit and the
+log says why. Proved by `tools/v32_spin_window_ut.py`.
 
 | Want to… | Where | Do this |
 |---|---|---|
@@ -126,6 +131,7 @@ After any code edit, run these three from the repo root — all must say PASS:
 python3 tools/v29_spin_ut.py      # orbit stays mono-safe
 python3 tools/v30_spin_gate_ut.py # gate still refuses 3 of 5 songs
 python3 tools/v31_vocal_hook_ut.py# shorts still land on sung windows
+python3 tools/v32_spin_window_ut.py # moment lands on the break, never the hook
 python3 tools/yamlcheck.py        # workflow files still valid
 ```
 Or the lazy version: dispatch a **dry_run** from the Actions button. It renders the whole thing,
