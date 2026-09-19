@@ -19,6 +19,10 @@ on:
         description: "1 = multipost lanes RENDER-ONLY, no API calls (whole-process dry run)"
         required: false
         default: ""
+      spin:
+        description: "1 = enable the dimensional moment for this run (ear-test)"
+        required: false
+        default: ""
   schedule:
     - cron: "0 10 * * *"         # DAILY 16:00 BDT (boss 2026-09-19: he posts by hand ~15:15, keep the engine clear of it; was 23 9 = 15:23 BDT)
 
