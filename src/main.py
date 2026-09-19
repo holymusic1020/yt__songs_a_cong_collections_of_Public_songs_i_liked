@@ -723,6 +723,10 @@ def main() -> None:
 
     print("  rendering audio + cover…")
     wav = ext_wav if ext_wav else composer.write_wav(OUT / f"ep{ep:03d}.wav", song)
+    # 🔉 2026-09-19: per-song loudness match to -14 LUFS / -1 dBTP (streaming standard).
+    # Level only — never tone/structure. LOUDNORM=0 kills it. Never raises.
+    from src import loudness as _loud
+    wav = _loud.normalize_wav(wav)
     if lrc_entries:                                    # 🎵 v16 musical captions
         # boss 2026-08-31: "lines isnt matching… dont make ALL the lines
         # matching — feels lame". Snap every flip to the drum grid (recovered
