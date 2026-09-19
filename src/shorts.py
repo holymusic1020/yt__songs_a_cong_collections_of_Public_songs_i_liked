@@ -35,8 +35,28 @@ def read_wav(path: Path) -> np.ndarray:
     return np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
 
 
-def pick_hook_window(x: np.ndarray, sr: int, bpm: float) -> tuple[float, float]:
-    """Highest-energy contiguous window, snapped to bar boundaries."""
+def _coverage(t0: float, L: float, sung) -> float:
+    """Fraction of [t0, t0+L) overlapped by sung lines (karaoke map)."""
+    ss = sorted(float(t) for t in (sung or []))
+    if not ss:
+        return 0.0
+    spans = [(ss[i], ss[i + 1] if i + 1 < len(ss) else ss[i] + 4.0)
+             for i in range(len(ss))]
+    ov = sum(max(0.0, min(t0 + L, s1) - max(t0, s0)) for s0, s1 in spans)
+    return ov / max(1e-6, L)
+
+
+def pick_hook_window(x: np.ndarray, sr: int, bpm: float,
+                     sung_starts=None) -> tuple[float, float]:
+    """Highest-energy contiguous window, snapped to bar boundaries.
+
+    2026-09-19 VOCAL-AWARE (boss heard a short whose captions quoted lines the
+    audio never sang): the loudest window is usually an instrumental drop, so
+    pure-energy picking can ship subtitles with no voice. Candidates that carry
+    sung lines (>=30% coverage) now outrank barren ones; if the whole track is
+    instrumental the old energy behaviour stands (and REQUIRE_VOCALS aborts
+    real releases anyway).
+    """
     try:                                # queue songs may ship '~' — never die
         bpm = float(bpm)
     except (TypeError, ValueError):
@@ -58,7 +78,17 @@ def pick_hook_window(x: np.ndarray, sr: int, bpm: float) -> tuple[float, float]:
     w = max(1, int(L / 0.25))
     cs = np.concatenate([[0.0], np.cumsum(e)])
     sums = cs[w:] - cs[:-w]
-    t0 = float(np.argmax(sums)) * 0.25
+    if sung_starts:
+        L_s = w * 0.25
+        cov = np.array([_coverage(i * 0.25, L_s, sung_starts) for i in range(len(sums))])
+        best_cov = cov.max()
+        if best_cov >= 0.30:                 # a singing window exists → prefer those
+            sums = np.where(cov >= 0.30, sums, sums * 0.10)
+        t0 = float(np.argmax(sums)) * 0.25
+        print(f"  🎤 hook vocal coverage: {_coverage(t0, L_s, sung_starts):.0%} "
+              f"(best available in track: {best_cov:.0%})")
+    else:
+        t0 = float(np.argmax(sums)) * 0.25
     t0 = round(t0 / bar) * bar                       # bar snap (loop cut)
     t0 = float(max(0.0, min(t0, dur - L - 0.5)))
     return t0, L
@@ -310,7 +340,9 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
           lines_override: list[str] | None = None,
           lrc_entries: list | None = None) -> dict:
     x, sr = read_wav(wav_path), 44100
-    t0, L = pick_hook_window(x, sr, info["bpm"])
+    t0, L = pick_hook_window(x, sr, info["bpm"],
+                             sung_starts=[t for t, _ in (lrc_entries or [])]
+                             if lrc_entries else None)
     seg = _slice_with_fades(x, sr, t0, L)
     if os.environ.get("CHIME_OFF", "") != "1":       # 🔔 loop point = station
         try:                                       #    chime — brand the loop
