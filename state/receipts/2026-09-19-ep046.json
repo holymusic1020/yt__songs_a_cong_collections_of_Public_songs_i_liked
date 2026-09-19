@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "at": "2026-09-19T06:10:14Z",
+  "date": "2026-09-19",
+  "episode": 46,
+  "mode": "dry_run",
+  "kind": "full",
+  "genre": "orbit_trap",
+  "track": "receiver rain",
+  "bpm": 148,
+  "key": "***",
+  "youtube": {
+    "video_id": null,
+    "short_id": null,
+    "watch": null,
+    "short": null
+  },
+  "multipost_dial": "fb,ig",
+  "lanes": {},
+  "seconds": 1268.7,
+  "run_id": "35424918117",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35424918117",
+  "sha": "e5376d7",
+  "errors": [],
+  "lane_audit_file": "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/lane_audit.json",
+  "queue_lane": "0",
+  "vocal_everyday": "1",
+  "require_vocals": "1",
+  "lane_audit": {
+    "schema": 1,
+    "at": "2026-09-19T06:10:12Z",
+    "net_probes": true,
+    "dials": {
+      "MULTIPOST": "fb,ig",
+      "MULTIPOST_DRYRUN": "0",
+      "MULTIPOST_TT_LONG": "0",
+      "MULTIPOST_IG_LONG": "0",
+      "MULTIPOST_IG_PHOTO": "1 (default on)",
+      "PUBLISH_OFF": "0",
+      "BOSS_DROP_DATE": "2026-09-04",
+      "TIKTOK_PRIVACY": "SELF_ONLY (default)",
+      "REQUIRE_VOCALS": "1",
+      "VOCAL_EVERYDAY": "1",
+      "KAGGLE_FIRST": "0",
+      "SUNO_OFF": "0"
+    },
+    "lanes_wanted": [
+      "fb",
+      "ig"
+    ],
+    "creds": {
+      "FB_PAGE_ID": {
+        "set": true,
+        "chars": 16,
+        "fp": "129…632"
+      },
+      "FB_PAGE_TOKEN": "***",
+      "TIKTOK_ACCESS_TOKEN": "***",
+      "TIKTOK_REFRESH_TOKEN": "***",
+      "TIKTOK_CLIENT_KEY": "***",
+      "TIKTOK_CLIENT_SECRET": "***",
+      "GH_TOKEN/GITHUB_TOKEN": "***",
+      "TELEGRAM_BOT_TOKEN": "***",
+      "YT_REFRESH_TOKEN": "***",
+      "SUNO_API_KEY": "***",
+      "KAGGLE_USERNAME": {
+        "set": true,
+        "chars": 10,
+        "fp": "short"
+      },
+      "GEMINI_API_KEY": "***",
+      "HF_TOKEN": "***"
+    },
+    "ig_account_cache": null,
+    "authoritative": true,
+    "checkpoint_evidence": "",
+    "verdicts": [
+      "🟡 the read-only canary saw no checkpoint flag — but it CANNOT prove you are unblocked (run #100: clean canary, real post still rejected with code 368). Trust the fb lane result in this receipt, not this line."
+    ],
+    "fb_token": "***",
+    "fb_page": {
+      "probed": true,
+      "ok": true,
+      "id": "1294240837106632",
+      "name": "Nix Speech",
+      "is_published": true,
+      "instagram_linked": true,
+      "instagram": {
+        "id": "17841421462783079",
+        "username": "nixspeech"
+      }
+    },
+    "fb_checkpoint": {
+      "probed": true,
+      "ok": true,
+      "readable_posts": 1,
+      "note": "page reads fine → no identity checkpoint right now"
+    },
+    "tt_status": {
+      "probed": false,
+      "why": "no publish_ids to check (set TT_PROBE_ID_1/2)"
+    }
+  }
+}

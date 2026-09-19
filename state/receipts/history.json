@@ -123,5 +123,22 @@
       "tiktok_publish_id": "v_pub_file~v2-1.7686871279869642759",
       "ig": "failed softly: ig container still POLL_ERROR after 420s (progress None)"
     }
+  },
+  {
+    "date": "2026-09-19",
+    "episode": 46,
+    "mode": "dry_run",
+    "kind": "full",
+    "genre": "orbit_trap",
+    "track": "receiver rain",
+    "multipost_dial": "fb,ig",
+    "seconds": 1268.7,
+    "youtube": {
+      "video_id": null,
+      "short_id": null,
+      "watch": null,
+      "short": null
+    },
+    "lanes": {}
   }
 ]
