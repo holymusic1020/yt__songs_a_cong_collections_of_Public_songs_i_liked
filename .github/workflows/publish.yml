@@ -20,7 +20,7 @@ on:
         required: false
         default: ""
   schedule:
-    - cron: "23 9 * * *"        # DAILY: a short every day; a full video every 3rd EP
+    - cron: "0 10 * * *"         # DAILY 16:00 BDT (boss 2026-09-19: he posts by hand ~15:15, keep the engine clear of it; was 23 9 = 15:23 BDT)
 
 # 🔒 one release at a time — kills the duplicate-EP race (manual spam-safe)
 concurrency:
