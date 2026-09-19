@@ -150,20 +150,15 @@
     "mode": "dry_run",
     "kind": "short",
     "genre": "lofi",
-    "track": "unlit porch bulb",
+    "track": "porch light humming",
     "multipost_dial": "fb,tt,ig",
-    "seconds": 183.4,
+    "seconds": 352.3,
     "youtube": {
       "video_id": null,
       "short_id": null,
       "watch": null,
       "short": null
     },
-    "lanes": {
-      "fb": "render-only — would post reel ~5.2 MB (credentialed ✓): unlit porch bulb — Nix Speech (official audio) 🌙 \n#lyrics #v…",
-      "tt": "render-only — would upload ~5.2 MB (SELF_ONLY law): unlit porch bulb — Nix Speech (official audio) #lyrics #vibe…",
-      "ig": "render-only — would post REEL ~5.2 MB to @unknown until the live run (33.8s ✓ )",
-      "ig_photo": "render-only — would post the cover art (~1530 KB → JPEG 1080×1350)"
-    }
+    "lanes": {}
   }
 ]
