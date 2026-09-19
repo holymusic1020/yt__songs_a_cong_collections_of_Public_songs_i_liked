@@ -10,6 +10,11 @@ name: 🛰️ meta probe (silent, self-deleting)
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_ig:
+        description: "true = also publish the demo reel to IG (default: diagnose only)"
+        required: false
+        default: ""
 
 permissions: {}
 
@@ -20,6 +25,7 @@ jobs:
       TOK:    ${{ secrets.FB_PAGE_TOKEN }}
       PAGE:   ${{ secrets.FB_PAGE_ID }}
       REPO:   holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked
+      PUB_IG: ${{ github.event.inputs.publish_ig }}
     steps:
       - name: probe fb + ig and print the truth
         run: |
@@ -88,6 +94,9 @@ jobs:
               if err: print(f"  🔴 poll rejected → {err}"); raise SystemExit
           if (r.get("status_code") or "").upper() != "FINISHED":
               print(f"  🔴 not finished after wait: {json.dumps(r)}"); raise SystemExit
+          if os.environ.get("PUB_IG") != "true":
+              print("  🟢 container FINISHED — diagnose only, NOT published (set publish_ig=true to post)")
+              raise SystemExit
           print("  🟢 container FINISHED — publishing the demo reel")
           r2, err2 = call(f"/{ig['id']}/media_publish", {"creation_id": cid, "access_token": TOK})
           if err2:
