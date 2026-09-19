@@ -186,6 +186,13 @@ jobs:
             elif [ "${PUBLISH_OFF:-0}" = "1" ]; then
               RUN_ARGS="--dry-run"
               echo "🛑 PUBLISH_OFF=1 — master switch: cron demoted to a harmless dry-run (YT+FB parked; boss interlude 2026-09-02)"
+            elif DUP="$(python3 -c 'import sys;sys.path.insert(0,".");from src.state import real_release_today as f;e=f();print((e or {}).get("episode",""))' 2>/dev/null)" && [ -n "$DUP" ]; then
+              # 🔁 ONE-RELEASE-PER-DAY law (2026-09-19). GitHub fires this cron 3–6 h late
+              # most days, so a real publish earlier in the day (manual dispatch, rescue
+              # run, boss drop) used to leave the evening slot free to ship a SECOND
+              # episode — two uploads on one day. The day already has its song: park.
+              RUN_ARGS="--dry-run"
+              echo "🔁 EP.$DUP already published today (BDT) — one release per day, so the cron demotes itself to a dry-run. Nothing uploads; the checklist still arrives."
             else
               RUN_ARGS="--publish"
             fi
