@@ -696,6 +696,21 @@
         "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AeurgI7c7nNslug7guZhdTxAfqpoDL-w-45eMmzSPz60i9bOOFM_fSJddeSLvh7j9SgjXfUxJc2iWXbM_Y0o",
         "ig": "failed softly: ig container still POLL_ERROR after 420s (progress None) last={\"status_code\": \"POLL_ERROR\", \"status\": \"HTTP Error 400: Bad Request\"}"
       }
+    },
+    {
+      "date": "2026-09-19",
+      "episode": 47,
+      "mode": "dry_run",
+      "kind": "short",
+      "genre": "lofi",
+      "track": "warm kitchen tiles",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "render-only — would post reel ~7.1 MB (credentialed ✓): warm kitchen tiles — Nix Speech (official audio) 🌙 \n#lyrics …",
+        "tt": "render-only — would upload ~7.1 MB (SELF_ONLY law): warm kitchen tiles — Nix Speech (official audio) #lyrics #vi…",
+        "ig": "render-only — would post REEL ~7.1 MB to @unknown until the live run (33.8s ✓ )",
+        "ig_photo": "render-only — would post the cover art (~1528 KB → JPEG 1080×1350)"
+      }
     }
   ]
 }
