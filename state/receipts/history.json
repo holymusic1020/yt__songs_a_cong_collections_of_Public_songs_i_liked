@@ -150,9 +150,9 @@
     "mode": "dry_run",
     "kind": "short",
     "genre": "lofi",
-    "track": "warm kitchen tiles",
+    "track": "unlit porch bulb",
     "multipost_dial": "fb,tt,ig",
-    "seconds": 403.0,
+    "seconds": 183.4,
     "youtube": {
       "video_id": null,
       "short_id": null,
@@ -160,10 +160,10 @@
       "short": null
     },
     "lanes": {
-      "fb": "render-only — would post reel ~7.1 MB (credentialed ✓): warm kitchen tiles — Nix Speech (official audio) 🌙 \n#lyrics …",
-      "tt": "render-only — would upload ~7.1 MB (SELF_ONLY law): warm kitchen tiles — Nix Speech (official audio) #lyrics #vi…",
-      "ig": "render-only — would post REEL ~7.1 MB to @unknown until the live run (33.8s ✓ )",
-      "ig_photo": "render-only — would post the cover art (~1528 KB → JPEG 1080×1350)"
+      "fb": "render-only — would post reel ~5.2 MB (credentialed ✓): unlit porch bulb — Nix Speech (official audio) 🌙 \n#lyrics #v…",
+      "tt": "render-only — would upload ~5.2 MB (SELF_ONLY law): unlit porch bulb — Nix Speech (official audio) #lyrics #vibe…",
+      "ig": "render-only — would post REEL ~5.2 MB to @unknown until the live run (33.8s ✓ )",
+      "ig_photo": "render-only — would post the cover art (~1530 KB → JPEG 1080×1350)"
     }
   }
 ]

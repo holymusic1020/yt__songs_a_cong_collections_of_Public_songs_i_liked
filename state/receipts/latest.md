@@ -2,22 +2,22 @@
 
 | | |
 |---|---|
-| track | **warm kitchen tiles** (lofi) |
+| track | **unlit porch bulb** (lofi) |
 | mode | dry_run · short |
 | youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 403.0 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35438934078 @ 9208bbb |
+| took | 183.4 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35439650773 @ a9cbfb7 |
 
 ## lanes
 
 | lane | result |
 |---|---|
-| fb | render-only — would post reel ~7.1 MB (credentialed ✓): warm kitchen tiles — Nix Speech (official audio) 🌙 
-#lyrics … |
-| ig | render-only — would post REEL ~7.1 MB to @unknown until the live run (33.8s ✓ ) |
-| ig_photo | render-only — would post the cover art (~1528 KB → JPEG 1080×1350) |
-| tt | render-only — would upload ~7.1 MB (SELF_ONLY law): warm kitchen tiles — Nix Speech (official audio) #lyrics #vi… |
+| fb | render-only — would post reel ~5.2 MB (credentialed ✓): unlit porch bulb — Nix Speech (official audio) 🌙 
+#lyrics #v… |
+| ig | render-only — would post REEL ~5.2 MB to @unknown until the live run (33.8s ✓ ) |
+| ig_photo | render-only — would post the cover art (~1530 KB → JPEG 1080×1350) |
+| tt | render-only — would upload ~5.2 MB (SELF_ONLY law): unlit porch bulb — Nix Speech (official audio) #lyrics #vibe… |
 
 ## 🩺 lane audit
 

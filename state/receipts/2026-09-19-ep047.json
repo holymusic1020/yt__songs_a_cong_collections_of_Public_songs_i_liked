@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "at": "2026-09-19T11:08:10Z",
+  "at": "2026-09-19T11:19:56Z",
   "date": "2026-09-19",
   "episode": 47,
   "mode": "dry_run",
   "kind": "short",
   "genre": "lofi",
-  "track": "warm kitchen tiles",
+  "track": "unlit porch bulb",
   "bpm": 78,
   "key": "***",
   "youtube": {
@@ -17,15 +17,15 @@
   },
   "multipost_dial": "fb,tt,ig",
   "lanes": {
-    "fb": "render-only — would post reel ~7.1 MB (credentialed ✓): warm kitchen tiles — Nix Speech (official audio) 🌙 \n#lyrics …",
-    "tt": "render-only — would upload ~7.1 MB (SELF_ONLY law): warm kitchen tiles — Nix Speech (official audio) #lyrics #vi…",
-    "ig": "render-only — would post REEL ~7.1 MB to @unknown until the live run (33.8s ✓ )",
-    "ig_photo": "render-only — would post the cover art (~1528 KB → JPEG 1080×1350)"
+    "fb": "render-only — would post reel ~5.2 MB (credentialed ✓): unlit porch bulb — Nix Speech (official audio) 🌙 \n#lyrics #v…",
+    "tt": "render-only — would upload ~5.2 MB (SELF_ONLY law): unlit porch bulb — Nix Speech (official audio) #lyrics #vibe…",
+    "ig": "render-only — would post REEL ~5.2 MB to @unknown until the live run (33.8s ✓ )",
+    "ig_photo": "render-only — would post the cover art (~1530 KB → JPEG 1080×1350)"
   },
-  "seconds": 403.0,
-  "run_id": "35438934078",
-  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35438934078",
-  "sha": "9208bbb",
+  "seconds": 183.4,
+  "run_id": "35439650773",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35439650773",
+  "sha": "a9cbfb7",
   "errors": [],
   "lane_audit_file": "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/lane_audit.json",
   "queue_lane": "0",
@@ -33,7 +33,7 @@
   "require_vocals": "1",
   "lane_audit": {
     "schema": 1,
-    "at": "2026-09-19T11:08:10Z",
+    "at": "2026-09-19T11:19:56Z",
     "net_probes": false,
     "dials": {
       "MULTIPOST": "fb,tt,ig",
