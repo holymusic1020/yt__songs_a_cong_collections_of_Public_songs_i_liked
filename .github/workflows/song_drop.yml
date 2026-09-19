@@ -53,7 +53,7 @@ jobs:
     steps:
       - name: friday gate (cron path only)
         env:
-          CHIME_OFF: ${{ vars.CHIME_OFF }}
+          CHIME_OFF: "${{ vars.CHIME_OFF || 1 }}"   # default 1 = chime dead (boss 2026-09-19 ting-tong); var CHIME_OFF=0 brings it back
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             TODAY="$(date -u +%F)"

@@ -34,7 +34,7 @@ jobs:
 
       - name: ffmpeg present?
         env:
-          CHIME_OFF: ${{ vars.CHIME_OFF }}
+          CHIME_OFF: "${{ vars.CHIME_OFF || 1 }}"   # default 1 = chime dead (boss 2026-09-19 ting-tong); var CHIME_OFF=0 brings it back
         run: |
           which ffmpeg >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg 2>&1 | tail -2; }
           ffmpeg -version 2>/dev/null | head -1
