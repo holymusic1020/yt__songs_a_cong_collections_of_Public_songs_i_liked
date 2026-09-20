@@ -1,19 +1,27 @@
-# 📋 receipt · EP.047 · 2026-09-19
+# 📋 receipt · EP.047 · 2026-09-20
 
 | | |
 |---|---|
-| track | **porch light humming** (lofi) |
-| mode | dry_run · short |
-| youtube | — · short: — |
+| track | **damp kitchen tiles** (lofi) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/1omvEObiEYg |
 | multipost dial | `fb,tt,ig` |
-| took | 352.3 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35446948586 @ 6027465 |
+| took | 1842.9 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35515370851 @ 307cea8 |
 
 ## lanes
 
 | lane | result |
 |---|---|
-| — | no lanes ran |
+| fb | published |
+| fb_reel_id | 122110721691453777 |
+| ig | published (reel) |
+| ig_media_id | 18003909099004511 |
+| ig_photo | published |
+| ig_photo_id | 18125562997893313 |
+| ig_user | nixspeech |
+| tiktok_publish_id | v_pub_file~v2-1.7687622047069390869 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 

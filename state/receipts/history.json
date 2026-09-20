@@ -160,5 +160,32 @@
       "short": null
     },
     "lanes": {}
+  },
+  {
+    "date": "2026-09-20",
+    "episode": 47,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "lofi",
+    "track": "damp kitchen tiles",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 1842.9,
+    "youtube": {
+      "video_id": null,
+      "short_id": "1omvEObiEYg",
+      "watch": null,
+      "short": "https://youtu.be/1omvEObiEYg"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122110721691453777",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7687622047069390869",
+      "ig": "published (reel)",
+      "ig_media_id": "18003909099004511",
+      "ig_user": "nixspeech",
+      "ig_photo": "published",
+      "ig_photo_id": "18125562997893313"
+    }
   }
 ]
