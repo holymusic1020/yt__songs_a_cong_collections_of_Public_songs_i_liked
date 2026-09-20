@@ -1,5 +1,5 @@
 {
-  "episode": 46,
+  "episode": 47,
   "history": [
     {
       "episode": 1,
@@ -598,6 +598,19 @@
       "publish_at": "2026-09-19T07:56:46Z",
       "short_publish_at": "2026-09-19T09:43:57Z",
       "at": "2026-09-19T06:29:18+00:00"
+    },
+    {
+      "episode": 47,
+      "kind": "short",
+      "youtube_id": "1omvEObiEYg",
+      "video_id": null,
+      "short_id": "1omvEObiEYg",
+      "title": "damp kitchen tiles — Nix Speech (official audio)",
+      "name": "damp kitchen tiles",
+      "genre": "lofi",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-20T17:11:51Z",
+      "at": "2026-09-20T14:21:05+00:00"
     }
   ],
   "receipts": [
@@ -706,6 +719,26 @@
       "track": "porch light humming",
       "multipost_dial": "fb,tt,ig",
       "lanes": {}
+    },
+    {
+      "date": "2026-09-20",
+      "episode": 47,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "lofi",
+      "track": "damp kitchen tiles",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122110721691453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7687622047069390869",
+        "ig": "published (reel)",
+        "ig_media_id": "18003909099004511",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18125562997893313"
+      }
     }
   ]
 }
