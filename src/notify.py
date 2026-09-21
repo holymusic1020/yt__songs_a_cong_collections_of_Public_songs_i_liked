@@ -86,10 +86,12 @@ def build_message(status: str, manifest: dict | None,
         # uploaded, so a refused-rights night must never read as "not posted".
         # (Its skip string contains the word "refused" — which _lane_state maps
         # to ❌ — so it is excluded from the failure list on purpose.)
-        dsp_note = str(lanes.get("dsp") or "")
+        dsp_note = str(lanes.get("dsp") or "").strip()
         if dsp_note:
-            lines.append(("📦 Spotify pack  " + ("✅ " if dsp_note.startswith("✅")
-                                                 else "➖ ") + dsp_note.lstrip("✅")))
+            ready = dsp_note.startswith("✅")
+            body = dsp_note.lstrip("✅").strip()
+            body = body.removeprefix("off").lstrip(" —")
+            lines.append(f"📦 Spotify pack  {'✅' if ready else '➖'} {body}")
         bad = [k for k in lanes
                if k in ("fb", "tt", "ig", "ig_photo")
                and _lane_state(str(lanes[k])) == "❌"]

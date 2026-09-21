@@ -1192,9 +1192,11 @@ def main() -> None:
         print(f"  📦 DSP pack: skipped — {dsp['why']}")
     try:
         if isinstance(_fanout_result, dict):
+            # kept SHORT — this string is what lands in the Telegram checklist.
+            # The long version (lane, licence, MB) lives in the receipt instead.
             _fanout_result["dsp"] = (
-                f"✅ streaming pack ready — {dsp.get('mb')} MB zip, lane={dsp.get('music_lane')} "
-                f"({dsp.get('rights')}), suggested release {dsp.get('release_date')}"
+                f"✅ {Path(str(dsp.get('zip') or 'pack')).name} · "
+                f"{dsp.get('mb')} MB · release {dsp.get('release_date')}"
                 if dsp.get("ok") else f"off — {dsp.get('why')}")
     except NameError:
         pass
