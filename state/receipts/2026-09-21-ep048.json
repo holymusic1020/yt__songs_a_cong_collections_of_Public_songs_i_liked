@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "at": "2026-09-21T04:29:44Z",
+  "at": "2026-09-21T06:08:43Z",
   "date": "2026-09-21",
   "episode": 48,
   "mode": "dry_run",
   "kind": "short",
   "genre": "deep_pop",
-  "track": "nectar bruise",
+  "track": "unlit lobby",
   "bpm": 96,
   "key": "***",
   "youtube": {
@@ -17,21 +17,21 @@
   },
   "multipost_dial": "fb,tt,ig",
   "lanes": {
-    "fb": "render-only — would post reel ~7.6 MB (credentialed ✓): nectar bruise — Nix Speech (official audio) 🌙 \n#lyrics #vibe…",
-    "tt": "render-only — would upload ~7.6 MB (SELF_ONLY law): nectar bruise — Nix Speech (official audio) #lyrics #vibes #…",
-    "ig": "render-only — would post REEL ~7.6 MB to @unknown until the live run (32.5s ✓ )",
-    "ig_photo": "render-only — would post the cover art (~1577 KB → JPEG 1080×1350)",
-    "dsp": "off — short-only day — streaming gets full songs, not shorts"
+    "fb": "render-only — would post reel ~7.8 MB (credentialed ✓): unlit lobby — Nix Speech (official audio) 🌙 \n#lyrics #vibes …",
+    "tt": "render-only — would upload ~7.8 MB (SELF_ONLY law): unlit lobby — Nix Speech (official audio) #lyrics #vibes #ne…",
+    "ig": "render-only — would post REEL ~7.8 MB to @unknown until the live run (32.5s ✓ )",
+    "ig_photo": "render-only — would post the cover art (~1580 KB → JPEG 1080×1350)",
+    "dsp": "off — DSP_PACK=0 — streaming packs off"
   },
-  "seconds": 347.0,
-  "run_id": "35560767105",
-  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35560767105",
-  "sha": "cd291a9",
+  "seconds": 314.3,
+  "run_id": "35566744592",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35566744592",
+  "sha": "9b7ae37",
   "errors": [],
   "music_lane": "unknown",
   "dsp": {
     "ok": false,
-    "why": "short-only day — streaming gets full songs, not shorts",
+    "why": "DSP_PACK=0 — streaming packs off",
     "zip": null,
     "mb": null,
     "music_lane": null,
@@ -45,7 +45,7 @@
   "require_vocals": "1",
   "lane_audit": {
     "schema": 1,
-    "at": "2026-09-21T04:29:44Z",
+    "at": "2026-09-21T06:08:43Z",
     "net_probes": false,
     "dials": {
       "MULTIPOST": "fb,tt,ig",
