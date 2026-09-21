@@ -5,6 +5,23 @@ Yes. Here is the honest shape of it, and every click.
 
 ---
 
+## ⚡ READ THIS FIRST — who does what (the whole thing, 6 lines)
+
+1. **The engine** makes the song, masters it, and every release night writes a **zip** with the
+   audio, the square cover, the lyrics and a copy-paste answer sheet for every box of the form.
+2. **You** open that zip on the RouteNote site and **type/paste it in — 8 minutes, by hand.**
+3. **Nobody can skip step 2.** RouteNote has **no API for artists** — their own site is the only
+   door, and a bot driving it is an account ban. [verified 2026-09-21]
+4. Full automation exists, but only through a **paid label-tier distributor with an API**
+   (LabelGrid / Audient / EVEARA, ~$59+/month, card required) — which is the one thing you said no
+   to. **No card = the 8 minutes is yours forever.** That is the trade, stated plainly.
+5. After you submit, RouteNote reviews (1–3 days) and delivers to **Spotify, Apple Music, Amazon,
+   YouTube Music, Deezer, Tidal, SoundCloud + ~100 more** in one go. You never touch those sites.
+6. If it's not worth 8 minutes a song: **one Variable, `DSP_PACK=0`**, and the streaming side
+   disappears. Nothing on YouTube/TikTok/Facebook/Instagram changes — ever.
+
+---
+
 ## 0 · The one rule that decides everything
 
 **Spotify and Apple Music do not accept uploads from artists.** Not you, not me, not

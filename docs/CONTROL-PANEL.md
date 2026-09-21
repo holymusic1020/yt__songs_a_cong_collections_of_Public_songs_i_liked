@@ -108,6 +108,10 @@ Actions → **📀 publish** → *Run workflow*:
 ---
 
 ## 📦 10. Streaming delivery (Spotify / Apple Music) — **ON**
+
+**Reality check, once and for all:** there is no API anywhere in the free path. RouteNote has no
+artist API at all — a human fills their web form, ~8 minutes per song, and no code of ours can
+change that. The engine's job is to make those 8 minutes pure copy-paste with zero decisions.
 Full step-by-step: **[`docs/SPOTIFY-APPLE-GUIDE.md`](SPOTIFY-APPLE-GUIDE.md)**. Every full song
 cooked by a legally sellable lane gets a delivery box zipped at `out/dsp/epNNN-dsp-pack.zip`
 (audio + 3000×3000 art + metadata + copy-paste sheet + lyrics + rights provenance), shipped as the
