@@ -1,5 +1,16 @@
 # 🎧 Spotify + Apple Music — the free route, step by step
 
+> ## ⏸ STATUS 2026-09-21: PARKED by the boss — everything below stays valid, nothing runs.
+> His reasoning, in his words: *"if I have to do things manually and there is no way — then OK,
+> we will leave it."* RouteNote ships no artist API [1](https://labelgrid.com/compare/routenote-alternative/), so the last 8 minutes
+> of every release is permanently a human at a web form. The channel stays on YouTube, TikTok,
+> Facebook and Instagram.
+> **The machinery is not deleted, not half-built and not untested** — the packer, the rights gate,
+> the docs and 18 test blocks all stay on the branch, and the whole thing switches back on with
+> one repo Variable: **`DSP_PACK` = `1`** (Settings → Secrets and variables → Actions → Variables).
+> Until then every run skips it in one line: `📦 DSP pack: skipped — DSP_PACK=0 — streaming packs off`.
+
+
 Boss 2026-09-19: *"Cannot we push this thing… add this with Spotify? or Apple Music?"*
 Yes. Here is the honest shape of it, and every click.
 

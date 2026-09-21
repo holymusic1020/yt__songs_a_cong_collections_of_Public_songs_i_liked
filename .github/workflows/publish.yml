@@ -171,7 +171,7 @@ jobs:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}  # EAA page token
           PUBLISH_OFF: ${{ vars.PUBLISH_OFF }}                               # 🛑 MASTER SWITCH — 1 demotes cron runs to dry-run (YT+FB both parked; boss interlude 2026-09-02)
           BOSS_DROP_DATE: ${{ vars.BOSS_DROP_DATE }}                           # 🐐 set to a date (e.g. 2026-09-04) → that day's engine slot is parked for the boss's own song
-          DSP_PACK: "${{ vars.DSP_PACK || 1 }}"                            # 📦 streaming-delivery pack (Spotify/Apple via a free distributor). 0 = off
+          DSP_PACK: "${{ vars.DSP_PACK || 0 }}"                          # 📦 streaming packs — PARKED by the boss 2026-09-21 ("manual only? then keep to YT/TT/FB/IG"). No artist API exists at any free distributor, so it was a human form forever. Wants it back? repo Variable DSP_PACK=1 — everything is already built and tested (docs/SPOTIFY-APPLE-GUIDE.md).                            # 📦 streaming-delivery pack (Spotify/Apple via a free distributor). 0 = off
           DSP_SAFE_FIRST: "${{ vars.DSP_SAFE_FIRST || inputs.dsp_safe_first || 0 }}"                  # 🧾 1 = cook with commercial-safe lanes first so every song can stream
           DSP_ARTIST: "${{ vars.DSP_ARTIST || 'Nix Speech' }}"               # artist name on the DSPs
           SPIN: "${{ vars.SPIN || inputs.spin || 1 }}"                     # 🌀 dimensional moment — DEFAULT ON (boss 2026-09-19), taste-gated to needy songs only. Permanent kill: repo Variable SPIN=0. One-run kill: input spin=0.

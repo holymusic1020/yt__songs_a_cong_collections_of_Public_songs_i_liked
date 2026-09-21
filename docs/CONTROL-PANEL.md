@@ -107,7 +107,14 @@ Actions → **📀 publish** → *Run workflow*:
 
 ---
 
-## 📦 10. Streaming delivery (Spotify / Apple Music) — **ON**
+## 📦 10. Streaming delivery (Spotify / Apple Music) — **PARKED (off) since 2026-09-21**
+
+Boss's call: RouteNote has no artist API, so the last step is always a human pasting a form —
+*"then OK we will leave it."* Channel stays on YouTube / TikTok / Facebook / Instagram.
+**Want it back:** repo Variable `DSP_PACK` = `1`. That is the entire switch — packer, rights gate,
+artwork, lyrics, provenance, Telegram line and the 90-day artifact all wake up together.
+When it's off, the run logs one line and carries on: `📦 DSP pack: skipped — DSP_PACK=0 — streaming packs off`.
+Full guide (still accurate): [DSP-ROUTE-NOTE / SPOTIFY-APPLE-GUIDE.md](SPOTIFY-APPLE-GUIDE.md).
 
 **Reality check, once and for all:** there is no API anywhere in the free path. RouteNote has no
 artist API at all — a human fills their web form, ~8 minutes per song, and no code of ours can
@@ -201,7 +208,7 @@ posts nothing, and sends you the checklist on Telegram. If the checklist arrives
 | 🛑 PUBLISH_OFF | not set = **live** |
 | 🌐 MULTIPOST | `fb,tt,ig` |
 | 🧪 MULTIPOST_DRYRUN | not set = **real posting** |
-| 📦 DSP_PACK streaming delivery | **ON** (rights-gated) |
+| 📦 DSP_PACK streaming delivery | **OFF — parked by boss 2026-09-21** (set `DSP_PACK=1` to wake) |
 | 🧾 DSP_SAFE_FIRST | **OFF** — flip to 1 to make every song streamable |
 | 🔁 one release per day | **ON** (automatic) |
 | 📅 schedule | cron says 16:00 BDT · GitHub fires it ~19:30–22:00 BDT |

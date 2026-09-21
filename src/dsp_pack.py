@@ -22,7 +22,10 @@ API key, no new credentials — and if anything at all is missing or the lane's
 licence isn't commercial-safe, the pack is refused and YouTube carries on exactly
 as before. Nothing here can break a release: it never raises.
 
-Dials:  DSP_PACK=0        → off entirely (default ON)
+Dials:  DSP_PACK=1        → on. Default is OFF: parked by the boss 2026-09-21 —
+        no free distributor has an artist API, so the last 8 minutes of every release is a
+        human at a web form; he chose to stay on YouTube/TikTok/Facebook/Instagram.
+        Everything here stays tested; one Variable wakes it up.
         DSP_ARTIST        → artist name on streaming (default "Nix Speech")
         DSP_LEAD_DAYS     → suggested release date lead (default 21)
 """
