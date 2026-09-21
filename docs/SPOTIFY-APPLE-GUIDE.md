@@ -26,6 +26,14 @@ So the real question is *which distributor*, and for us three filters apply:
   engine now writes that proof for you (`PROVENANCE.md` inside every pack).
 - Pays by **PayPal, Bank Transfer or Payoneer** once you pass **$50** (Payoneer is
   the one that works cleanly from Bangladesh).
+- **There is no API.** RouteNote has none for artists — every release is a human in the web
+  dashboard. That is why our half of the job is "produce a zip that needs zero thinking", not
+  "auto-upload". Nobody can automate this step from the outside; if a service ever offers to,
+  it is a scraping bot and it will get the account banned.
+- **Moderation is fast:** most releases clear in **1–3 business days**, then stores take 1–5
+  more. No signup limit on the free tier; releases stay live even if you stop uploading.
+- **AI content is excluded from Korean stores** (in addition to YouTube Content ID). Everything
+  else delivers normally.
 - Backups if they ever refuse us: **Amuse** (accepts AI, max 10 AI releases per
   7 days, no free tier now) and **UnitedMasters** (free revenue-share tier).
   Never send the same song through two distributors at once — that splits the
@@ -41,7 +49,9 @@ We disclose and stay clean.
 ## 1 · What the engine now does for you (already built)
 
 Every day it makes a **full song** (not a short) whose cooking lane is legally
-sellable, it builds a delivery box and zips it:
+sellable, it builds a delivery box and zips it. Cadence needs no dial: a long-form song lands
+every 3rd episode (`VIDEO_EVERY = 3`) ≈ **2.3 per week**, which is already the "one song every
+two-to-three days" the channel runs on. Shorts-only days produce no pack, by design:
 
 ```
 out/dsp/ep047-dsp-pack.zip
@@ -101,6 +111,21 @@ Prove it first with a dry run: Actions → publish → Run workflow →
 the pack in the artifacts, and nothing is published.
 
 ---
+
+### Do this on day one, before any pack exists (~5 minutes)
+
+Only two things matter on a fresh account, and only one of them is permanent:
+
+1. **Artist / profile name: `Nix Speech` — typed exactly like that, once.** Stores merge by
+   name; a second spelling (`NixSpeech`, `Nix Speech Music`) splits your catalogue across two
+   profiles and the fix is a support ticket measured in weeks.
+2. Country **Bangladesh**, tier **Free**. Skip the payout method — it only matters past **$50**.
+3. Do **not** create an empty/dummy release to "test the form". A submission with no audio is a
+   moderation strike on a brand-new account. Wait for the first real `dsp-pack` zip.
+4. **Do not** pull an older published track out of YouTube and register it as `human-drop` just to
+   have something to upload today. `human-drop` means *you* performed it; used on a machine-cooked
+   master it is a false rights declaration, and that — not low streams — is what terminates
+   distributor accounts. The engine refuses uncertifiable audio for exactly this reason.
 
 ## 3 · Your clicks (one time, ~10 minutes, no card)
 
