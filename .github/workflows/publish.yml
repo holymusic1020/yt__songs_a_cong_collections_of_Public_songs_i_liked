@@ -225,9 +225,20 @@ jobs:
             out/summary.md
             out/run.log
             out/post_card.png
-            out/dsp/**
           if-no-files-found: ignore     # never fail the job over a missing log
           retention-days: 14            # auto-expire — zero storage pile-up
+
+      - name: 📦 Streaming packs (Spotify/Apple — ready to submit)
+        if: always()                    # worth downloading even on a red run
+        continue-on-error: true         # a missing pack is never a failure
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsp-pack
+          path: out/dsp/**
+          if-no-files-found: ignore     # shorts day or refused lane → nothing to ship
+          retention-days: 90            # RouteNote review + your free evenings need
+                                        # more than 14 days. Public repo ⇒ storage is
+                                        # free and uncapped, so a 40 MB zip costs ৳0.
 
       - name: 📦 Queue tomorrow's song (artifact hand-off)
         if: always()                    # queue refreshes its 14-day TTL every run

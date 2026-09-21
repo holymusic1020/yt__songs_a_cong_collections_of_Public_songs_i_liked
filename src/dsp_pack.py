@@ -129,24 +129,37 @@ def build_pack(wav, cover=None, meta=None, genre_key: str = "", ep: int = 0,
         title = title.split("—")[0].split(" - ")[0].strip() or "untitled"
         primary, secondary = GENRE_MAP.get(str(genre_key), ("Alternative", ""))
         lead = int(os.environ.get("DSP_LEAD_DAYS", "21") or 21)
-        rel = (datetime.now() + timedelta(days=lead)).strftime("%Y-%m-%d")
+        # Music releases worldwide land on a FRIDAY (the industry's new-music
+        # day; playlists and charts are cut around it). Pick the first Friday at
+        # least `lead` days out, so the pitch/pre-save window is never wasted.
+        rel_dt = datetime.now() + timedelta(days=lead)
+        rel_dt += timedelta(days=(4 - rel_dt.weekday()) % 7)          # Mon=0 → Fri=4
+        rel = rel_dt.strftime("%Y-%m-%d")
 
         # 1 · audio — the exact master the video used (loudness-matched already)
         audio = d / f"{_clean(artist)} - {_clean(title)}.wav"
         shutil.copyfile(wav, audio)
         spec = _audio_spec(audio)
 
-        # 2 · artwork — square 3000×3000 JPEG
+        # 2 · artwork — square 3000×3000 JPEG. The video cover is 1280×720, so
+        # the wide frame has to become a square. Solid black bars get REJECTED by
+        # store review ("no borders/letterboxing"), and cropping the sides off
+        # loses the art we paid for. So: the full art sits centred on a square
+        # canvas over a blurred, stretched copy of itself — reads as a designed
+        # cover, keeps every pixel of the artwork, and is not a border.
         art_name = ""
         if cover and Path(cover).exists():
             try:
-                from PIL import Image
+                from PIL import Image, ImageFilter
                 im = Image.open(str(cover)).convert("RGB")
                 if im.size != (COVER_PX, COVER_PX):
                     side = max(im.size)
-                    canvas = Image.new("RGB", (side, side), (10, 10, 14))
-                    canvas.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
-                    im = canvas
+                    bg = im.resize((side, side), Image.LANCZOS).filter(
+                        ImageFilter.GaussianBlur(max(8, side // 28)))
+                    fh = max(1, int(round(im.height * side / im.width)))
+                    fg = im.resize((side, fh), Image.LANCZOS)
+                    bg.paste(fg, (0, (side - fh) // 2))
+                    im = bg
                     im = im.resize((COVER_PX, COVER_PX), Image.LANCZOS)
                 art_name = f"cover_{COVER_PX}x{COVER_PX}.jpg"
                 im.save(str(d / art_name), "JPEG", quality=JPEG_Q, optimize=True)
@@ -255,7 +268,8 @@ def build_pack(wav, cover=None, meta=None, genre_key: str = "", ep: int = 0,
                "title": title, "artist": artist, "music_lane": v["lane"],
                "rights": v.get("license"), "release_date": rel,
                "duration_s": spec.get("duration_s"),
-               "why": f"streaming pack ready ({round(size / 1e6, 1)} MB, {len(fields) and 6} parts)"}
+               "why": f"streaming pack ready ({round(size / 1e6, 1)} MB, "
+                        f"{sum(1 for f in d.iterdir() if f.is_file())} parts)"}
         print(f"  📦 DSP pack: {zpath.name} · {res['mb']} MB · lane={v['lane']} "
               f"({v.get('license')}) · suggested release {rel}")
         if v.get("conditional"):

@@ -116,6 +116,8 @@ python -m src.main --dry-run --genre drift_phonk --length 60
 
 ## Tuning knobs
 
+> **🎧 Streaming on Spotify / Apple Music** → [`docs/SPOTIFY-APPLE-GUIDE.md`](docs/SPOTIFY-APPLE-GUIDE.md) — no DSP takes artist uploads, so every full song gets a ready-to-submit distributor pack (`dsp-pack` artifact), rights-gated lane by lane. Free route, no credit card.
+
 > **🎛 Every on/off switch in one place → [`docs/CONTROL-PANEL.md`](docs/CONTROL-PANEL.md)** (boss's dial map: what each switch does, where it lives, the exact one-line flip, and the log line that proves it fired.)
 
 | Want | Where |

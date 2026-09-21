@@ -82,7 +82,17 @@ def build_message(status: str, manifest: dict | None,
                 if key == "ig" and lanes.get("ig_permalink"):
                     extra = f" {lanes['ig_permalink']}"
                 lines.append(f"{label:<15} {st}{extra}")
-        bad = [k for k in lanes if _lane_state(str(lanes[k])) == "❌"]
+        # 📦 streaming pack — informational ONLY. It is not a lane: nothing is
+        # uploaded, so a refused-rights night must never read as "not posted".
+        # (Its skip string contains the word "refused" — which _lane_state maps
+        # to ❌ — so it is excluded from the failure list on purpose.)
+        dsp_note = str(lanes.get("dsp") or "")
+        if dsp_note:
+            lines.append(("📦 Spotify pack  " + ("✅ " if dsp_note.startswith("✅")
+                                                 else "➖ ") + dsp_note.lstrip("✅")))
+        bad = [k for k in lanes
+               if k in ("fb", "tt", "ig", "ig_photo")
+               and _lane_state(str(lanes[k])) == "❌"]
         lines.append("─" * 22)
         if bad:
             lines.append(f"❌ not posted: {', '.join(bad)}")

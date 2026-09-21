@@ -122,6 +122,9 @@ no-card one we picked is RouteNote (15% of royalties).
 | Change the songwriter credit | Variable `DSP_WRITER` (defaults to the artist name) |
 | Change the release lead time | Variable `DSP_LEAD_DAYS` (default 21 days) |
 
+The zip waits in the Actions run → artifact **`dsp-pack`** (90 days, public repo = free
+storage). Telegram says so in one line: `📦 Spotify pack ✅ …` / `➖ off — <why>` — a refused
+night is never counted as a failed platform.
 Log proof: `📦 DSP pack: ep047-dsp-pack.zip · 3.9 MB · lane=ace-kaggle (Apache-2.0)` or
 `📦 DSP pack: skipped — rights: lane 'suno' is not commercial-safe`.
 

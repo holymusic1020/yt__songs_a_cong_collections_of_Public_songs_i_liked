@@ -46,7 +46,9 @@ sellable, it builds a delivery box and zips it:
 ```
 out/dsp/ep047-dsp-pack.zip
 ├── Nix Speech - porcelain static.wav   ← the loudness-matched master (-14 LUFS / -1 dBTP)
-├── cover_3000x3000.jpg                 ← square artwork, padded not stretched
+├── cover_3000x3000.jpg                 ← square artwork — the 16:9 cover centred on a
+│                                         blurred copy of itself (no black bars: stores
+│                                         reject bordered artwork; no cropping either)
 ├── metadata.json                       ← machine-readable, every store field
 ├── metadata.md                         ← COPY-PASTE SHEET for the web form
 ├── lyrics.txt                          ← plain lyrics (stores require them)
@@ -58,11 +60,15 @@ Log line on a release day:
 ```
 📦 DSP pack: ep047-dsp-pack.zip · 3.9 MB · lane=ace-kaggle (Apache-2.0) · suggested release 2026-10-12
 ```
-Telegram checklist gets a `dsp` line too, and the receipt records `music_lane` +
-the pack summary — so provenance is on file forever.
+Telegram gets its own line — `📦 Spotify pack ✅ …` when a pack waits, `➖ off — <why>`
+when a night is refused. **It is informational, never a red ❌**: a skipped pack is a
+missing single, not a broken release. The receipt records `music_lane` + the pack
+summary, so provenance is on file forever.
 
-**Where to download it:** GitHub → repo → **Actions** → the day's run →
-**Artifacts** at the bottom → `episode-latest` → inside it, `out/dsp/…zip`.
+**Where to download it:** GitHub → repo → **Actions** → the day's run → **Artifacts**
+at the bottom → **`dsp-pack`** → `out/dsp/epNNN-dsp-pack.zip`.
+That artifact lives **90 days** (the packs ride their own artifact, not the 14-day log
+one) and the repo is public, so GitHub charges nothing for the storage.
 
 ## 2 · The rights gate (why some days have no pack)
 
@@ -115,7 +121,9 @@ the pack in the artifacts, and nothing is published.
    tool link it lists (e.g. the ACE-Step model page). If they ask for proof of
    commercial rights, send `PROVENANCE.md` itself — it names the licence.
 7. **Stores:** tick everything (Spotify, Apple Music, Amazon, YouTube Music, TikTok, Tidal…).
-8. **Release date:** use `suggested_release_date` (today + 21 days). Delivery and
+8. **Release date:** use `suggested_release_date` — the next **Friday** at least 21 days
+   out (music lands worldwide on Fridays; that's also the day charts and editorial
+   playlists are cut). Delivery and
    moderation take days, and a date 3–4 weeks out is what unlocks pre-saves and
    Spotify's editorial pitch form.
 9. **Submit.** Expect a moderation review; if they ask a question, answer fast —
@@ -151,5 +159,7 @@ the pack in the artifacts, and nothing is published.
 | Different songwriter credit | Variable `DSP_WRITER` = `Your Legal Name` |
 | Different release lead time | Variable `DSP_LEAD_DAYS` = `28` |
 
-Proof it all works: `python3 tools/v34_dsp_pack_ut.py` → **UT-34 PASS** (11 checks,
-including every refusal path).
+Proof it all works: `python3 tools/v34_dsp_pack_ut.py` → **UT-34 PASS**, 16 blocks:
+every refusal path, the pack contents, the metadata, **byte-identical audio** (the pack
+can never alter your sound), the Friday date, no-black-bar artwork, the Telegram
+false-alarm guard, and the artist/writer dials.

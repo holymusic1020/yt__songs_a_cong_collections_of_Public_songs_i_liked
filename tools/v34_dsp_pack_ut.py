@@ -142,4 +142,70 @@ r = dsp_pack.build_pack(wav=Path("/tmp/ut34/does-not-exist.wav"), meta={}, ep=52
 assert not r["ok"] and "no master wav" in r["why"], r
 print(f"   ✅ returns a reason instead of raising: {r['why']}")
 
+print("── 12. the audio in the pack IS the video master (byte for byte)")
+r47 = pack(ep=55)                       # fresh — earlier blocks wipe the zips
+d47 = OUT / "dsp" / "ep055"
+z47 = zipfile.ZipFile(Path(r47["zip"]))
+n47 = z47.namelist()
+audio_name = [n for n in n47 if n.endswith(".wav")][0]
+assert z47.read(audio_name) == WAV.read_bytes(), \
+    "the pack must never re-encode, re-normalise or re-render the approved sound"
+assert (d47 / Path(audio_name).name).read_bytes() == WAV.read_bytes()
+print("   ✅ identical bytes — same loudness, same spin, same everything")
+
+print("── 13. release date = a Friday, at least DSP_LEAD_DAYS out")
+from datetime import datetime, timedelta
+rel = datetime.strptime(json.loads((d47 / "metadata.json").read_text())[
+    "suggested_release_date"], "%Y-%m-%d").date()
+lead = int(os.environ.get("DSP_LEAD_DAYS", "21") or 21)
+assert rel.weekday() == 4, f"{rel} is a {rel.strftime('%A')} — stores release on Fridays"
+assert (rel - datetime.now().date()).days >= lead, (rel, lead)
+print(f"   ✅ {rel} ({rel.strftime('%A')}, {(rel - datetime.now().date()).days} days out)")
+
+print("── 14. artwork fill: blurred art, NOT a black bar (stores reject borders)")
+import io as _io
+import numpy as _np
+jpg = [f for f in sorted(d47.iterdir()) if f.suffix == ".jpg"][0]
+art_px = _np.asarray(Image.open(jpg).convert("L"))
+pad = art_px[:120]          # the band the old (10,10,14) black canvas used to fill
+# heavy gaussian blur flattens variance, so the discriminator is BRIGHTNESS: a
+# solid black bar measures ~11 grey; a blurred copy of the artwork measures ~127.
+assert pad.mean() > 25.0 and pad.std() > 0.4, \
+    f"pad band looks like a border (mean={pad.mean():.1f}, std={pad.std():.2f})"
+print(f"   ✅ 3000×3000 · pad mean={pad.mean():.0f} (black bar would be 11) "
+      f"· std={pad.std():.1f}")
+
+print("── 15. Telegram: a refused pack never reads as a failed platform")
+from src import notify
+msg = notify.build_message("success", {
+    "episode": 47, "meta": {"name": "porcelain static", "genre": "lofi", "bpm": 92,
+                            "key": "F#m"},
+    "video_today": True, "video_id": "V1", "short_id": "S1",
+    "lanes": {"fb": "published", "tt": "draft created", "ig": "published",
+              "dsp": "off — rights: lane 'suno' is not commercial-safe "
+                     "(Suno ToS — FREE tier is non-commercial) — refused"},
+}, "https://x/y", "")
+assert "not posted" not in msg, msg          # "refused" must not become a red alarm
+assert "Spotify pack" in msg and "suno" in msg, msg
+assert "all lanes clear" in msg, msg
+msg2 = notify.build_message("success", {**json.loads(json.dumps({
+    "episode": 47, "meta": {"name": "x", "genre": "lofi", "bpm": 1, "key": "A"},
+    "video_today": True, "video_id": "V", "short_id": "S",
+    "lanes": {"fb": "failed: http 400", "dsp": "✅ streaming pack ready"}})),
+}, "https://x/y", "")
+assert "not posted: fb" in msg2 and "dsp" not in msg2.split("not posted: ")[1].split("\n")[0]
+print("   ✅ the pack line is informational; real lane failures still shout")
+
+print("── 16. DSP_WRITER / DSP_ARTIST reach the metadata")
+os.environ["DSP_ARTIST"] = "Nix Speech"
+os.environ["DSP_WRITER"] = "N. Speaker"
+r = pack(ep=53)
+md3 = json.loads((OUT / "dsp" / "ep053" / "metadata.json").read_text())
+assert md3["primary_artist"] == "Nix Speech" and md3["songwriter"] == "N. Speaker"
+os.environ.pop("DSP_WRITER"); os.environ.pop("DSP_ARTIST")
+r2 = pack(ep=54)
+md4 = json.loads((OUT / "dsp" / "ep054" / "metadata.json").read_text())
+assert md4["songwriter"] == "Nix Speech", "writer defaults to the artist name"
+print("   ✅ dials respected, and the default credit is the artist (boss's pick)")
+
 print("\nUT-34 PASS · the streaming box is built only from songs we may legally sell")
