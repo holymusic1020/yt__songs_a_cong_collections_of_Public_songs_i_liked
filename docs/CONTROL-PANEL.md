@@ -107,7 +107,25 @@ Actions → **📀 publish** → *Run workflow*:
 
 ---
 
-## 🔁 10. One release per day — **automatic, no dial**
+## 📦 10. Streaming delivery (Spotify / Apple Music) — **ON**
+Full step-by-step: **[`docs/SPOTIFY-APPLE-GUIDE.md`](SPOTIFY-APPLE-GUIDE.md)**. Every full song
+cooked by a legally sellable lane gets a delivery box zipped at `out/dsp/epNNN-dsp-pack.zip`
+(audio + 3000×3000 art + metadata + copy-paste sheet + lyrics + rights provenance), shipped as the
+run's `episode-latest` artifact. Nothing uploads itself — a distributor is mandatory, and the free
+no-card one we picked is RouteNote (15% of royalties).
+
+| Want to… | Do this |
+|---|---|
+| Stop building packs | Variable `DSP_PACK` = `0` |
+| Make **every** song streamable | Variable `DSP_SAFE_FIRST` = `1` — commercial-safe lanes cook first. ⚠️ a different model sings, so the sound can change; test with a dry run first (`dsp_safe_first=1`) |
+| Change the DSP artist name | Variable `DSP_ARTIST` |
+| Change the songwriter credit | Variable `DSP_WRITER` (defaults to the artist name) |
+| Change the release lead time | Variable `DSP_LEAD_DAYS` (default 21 days) |
+
+Log proof: `📦 DSP pack: ep047-dsp-pack.zip · 3.9 MB · lane=ace-kaggle (Apache-2.0)` or
+`📦 DSP pack: skipped — rights: lane 'suno' is not commercial-safe`.
+
+## 🔁 11. One release per day — **automatic, no dial**
 If a real release already went out today (your clock, BDT) — a manual run, a rescue, a boss drop —
 the evening cron **parks itself** and ships nothing. Log line:
 ```
@@ -118,7 +136,7 @@ runs), so a midday release used to leave the evening slot free to ship a second 
 uploads, two TikToks, two reels in one day. Your Run-workflow button is never blocked by this:
 that's your own hand.
 
-## 📅 11. Daily time — **16:00 BDT (requested)** · lands ~19:30–22:00 BDT in practice
+## 📅 12. Daily time — **16:00 BDT (requested)** · lands ~19:30–22:00 BDT in practice
 `.github/workflows/publish.yml` ~line 27 — search `cron:`. It reads `0 10 * * *` (UTC).
 Dhaka is UTC+6, so `10` = 16:00. Want 18:00 BDT → `0 12 * * *`. Want 09:00 BDT → `0 3 * * *`.
 Formula: **UTC hour = BDT hour − 6.**
@@ -132,12 +150,12 @@ If you want the video to actually *appear* near 16:00 BDT, set the cron to
 `0 5 * * *` (05:00 UTC = 11:00 BDT) and the usual delay lands it at ~15:30–17:30 BDT.
 Say the word and I'll move it; until then it stays at the time you asked for.
 
-## 🐐 12. Your own song drops
+## 🐐 13. Your own song drops
 Two Variables together: `BOSS_DROP_DATE` = a date like `2026-09-26` and `BOSSDROP_ARMED` = `1`.
 That day the engine parks its own slot and the boss-drop workflow takes over. Clear the date →
 engine resumes normal duty.
 
-## 🌍 13. Small extras (all optional, all OFF unless set)
+## 🌍 14. Small extras (all optional, all OFF unless set)
 - `POSTS_OFF=1` → silence the YouTube community post packs
 - `WORLD_TOUR_EVERY=N` → every Nth episode ships a foreign-language version; `WORLD_LANGS` = list
 - `SHORT_SFX=1` → chirp sound effects on short caption flips (**OFF** by your order, 2026-09-15)
@@ -153,6 +171,7 @@ python3 tools/v30_spin_gate_ut.py # gate still refuses 3 of 5 songs
 python3 tools/v31_vocal_hook_ut.py# shorts still land on sung windows
 python3 tools/v32_spin_window_ut.py # moment lands on the break, never the hook
 python3 tools/v33_daily_dedupe_ut.py # never two releases in one day
+python3 tools/v34_dsp_pack_ut.py    # streaming pack + rights gate
 python3 tools/yamlcheck.py        # workflow files still valid
 ```
 Or the lazy version: dispatch a **dry_run** from the Actions button. It renders the whole thing,
@@ -169,6 +188,8 @@ posts nothing, and sends you the checklist on Telegram. If the checklist arrives
 | 🛑 PUBLISH_OFF | not set = **live** |
 | 🌐 MULTIPOST | `fb,tt,ig` |
 | 🧪 MULTIPOST_DRYRUN | not set = **real posting** |
+| 📦 DSP_PACK streaming delivery | **ON** (rights-gated) |
+| 🧾 DSP_SAFE_FIRST | **OFF** — flip to 1 to make every song streamable |
 | 🔁 one release per day | **ON** (automatic) |
 | 📅 schedule | cron says 16:00 BDT · GitHub fires it ~19:30–22:00 BDT |
 | 🔇 SHORT_SFX / LOOP_OFF / MASCOT_OFF / POSTS_OFF | all **OFF** |

@@ -23,6 +23,10 @@ on:
         description: "0 = skip the dimensional moment for THIS run | blank = default (ON, taste-gated)"
         required: false
         default: ""
+      dsp_safe_first:
+        description: "1 = cook with commercial-safe lanes first (song becomes streaming-eligible)"
+        required: false
+        default: ""
   schedule:
     - cron: "0 10 * * *"         # DAILY 16:00 BDT (boss 2026-09-19: he posts by hand ~15:15, keep the engine clear of it; was 23 9 = 15:23 BDT)
 
@@ -167,6 +171,9 @@ jobs:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN || vars.FB_PAGE_TOKEN }}  # EAA page token
           PUBLISH_OFF: ${{ vars.PUBLISH_OFF }}                               # 🛑 MASTER SWITCH — 1 demotes cron runs to dry-run (YT+FB both parked; boss interlude 2026-09-02)
           BOSS_DROP_DATE: ${{ vars.BOSS_DROP_DATE }}                           # 🐐 set to a date (e.g. 2026-09-04) → that day's engine slot is parked for the boss's own song
+          DSP_PACK: "${{ vars.DSP_PACK || 1 }}"                            # 📦 streaming-delivery pack (Spotify/Apple via a free distributor). 0 = off
+          DSP_SAFE_FIRST: "${{ vars.DSP_SAFE_FIRST || inputs.dsp_safe_first || 0 }}"                  # 🧾 1 = cook with commercial-safe lanes first so every song can stream
+          DSP_ARTIST: "${{ vars.DSP_ARTIST || 'Nix Speech' }}"               # artist name on the DSPs
           SPIN: "${{ vars.SPIN || inputs.spin || 1 }}"                     # 🌀 dimensional moment — DEFAULT ON (boss 2026-09-19), taste-gated to needy songs only. Permanent kill: repo Variable SPIN=0. One-run kill: input spin=0.
           LOUDNORM: "${{ vars.LOUDNORM || 1 }}"                              # 🔉 -14 LUFS / -1 dBTP per song; var=0 off
           CHIME_OFF: "${{ vars.CHIME_OFF || 1 }}"   # default 1 = chime dead (boss 2026-09-19 ting-tong); var CHIME_OFF=0 brings it back                                  # 🔔 1 = kill the 0.75s station chime (boss 2026-09-19: "ting tong on every video")
@@ -218,6 +225,7 @@ jobs:
             out/summary.md
             out/run.log
             out/post_card.png
+            out/dsp/**
           if-no-files-found: ignore     # never fail the job over a missing log
           retention-days: 14            # auto-expire — zero storage pile-up
 

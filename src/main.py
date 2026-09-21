@@ -577,6 +577,10 @@ def main() -> None:
                    "anime_titan": "anime titan"}
     ext_wav = ext_src = ext_name = ext_genre = None
     ext_lang, ext_lyc, ext_lrc = "en", None, None
+    # 🧾 DSP provenance (2026-09-19): WHICH engine cooked today's audio decides
+    # whether the song may be delivered to Spotify/Apple Music. "engine" = our own
+    # composer (commercial-safe). Set below by the queue sidecar or the cook lane.
+    music_lane = "engine"
     everyday = os.environ.get("VOCAL_EVERYDAY", "1") != "0"   # 🎤 vocal shorts too
     if video_today or everyday:      # was video-days-only → shorts never saw the queue
         (ext_wav, ext_src, ext_name, ext_genre, ext_lang,
@@ -589,6 +593,18 @@ def main() -> None:
         genre_key = ext_genre
     if ext_wav:
         print(f"  🎁 using queued song: {ext_src.name}")
+        try:                                    # 🧾 who cooked this queued song?
+            _side = Path(ext_src).with_name(Path(ext_src).stem + ".lane.txt")
+            if _side.exists():
+                music_lane = _side.read_text(encoding="utf-8").strip() or "unknown"
+            elif not str(ext_src.name).startswith("next_song"):
+                music_lane = "human-drop"       # the boss's own recording
+            else:
+                music_lane = "unknown"          # no provenance → rights gate refuses
+            print(f"  🧾 provenance: {music_lane}")
+        except Exception as _pe:
+            music_lane = "unknown"
+            print(f"  🧾 provenance unreadable ({_pe}) → treated as unknown")
         import wave as _wave
         with _wave.open(str(ext_wav), "rb") as _w:
             dur = _w.getnframes() / _w.getframerate()
@@ -644,6 +660,7 @@ def main() -> None:
                     info = {"bpm": _ms.GENRE_BPM.get(genre_key, 110), "key": "—",
                             "genre": GENRE_LABEL[genre_key], "duration_s": dur2}
                     print(f"  ✅ today's vocal cooked by: {cooked_by}")
+                    music_lane = cooked_by or "engine"      # 🧾 DSP provenance
                 elif os.environ.get("REQUIRE_VOCALS", "") == "1" and args.publish:
                     raise SystemExit("No vocal music lane succeeded; refusing to publish instrumental fallback")
             except SystemExit:
@@ -1067,6 +1084,12 @@ def main() -> None:
                 if cooked and nxt_lyc and cooked_by != "musicgen-local":
                     (inc / f"{stem}.lyrics.txt").write_text(
                         nxt_lyc, encoding="utf-8")
+                if cooked:
+                    # 🧾 provenance rides with the song, exactly like the lyrics
+                    # sidecar: tomorrow's run reads it and knows whether the
+                    # track may go to Spotify/Apple Music (src/rights.py).
+                    (inc / f"{stem}.lane.txt").write_text(
+                        str(cooked_by or "engine"), encoding="utf-8")
             else:
                 print("  📦 queue still stocked — nothing to cook today")
         except Exception as e:
@@ -1142,6 +1165,40 @@ def main() -> None:
     except Exception as _lae:                     # never fatal — it is a diagnostic
         print(f"  🩺 authoritative lane audit skipped: {_lae}")
 
+    # 📦 DSP PACK (2026-09-19 · boss: "cannot we push this thing… Spotify? apple
+    # music?"). No DSP takes artist uploads directly — a distributor does, and the
+    # free AI-friendly ones (RouteNote: $0, 15% of royalties, no card) want one
+    # fixed box per release. We already own every part of that box; this gathers
+    # it, rights-gated by src/rights.py. Skipped silently on shorts-only days and
+    # refused outright when the cooking lane isn't commercial-safe.
+    dsp = {"ok": False, "why": "not attempted"}
+    try:
+        from src import dsp_pack as _dsp
+        _lyr_txt = ""
+        try:
+            if ext_lyc and Path(ext_lyc).exists():
+                _lyr_txt = Path(ext_lyc).read_text(encoding="utf-8")
+        except Exception:
+            _lyr_txt = ""
+        dsp = _dsp.build_pack(
+            wav=wav, cover=cover, meta=meta, genre_key=genre_key, ep=ep,
+            lane=music_lane, kind=("full" if video_today else "short"),
+            lrc_entries=lrc_entries, lyrics_text=_lyr_txt,
+            out_root=OUT, dry_run=bool(args.dry_run))
+        if not dsp.get("ok"):
+            print(f"  📦 DSP pack: skipped — {dsp.get('why')}")
+    except Exception as _de:                       # never fatal
+        dsp = {"ok": False, "why": f"dsp pack error: {_de}"}
+        print(f"  📦 DSP pack: skipped — {dsp['why']}")
+    try:
+        if isinstance(_fanout_result, dict):
+            _fanout_result["dsp"] = (
+                f"✅ streaming pack ready — {dsp.get('mb')} MB zip, lane={dsp.get('music_lane')} "
+                f"({dsp.get('rights')}), suggested release {dsp.get('release_date')}"
+                if dsp.get("ok") else f"off — {dsp.get('why')}")
+    except NameError:
+        pass
+
     # Laws: never raises, text-only, NEVER commits state/state.json (the
     # workflow's own 'Commit state' step owns that file — racing it caused the
     # duplicate-episode bug class), credentials masked at the door.
@@ -1154,6 +1211,10 @@ def main() -> None:
             mode=("dry_run" if args.dry_run else "publish" if args.publish else "auto"),
             root=ROOT,
             extra={"errors": errors[:6],
+                   "music_lane": music_lane,
+                   "dsp": {k: dsp.get(k) for k in
+                           ("ok", "why", "zip", "mb", "music_lane", "rights",
+                            "release_date", "duration_s")},
                    "lane_audit_file": str(ROOT / "out" / "lane_audit.json"),
                    "queue_lane": str(os.environ.get("KAGGLE_FIRST", "")),
                    "vocal_everyday": str(os.environ.get("VOCAL_EVERYDAY", "")),

@@ -138,7 +138,16 @@ def cook(genre_key: str, seconds: float, out_path: Path,
 
     # If your main goal is "real song with vocals", put Kaggle immediately
     # after Suno. This avoids wasting minutes/quota on Gemini/ACE lanes first.
-    if os.environ.get("KAGGLE_FIRST", "") == "1":
+    if os.environ.get("DSP_SAFE_FIRST", "") == "1":
+        # 📦 streaming-first (2026-09-19): cook with a lane whose licence lets the
+        # song be DELIVERED to Spotify/Apple Music — ACE-Step & DiffRhythm are
+        # Apache-2.0, Lyria is conditional. Suno's FREE tier is non-commercial
+        # ("cannot be monetized", help.suno.com), so it drops to last resort.
+        lanes = [acek_lane, ace15_lane, ace1_lane, lyria_lane, kaggle_lane,
+                 suno_lane, local_lane]
+        print("  📦 DSP_SAFE_FIRST=1 → commercial-safe lanes cook first "
+              "(suno/musicgen demoted — see src/rights.py)")
+    elif os.environ.get("KAGGLE_FIRST", "") == "1":
         lanes = [suno_lane, kaggle_lane, lyria_lane, acek_lane, ace15_lane, ace1_lane, local_lane]
     else:
         lanes = [suno_lane, lyria_lane, acek_lane, ace15_lane, ace1_lane, kaggle_lane, local_lane]
