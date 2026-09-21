@@ -120,39 +120,94 @@ Only two things matter on a fresh account, and only one of them is permanent:
    name; a second spelling (`NixSpeech`, `Nix Speech Music`) splits your catalogue across two
    profiles and the fix is a support ticket measured in weeks.
 2. Country **Bangladesh**, tier **Free**. Skip the payout method — it only matters past **$50**.
-3. Do **not** create an empty/dummy release to "test the form". A submission with no audio is a
-   moderation strike on a brand-new account. Wait for the first real `dsp-pack` zip.
+3. You **may** open the wizard and look around — nothing is reviewed until the final
+   **Distribute Free** button, and an unfinished release just sits in *Discography* as
+   *In Progress* (there's even a "delete all unfinished releases" action). What you must not do
+   is **submit** a release with no audio, or a placeholder "test" track: that is what burns
+   moderation goodwill on a fresh account. Walk the form, close the tab, submit only a real pack.
 4. **Do not** pull an older published track out of YouTube and register it as `human-drop` just to
    have something to upload today. `human-drop` means *you* performed it; used on a machine-cooked
    master it is a false rights declaration, and that — not low streams — is what terminates
    distributor accounts. The engine refuses uncertifiable audio for exactly this reason.
 
-## 3 · Your clicks (one time, ~10 minutes, no card)
+## 3 · The wizard, screen by screen (this is the whole job)
 
-1. Go to **routenote.com** → **Sign up** → email + password. Free tier is the default; never enter card details.
-2. Verify the email, then fill the profile: artist name **Nix Speech**, your country, and a **payment method** (Payoneer is the Bangladesh-friendly one; add it later if you prefer — it only matters once you pass $50).
-3. Dashboard → **Distribution** → **Create a new release**.
+RouteNote's flow is a linear wizard: each section ends with **Save and Continue** and drops you
+back on the "release in progress" page, where the next section is waiting. Nothing is reviewed or
+sent anywhere until the very last button, so **you can stop halfway and come back** — it sits in
+Discography as *In Progress*. Verified wording below is theirs.
 
-## 4 · Your clicks (per song, ~8 minutes)
+### Screen 1 — `Create a Release` (`/rn/create_album`) → *Release Data*
+| Box | Type |
+|---|---|
+| **UPC** | **leave EMPTY.** They generate one free. Only fill it if you're migrating from another distributor. |
+| **Release Title** | the `release_title` line from `metadata.md`. For a single this IS the song title. |
+| **Create Release** | click it. |
 
-1. **Release type:** Single · **Release title:** from `metadata.md` → `release_title`
-2. **Upload audio:** the `.wav` from the pack (they ask for WAV 16/24-bit 44.1 kHz — ours is exactly that)
-3. **Artwork:** `cover_3000x3000.jpg` (must be square, no URLs, no extra branding)
-4. **Track details:** copy the fields straight off `metadata.md` — primary artist,
-   songwriter/composer, publisher, language, genre, explicit = No.
-   **ISRC and UPC: leave blank.** RouteNote assigns them. Never invent one.
-5. **Lyrics:** paste `lyrics.txt`. Tick the synced-lyrics option and upload `lyrics.lrc` if they offer it.
-6. **AI disclosure:** paste the statement from `PROVENANCE.md`, and give them the
-   tool link it lists (e.g. the ACE-Step model page). If they ask for proof of
-   commercial rights, send `PROVENANCE.md` itself — it names the licence.
-7. **Stores:** tick everything (Spotify, Apple Music, Amazon, YouTube Music, TikTok, Tidal…).
-8. **Release date:** use `suggested_release_date` — the next **Friday** at least 21 days
-   out (music lands worldwide on Fridays; that's also the day charts and editorial
-   playlists are cut). Delivery and
-   moderation take days, and a date 3–4 weeks out is what unlocks pre-saves and
-   Spotify's editorial pitch form.
-9. **Submit.** Expect a moderation review; if they ask a question, answer fast —
-   unanswered requests are the #1 reason releases stall.
+### Screen 2 — *Album Details*
+| Box | Type |
+|---|---|
+| Language | the `language` line (match the sung language, not the video's captions) |
+| Album/Single/EP Title | already filled — skip |
+| Album Version | leave empty (put `Instrumental` only if it truly is one) |
+| **Artist Name** | `Nix Speech` — spelled EXACTLY like the profile, every time |
+| **Artist page on Spotify** | pick **Create a new profile** (first release). Once claimed, later releases must select that page or your streams split across two profiles. |
+| **Writers** | `Nix Speech` — first + last name format. Tick the lyricist box and repeat it (our lyrics are written for the song, so both credits are the same). |
+| **Primary Genre** | from `primary_genre` · **Secondary Genre** from `secondary_genre` |
+| **Composition Copyright (C line)** | `c_line` from the sheet, e.g. `© 2026 Nix Speech` |
+| **Sound Recording Copyright (P line)** | `p_line`, e.g. `(℗) 2026 Nix Speech` |
+| **Record Label Name** | **`Nix Speech`.** ⚠️ Their own rule: `none`, `unsigned`, `indie`, `N/A` and **`independent` are all rejected** — no label means put your artist name. |
+| **Originally Released** | **today's date** — first time it reaches stores. Leave Pre-Order and Sales Start blank. |
+| **Explicit Content** | **Non-explicit** |
+| Save and Continue | click |
+
+### Screen 3 — *Add Audio*
+**Track Name** = the song title (for a single it must match the release title) → **Choose File** →
+drop in `Nix Speech - <title>.wav` from the pack → wait for 100% → **Save and Continue**.
+(If it stalls under 100% it's usually the file: ours is WAV 44.1 kHz / 16-bit, which is their
+spec, so check it wasn't renamed to `.wav.wav` by your OS on the way out of the zip.)
+
+### Screen 4 — *Track Metadata*
+Track name / track number `1` / artist are prefilled — skip. **Title Version** empty.
+**Composer** `Nix Speech`, tick **Yes** on lyrics and add **Lyricist** `Nix Speech`.
+**ISRC** — auto-filled by them; leave it. **Explicit** Non-explicit. **Audio Language** match screen 2.
+→ **Save and Continue** → **I'm Finished**.
+
+### Screen 5 — *Artwork*
+Drag in `cover_3000x3000.jpg`. It's square, 3000 px, and **deliberately has no frame, no
+"OFFICIAL AUDIO" chip and no episode number** — the video thumbnail has those, and Apple/Spotify
+reject borders and overlay text on artwork. Their no-list: website addresses, emails, **@handles**,
+**hashtags**, phone numbers, QR codes, store or social **logos**, "coming soon"/"follow me"
+**advertising**, prices, CD/DVD logos, barcodes. → **Save and Continue**.
+
+### Screen 6 — *Manage Stores*
+Tick **Select all stores**. **Pricing = Standard**. **Territories: add nothing** — empty means
+worldwide, which is their documented rule. → **Save and Continue**.
+
+### Screen 7 — *Localisation*
+Skip it (that's translated metadata; `VOCAL_EVERYDAY`/world-tour episodes can wait until a
+language actually earns something).
+
+### Screen 8 — *Finalise*
+Read the summary, tick the **Artist/Label Agreement** box, then:
+
+> ### ⚠️ press **Distribute Free** — NOT "Distribute Premium"
+> Premium is the paid one (card required, $9.99/single). Free = $0, they keep 15% of royalties.
+> The site will offer you Premium in several places (the welcome page has a "Choose Premium"
+> button). Every one of them is an upsell. Ignore all of them, always.
+
+Done. Status → *In Review*. Moderation 1–3 business days, then stores take 1–5 more.
+
+### What moderation writes back if something's wrong
+They email + put a note in **Discography** with the fix needed. Edit the field, re-submit. That is
+normal, not a strike — the only thing that actually hurts an account is *lying* (rights, AI,
+impersonation). Common asks from our side would be a title-format note or artwork text; answer
+once, it's cleared forever.
+
+### The three traps on this form
+1. `independent` in the label box → rejected (use `Nix Speech`).
+2. An ISRC/UPC typed in by hand → duplicate-registry mess. Both boxes stay empty, forever.
+3. A different spelling of the artist name on release #2 → two Spotify profiles, split stats.
 
 ## 5 · After the first release goes live (free, 10 minutes)
 

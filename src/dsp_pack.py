@@ -99,7 +99,8 @@ def _lrc_text(entries) -> str:
 
 def build_pack(wav, cover=None, meta=None, genre_key: str = "", ep: int = 0,
                lane: str = "engine", kind: str = "full", lrc_entries=(),
-               lyrics_text: str = "", out_root=None, dry_run: bool = False) -> dict:
+               lyrics_text: str = "", art_clean=None, out_root=None,
+               dry_run: bool = False) -> dict:
     """Assemble (and zip) the delivery box for ONE song. Never raises.
 
     Returns a dict that is safe to print, put in the Telegram checklist and
@@ -141,17 +142,23 @@ def build_pack(wav, cover=None, meta=None, genre_key: str = "", ep: int = 0,
         shutil.copyfile(wav, audio)
         spec = _audio_spec(audio)
 
-        # 2 · artwork — square 3000×3000 JPEG. The video cover is 1280×720, so
+        # 2 · artwork — square 3000×3000 JPEG. Prefer the UN-BRANDED art: our
+        # video cover carries a thin white frame, an "OFFICIAL AUDIO" chip and an
+        # EP number, and Apple/Spotify reject borders, frames and overlay text on
+        # artwork. Same pixels, minus the chrome — the video cover is untouched.
+        src_art = cover
+        if art_clean and Path(art_clean).exists():
+            src_art = art_clean
         # the wide frame has to become a square. Solid black bars get REJECTED by
         # store review ("no borders/letterboxing"), and cropping the sides off
         # loses the art we paid for. So: the full art sits centred on a square
         # canvas over a blurred, stretched copy of itself — reads as a designed
         # cover, keeps every pixel of the artwork, and is not a border.
         art_name = ""
-        if cover and Path(cover).exists():
+        if src_art and Path(src_art).exists():
             try:
                 from PIL import Image, ImageFilter
-                im = Image.open(str(cover)).convert("RGB")
+                im = Image.open(str(src_art)).convert("RGB")
                 if im.size != (COVER_PX, COVER_PX):
                     side = max(im.size)
                     bg = im.resize((side, side), Image.LANCZOS).filter(
@@ -186,6 +193,23 @@ def build_pack(wav, cover=None, meta=None, genre_key: str = "", ep: int = 0,
             "songwriter": os.environ.get("DSP_WRITER", "").strip() or artist,
             "composer": os.environ.get("DSP_WRITER", "").strip() or artist,
             "publisher": artist,
+            # RouteNote's OWN rule: the label field must not be "none", "unsigned",
+            # "indie", "N/A" or "independent" — those get rejected. No label? Their
+            # instruction is to enter the artist name. So we send the artist name.
+            "record_label_name": artist,
+            "_label_warning": "do NOT type 'Independent' / 'N/A' — rejected; use the "
+                              "artist name (this field)",
+            "spotify_artist_page": "Create a new profile (first release only)",
+            "originally_released": datetime.now().strftime("%Y-%m-%d"),
+            "_originally_released_note": "first time this is released to stores — today. "
+                                        "Leave Pre-Order/Sales Start blank.",
+            "explicit_content": "Non-explicit",
+            "upc_note": "leave the UPC box empty — they generate one free",
+            "isrc_note": "auto-filled by RouteNote — do not invent one",
+            "stores": "tick Select all stores",
+            "territories": "leave EMPTY = worldwide (their rule)",
+            "pricing": "Standard (leave as is)",
+            "submit_button": "Distribute Free  (NOT Distribute Premium)",
             "language": str(meta.get("lang") or "en"),
             "primary_genre": primary,
             "secondary_genre": secondary,
@@ -220,18 +244,25 @@ def build_pack(wav, cover=None, meta=None, genre_key: str = "", ep: int = 0,
         sheet = [f"# 📋 COPY-PASTE SHEET — {artist} · {title}",
                  "", "Every field the distributor's form asks for. Copy the right-hand column.",
                  "", "| Form field | Type this |", "|---|---|"]
-        for k in ("release_title", "release_type", "track_title", "primary_artist",
-                  "songwriter", "composer", "publisher", "language", "primary_genre",
-                  "secondary_genre", "explicit", "isrc", "upc",
-                  "suggested_release_date", "p_line", "c_line"):
+        for k in ("release_title", "upc_note", "release_type", "track_title",
+                  "primary_artist", "spotify_artist_page", "songwriter", "composer",
+                  "publisher", "record_label_name", "language", "primary_genre",
+                  "secondary_genre", "explicit_content", "originally_released",
+                  "suggested_release_date", "isrc", "upc", "p_line", "c_line",
+                  "stores", "territories", "pricing", "submit_button"):
             val = fields[k]
-            val = "— (they assign it, leave blank)" if k in ("isrc", "upc") else val
+            if k in ("isrc", "upc"):
+                val = "— leave blank, they generate it free"
             sheet.append(f"| {k} | `{val}` |")
         sheet += ["", "## Files to upload",
                   f"- **Audio:** `{audio.name}` — {spec.get('format')}, "
                   f"{spec.get('sample_rate_hz')} Hz, {spec.get('bit_depth')}-bit, "
                   f"{spec.get('channels')}, {spec.get('duration_s')} s",
-                  f"- **Artwork:** `{fields['artwork']}`",
+                  f"- **Artwork:** `{fields['artwork']}` — "
+                  + ("clean art, no frame/chip/EP text (store rule: no borders or "
+                     "overlay text)" if src_art is art_clean else
+                     "video cover — has our brand frame; if moderation complains, ask "
+                     "me for the clean-art build"),
                   f"- **Lyrics:** `lyrics.txt` (plain) · `lyrics.lrc` (synced, for Apple Music)",
                   "", "## AI disclosure (paste verbatim if they ask)",
                   fields["ai_disclosure"]["statement"], ""]

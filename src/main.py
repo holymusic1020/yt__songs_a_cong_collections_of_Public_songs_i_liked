@@ -770,6 +770,7 @@ def main() -> None:
             print(f"  (sonic logo skipped: {e})")
 
     cover = None
+    art_clean = None        # 📦 un-branded art for the streaming pack (may stay None)
     art_mode = args.art_mode
     if art_mode == "auto":
         art_mode = "gemini" if os.environ.get("GEMINI_API_KEY", "").strip() else "procedural"
@@ -777,6 +778,16 @@ def main() -> None:
         try:
             from src import art_gemini
             base = art_gemini.generate(meta)
+            # 📦 the store-safe copy: the RAW art, before our brand chrome (frame,
+            # "OFFICIAL AUDIO" chip, EP number) is drawn on it. Apple/Spotify reject
+            # artwork with borders/frames/watermarks, so the DSP pack ships this one.
+            # Video cover is untouched — this is a save, not a change.
+            try:
+                _b = base.convert("RGB") if hasattr(base, "convert") else None
+                if _b is not None:
+                    _b.save(OUT / f"ep{ep:03d}_artclean.png"); art_clean = OUT / f"ep{ep:03d}_artclean.png"
+            except Exception:
+                pass
             cover = art.overlay(meta, ep, rng, base, OUT / f"ep{ep:03d}.png")
         except Exception as e:
             print(f"  ⚠ cover gen failed ({e}) — fallback scene cover")
@@ -791,6 +802,12 @@ def main() -> None:
             variant = (_ag.MOODS.get(meta["genre_key"]) or
                        "empty neon city street in night rain")
             scene = art_free.generate_scenes(variant, n=1, seed0=ep * 101)[0]
+            try:
+                _b = scene.convert("RGB") if hasattr(scene, "convert") else None
+                if _b is not None:
+                    _b.save(OUT / f"ep{ep:03d}_artclean.png"); art_clean = OUT / f"ep{ep:03d}_artclean.png"
+            except Exception:
+                pass
             cover = art.overlay(meta, ep, rng, scene,
                                 OUT / f"ep{ep:03d}.png")
             print("  🖼  free-engine scene cover (Gemini quota down)")
@@ -1184,7 +1201,7 @@ def main() -> None:
             wav=wav, cover=cover, meta=meta, genre_key=genre_key, ep=ep,
             lane=music_lane, kind=("full" if video_today else "short"),
             lrc_entries=lrc_entries, lyrics_text=_lyr_txt,
-            out_root=OUT, dry_run=bool(args.dry_run))
+            art_clean=art_clean, out_root=OUT, dry_run=bool(args.dry_run))
         if not dsp.get("ok"):
             print(f"  📦 DSP pack: skipped — {dsp.get('why')}")
     except Exception as _de:                       # never fatal

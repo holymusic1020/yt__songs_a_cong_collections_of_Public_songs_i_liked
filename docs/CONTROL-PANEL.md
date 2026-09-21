@@ -123,7 +123,9 @@ no-card one we picked is RouteNote (15% of royalties).
 | Change the release lead time | Variable `DSP_LEAD_DAYS` (default 21 days) |
 
 The zip waits in the Actions run → artifact **`dsp-pack`** (90 days, public repo = free
-storage). Telegram carries one line, and it is *informational only* — a refused night is never
+storage). The pack ships the **un-branded** artwork (no frame / "OFFICIAL AUDIO" chip / EP number —
+stores reject borders and overlay text); the video thumbnail keeps them. Its label field is the
+artist name, never "Independent" — RouteNote rejects that word. Telegram carries one line, and it is *informational only* — a refused night is never
 counted as a failed platform:
 ```
 📦 Spotify pack  ✅ ep049-dsp-pack.zip · 41.3 MB · release 2026-10-16

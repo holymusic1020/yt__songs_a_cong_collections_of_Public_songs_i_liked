@@ -208,4 +208,40 @@ md4 = json.loads((OUT / "dsp" / "ep054" / "metadata.json").read_text())
 assert md4["songwriter"] == "Nix Speech", "writer defaults to the artist name"
 print("   ✅ dials respected, and the default credit is the artist (boss's pick)")
 
+print("── 17. the pack ships the CLEAN art, not the video cover with our frame on it")
+from PIL import ImageDraw
+red = OUT / "chrome_cover.png"
+with Image.open(red) if False else Image.new("RGB", (1600, 900), (220, 20, 20)) as _im:
+    _im.save(red)
+ImageDraw.Draw(_im).rectangle([26, 26, 1574, 874], outline=(255, 255, 255), width=4)
+_im.save(red)                                    # red art + our white brand frame
+blue = OUT / "clean_base.png"
+Image.new("RGB", (1600, 900), (20, 30, 230)).save(blue)   # same art, no chrome
+r17 = pack(ep=57, cover=red)                     # no clean art → framed cover used
+r18 = pack(ep=58, cover=red, art_clean=blue)     # clean art available → must win
+def _edge_mean(d):
+    f = [x for x in sorted((OUT / "dsp" / d).iterdir()) if x.suffix == ".jpg"][0]
+    a = _np.asarray(Image.open(f).convert("RGB"))
+    return int(a[:120].mean(axis=(0, 1))[0]), int(a[:120].mean(axis=(0, 1))[2])
+r_red, b_red = _edge_mean("ep057")
+r_ok, b_ok = _edge_mean("ep058")
+assert r_red > r_ok, f"framed cover should read red at the pad: {r_red} vs {r_ok}"
+assert b_ok > r_ok, f"clean art must win when supplied: blue={b_ok} red={r_ok}"
+print(f"   ✅ video cover → pad R={r_red} (frame) · with clean art → pad B={b_ok} > R={r_ok}")
+
+print("── 18. the fields RouteNote actually asks, and its own rejection traps")
+md17 = json.loads((OUT / "dsp" / "ep058" / "metadata.json").read_text())
+assert md17["record_label_name"] == md17["primary_artist"], "label = artist name"
+assert md17["record_label_name"] != "independent"
+blob = (OUT / "dsp" / "ep058" / "metadata.json").read_text().lower()
+for banned in ('"label": "independent"', "label: independent"):
+    assert banned not in blob, f"RouteNote rejects the label value {banned!r}"
+for k in ("spotify_artist_page", "originally_released", "explicit_content", "upc_note",
+          "isrc_note", "stores", "territories", "pricing", "submit_button"):
+    assert k in md17, k
+assert md17["submit_button"].startswith("Distribute Free")
+assert "territories" in (OUT / "dsp" / "ep058" / "metadata.md").read_text(), \
+    "the copy-paste sheet must carry every wizard step"
+print("   ✅ label = artist name, 'Distribute Free', territories blank = worldwide")
+
 print("\nUT-34 PASS · the streaming box is built only from songs we may legally sell")
