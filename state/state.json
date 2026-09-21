@@ -746,14 +746,14 @@
       "mode": "dry_run",
       "kind": "short",
       "genre": "deep_pop",
-      "track": "nectar bruise",
+      "track": "unlit lobby",
       "multipost_dial": "fb,tt,ig",
       "lanes": {
-        "fb": "render-only — would post reel ~7.6 MB (credentialed ✓): nectar bruise — Nix Speech (official audio) 🌙 \n#lyrics #vibe…",
-        "tt": "render-only — would upload ~7.6 MB (SELF_ONLY law): nectar bruise — Nix Speech (official audio) #lyrics #vibes #…",
-        "ig": "render-only — would post REEL ~7.6 MB to @unknown until the live run (32.5s ✓ )",
-        "ig_photo": "render-only — would post the cover art (~1577 KB → JPEG 1080×1350)",
-        "dsp": "off — short-only day — streaming gets full songs, not shorts"
+        "fb": "render-only — would post reel ~7.8 MB (credentialed ✓): unlit lobby — Nix Speech (official audio) 🌙 \n#lyrics #vibes …",
+        "tt": "render-only — would upload ~7.8 MB (SELF_ONLY law): unlit lobby — Nix Speech (official audio) #lyrics #vibes #ne…",
+        "ig": "render-only — would post REEL ~7.8 MB to @unknown until the live run (32.5s ✓ )",
+        "ig_photo": "render-only — would post the cover art (~1580 KB → JPEG 1080×1350)",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
   ]
