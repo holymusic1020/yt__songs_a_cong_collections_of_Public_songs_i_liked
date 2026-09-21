@@ -739,6 +739,22 @@
         "ig_photo": "published",
         "ig_photo_id": "18125562997893313"
       }
+    },
+    {
+      "date": "2026-09-21",
+      "episode": 48,
+      "mode": "dry_run",
+      "kind": "short",
+      "genre": "deep_pop",
+      "track": "kitchen floor static",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "render-only — would post reel ~8.4 MB (credentialed ✓): kitchen floor static — Nix Speech (official audio) 🌙 \n#lyric…",
+        "tt": "render-only — would upload ~8.4 MB (SELF_ONLY law): kitchen floor static — Nix Speech (official audio) #lyrics #…",
+        "ig": "render-only — would post REEL ~8.4 MB to @unknown until the live run (32.5s ✓ )",
+        "ig_photo": "render-only — would post the cover art (~1572 KB → JPEG 1080×1350)",
+        "dsp": "off — short-only day — streaming gets full songs, not shorts"
+      }
     }
   ]
 }
