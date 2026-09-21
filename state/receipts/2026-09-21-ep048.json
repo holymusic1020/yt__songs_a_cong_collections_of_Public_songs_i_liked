@@ -1,32 +1,37 @@
 {
   "schema": 1,
-  "at": "2026-09-21T06:08:43Z",
+  "at": "2026-09-21T16:45:52Z",
   "date": "2026-09-21",
   "episode": 48,
-  "mode": "dry_run",
+  "mode": "publish",
   "kind": "short",
   "genre": "deep_pop",
-  "track": "unlit lobby",
+  "track": "nectar bruise",
   "bpm": 96,
   "key": "***",
   "youtube": {
     "video_id": null,
-    "short_id": null,
+    "short_id": "6Jlbmg4hrQ8",
     "watch": null,
-    "short": null
+    "short": "https://youtu.be/6Jlbmg4hrQ8"
   },
   "multipost_dial": "fb,tt,ig",
   "lanes": {
-    "fb": "render-only — would post reel ~7.8 MB (credentialed ✓): unlit lobby — Nix Speech (official audio) 🌙 \n#lyrics #vibes …",
-    "tt": "render-only — would upload ~7.8 MB (SELF_ONLY law): unlit lobby — Nix Speech (official audio) #lyrics #vibes #ne…",
-    "ig": "render-only — would post REEL ~7.8 MB to @unknown until the live run (32.5s ✓ )",
-    "ig_photo": "render-only — would post the cover art (~1580 KB → JPEG 1080×1350)",
+    "fb": "published",
+    "fb_reel_id": "122111139621453777",
+    "tt": "uploaded → DRAFT (boss publishes in-app)",
+    "tiktok_publish_id": "v_pub_file~v2-1.7688027478534998036",
+    "ig": "published (reel)",
+    "ig_media_id": "17905993251328989",
+    "ig_user": "nixspeech",
+    "ig_photo": "published",
+    "ig_photo_id": "18023354444860497",
     "dsp": "off — DSP_PACK=0 — streaming packs off"
   },
-  "seconds": 314.3,
-  "run_id": "35566744592",
-  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35566744592",
-  "sha": "9b7ae37",
+  "seconds": 1336.8,
+  "run_id": "35625209376",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35625209376",
+  "sha": "3d81b6e",
   "errors": [],
   "music_lane": "unknown",
   "dsp": {
@@ -45,11 +50,11 @@
   "require_vocals": "1",
   "lane_audit": {
     "schema": 1,
-    "at": "2026-09-21T06:08:43Z",
-    "net_probes": false,
+    "at": "2026-09-21T16:45:51Z",
+    "net_probes": true,
     "dials": {
       "MULTIPOST": "fb,tt,ig",
-      "MULTIPOST_DRYRUN": "1",
+      "MULTIPOST_DRYRUN": "0",
       "MULTIPOST_TT_LONG": "0",
       "MULTIPOST_IG_LONG": "0",
       "MULTIPOST_IG_PHOTO": "1 (default on)",
@@ -89,13 +94,40 @@
       "GEMINI_API_KEY": "***",
       "HF_TOKEN": "***"
     },
-    "ig_account_cache": null,
+    "ig_account_cache": {
+      "id": "17841421462783079",
+      "username": "nixspeech",
+      "page_id": "1294240837106632",
+      "found_at": "2026-09-21T16:34:09Z"
+    },
     "authoritative": true,
     "checkpoint_evidence": "",
     "verdicts": [
       "🟡 tt posts as SELF_ONLY (pre-approval law) → they land PRIVATE on the account (🔒 on the profile, invisible to everyone else). That is expected until TikTok approves the app, then flip repo var TIKTOK_PRIVACY=PUBLIC_TO_EVERYONE.",
-      "🟡 MULTIPOST_DRYRUN=1 → lanes render only, ZERO api calls (intentional test mode)."
+      "🟡 the read-only canary saw no checkpoint flag — but it CANNOT prove you are unblocked (run #100: clean canary, real post still rejected with code 368). Trust the fb lane result in this receipt, not this line."
     ],
-    "fb_token": "***"
+    "fb_token": "***",
+    "fb_page": {
+      "probed": true,
+      "ok": true,
+      "id": "1294240837106632",
+      "name": "Nix Speech",
+      "is_published": true,
+      "instagram_linked": true,
+      "instagram": {
+        "id": "17841421462783079",
+        "username": "nixspeech"
+      }
+    },
+    "fb_checkpoint": {
+      "probed": true,
+      "ok": true,
+      "readable_posts": 1,
+      "note": "page reads fine → no identity checkpoint right now"
+    },
+    "tt_status": {
+      "probed": false,
+      "why": "no publish_ids to check (set TT_PROBE_ID_1/2)"
+    }
   }
 }

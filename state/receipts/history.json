@@ -191,23 +191,28 @@
   {
     "date": "2026-09-21",
     "episode": 48,
-    "mode": "dry_run",
+    "mode": "publish",
     "kind": "short",
     "genre": "deep_pop",
-    "track": "unlit lobby",
+    "track": "nectar bruise",
     "multipost_dial": "fb,tt,ig",
-    "seconds": 314.3,
+    "seconds": 1336.8,
     "youtube": {
       "video_id": null,
-      "short_id": null,
+      "short_id": "6Jlbmg4hrQ8",
       "watch": null,
-      "short": null
+      "short": "https://youtu.be/6Jlbmg4hrQ8"
     },
     "lanes": {
-      "fb": "render-only — would post reel ~7.8 MB (credentialed ✓): unlit lobby — Nix Speech (official audio) 🌙 \n#lyrics #vibes …",
-      "tt": "render-only — would upload ~7.8 MB (SELF_ONLY law): unlit lobby — Nix Speech (official audio) #lyrics #vibes #ne…",
-      "ig": "render-only — would post REEL ~7.8 MB to @unknown until the live run (32.5s ✓ )",
-      "ig_photo": "render-only — would post the cover art (~1580 KB → JPEG 1080×1350)",
+      "fb": "published",
+      "fb_reel_id": "122111139621453777",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7688027478534998036",
+      "ig": "published (reel)",
+      "ig_media_id": "17905993251328989",
+      "ig_user": "nixspeech",
+      "ig_photo": "published",
+      "ig_photo_id": "18023354444860497",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
   }
