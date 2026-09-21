@@ -194,9 +194,9 @@
     "mode": "dry_run",
     "kind": "short",
     "genre": "deep_pop",
-    "track": "kitchen floor static",
+    "track": "nectar bruise",
     "multipost_dial": "fb,tt,ig",
-    "seconds": 314.9,
+    "seconds": 347.0,
     "youtube": {
       "video_id": null,
       "short_id": null,
@@ -204,10 +204,10 @@
       "short": null
     },
     "lanes": {
-      "fb": "render-only — would post reel ~8.4 MB (credentialed ✓): kitchen floor static — Nix Speech (official audio) 🌙 \n#lyric…",
-      "tt": "render-only — would upload ~8.4 MB (SELF_ONLY law): kitchen floor static — Nix Speech (official audio) #lyrics #…",
-      "ig": "render-only — would post REEL ~8.4 MB to @unknown until the live run (32.5s ✓ )",
-      "ig_photo": "render-only — would post the cover art (~1572 KB → JPEG 1080×1350)",
+      "fb": "render-only — would post reel ~7.6 MB (credentialed ✓): nectar bruise — Nix Speech (official audio) 🌙 \n#lyrics #vibe…",
+      "tt": "render-only — would upload ~7.6 MB (SELF_ONLY law): nectar bruise — Nix Speech (official audio) #lyrics #vibes #…",
+      "ig": "render-only — would post REEL ~7.6 MB to @unknown until the live run (32.5s ✓ )",
+      "ig_photo": "render-only — would post the cover art (~1577 KB → JPEG 1080×1350)",
       "dsp": "off — short-only day — streaming gets full songs, not shorts"
     }
   }
