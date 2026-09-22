@@ -215,5 +215,36 @@
       "ig_photo_id": "18023354444860497",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-09-22",
+    "episode": 49,
+    "mode": "publish",
+    "kind": "full",
+    "genre": "drift_phonk",
+    "track": "cloverleaf drizzle",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 2624.6,
+    "youtube": {
+      "video_id": "8RIjyRqE1lY",
+      "short_id": "G7IqfCfmnXE",
+      "watch": "https://youtu.be/8RIjyRqE1lY",
+      "short": "https://youtu.be/G7IqfCfmnXE"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122111543349453777",
+      "fb_video": "published",
+      "fb_video_id": "2318715722217348",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7688373403313080338",
+      "ig": "published (reel)",
+      "ig_media_id": "18099447785620699",
+      "ig_user": "nixspeech",
+      "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+      "ig_photo": "published",
+      "ig_photo_id": "17888633361460532",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]
