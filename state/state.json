@@ -1,5 +1,5 @@
 {
-  "episode": 49,
+  "episode": 50,
   "history": [
     {
       "episode": 1,
@@ -637,6 +637,19 @@
       "publish_at": "2026-09-22T17:39:19Z",
       "short_publish_at": "2026-09-22T17:22:35Z",
       "at": "2026-09-22T14:55:51+00:00"
+    },
+    {
+      "episode": 50,
+      "kind": "short",
+      "youtube_id": "9FtVh5Z6t6k",
+      "video_id": null,
+      "short_id": "9FtVh5Z6t6k",
+      "title": "gasoline ballroom — Nix Speech (official audio)",
+      "name": "gasoline ballroom",
+      "genre": "villain_pop",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-09-23T16:24:26Z",
+      "at": "2026-09-23T15:09:16+00:00"
     }
   ],
   "receipts": [
@@ -808,6 +821,27 @@
         "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
         "ig_photo": "published",
         "ig_photo_id": "17888633361460532",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-09-23",
+      "episode": 50,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "villain_pop",
+      "track": "gasoline ballroom",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122111937573453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7688747744475662344",
+        "ig": "published (reel)",
+        "ig_media_id": "18118347319797196",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18632805949018731",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
