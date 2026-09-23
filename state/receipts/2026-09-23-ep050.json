@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "at": "2026-09-23T15:26:01Z",
+  "date": "2026-09-23",
+  "episode": 50,
+  "mode": "publish",
+  "kind": "short",
+  "genre": "villain_pop",
+  "track": "gasoline ballroom",
+  "bpm": 142,
+  "key": "***",
+  "youtube": {
+    "video_id": null,
+    "short_id": "9FtVh5Z6t6k",
+    "watch": null,
+    "short": "https://youtu.be/9FtVh5Z6t6k"
+  },
+  "multipost_dial": "fb,tt,ig",
+  "lanes": {
+    "fb": "published",
+    "fb_reel_id": "122111937573453777",
+    "tt": "uploaded → DRAFT (boss publishes in-app)",
+    "tiktok_publish_id": "v_pub_file~v2-1.7688747744475662344",
+    "ig": "published (reel)",
+    "ig_media_id": "18118347319797196",
+    "ig_user": "nixspeech",
+    "ig_photo": "published",
+    "ig_photo_id": "18632805949018731",
+    "dsp": "off — DSP_PACK=0 — streaming packs off"
+  },
+  "seconds": 2042.7,
+  "run_id": "35877237391",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35877237391",
+  "sha": "f56197b",
+  "errors": [],
+  "music_lane": "ace-kaggle",
+  "dsp": {
+    "ok": false,
+    "why": "DSP_PACK=0 — streaming packs off",
+    "zip": null,
+    "mb": null,
+    "music_lane": null,
+    "rights": null,
+    "release_date": null,
+    "duration_s": null
+  },
+  "lane_audit_file": "/home/runner/work/yt__songs_a_cong_collections_of_Public_songs_i_liked/yt__songs_a_cong_collections_of_Public_songs_i_liked/out/lane_audit.json",
+  "queue_lane": "0",
+  "vocal_everyday": "1",
+  "require_vocals": "1",
+  "lane_audit": {
+    "schema": 1,
+    "at": "2026-09-23T15:26:01Z",
+    "net_probes": true,
+    "dials": {
+      "MULTIPOST": "fb,tt,ig",
+      "MULTIPOST_DRYRUN": "0",
+      "MULTIPOST_TT_LONG": "0",
+      "MULTIPOST_IG_LONG": "0",
+      "MULTIPOST_IG_PHOTO": "1 (default on)",
+      "PUBLISH_OFF": "0",
+      "BOSS_DROP_DATE": "2026-09-04",
+      "TIKTOK_PRIVACY": "SELF_ONLY (default)",
+      "REQUIRE_VOCALS": "1",
+      "VOCAL_EVERYDAY": "1",
+      "KAGGLE_FIRST": "0",
+      "SUNO_OFF": "0"
+    },
+    "lanes_wanted": [
+      "fb",
+      "tt",
+      "ig"
+    ],
+    "creds": {
+      "FB_PAGE_ID": {
+        "set": true,
+        "chars": 16,
+        "fp": "129…632"
+      },
+      "FB_PAGE_TOKEN": "***",
+      "TIKTOK_ACCESS_TOKEN": "***",
+      "TIKTOK_REFRESH_TOKEN": "***",
+      "TIKTOK_CLIENT_KEY": "***",
+      "TIKTOK_CLIENT_SECRET": "***",
+      "GH_TOKEN/GITHUB_TOKEN": "***",
+      "TELEGRAM_BOT_TOKEN": "***",
+      "YT_REFRESH_TOKEN": "***",
+      "SUNO_API_KEY": "***",
+      "KAGGLE_USERNAME": {
+        "set": true,
+        "chars": 10,
+        "fp": "short"
+      },
+      "GEMINI_API_KEY": "***",
+      "HF_TOKEN": "***"
+    },
+    "ig_account_cache": {
+      "id": "17841421462783079",
+      "username": "nixspeech",
+      "page_id": "1294240837106632",
+      "found_at": "2026-09-23T15:10:04Z"
+    },
+    "authoritative": true,
+    "checkpoint_evidence": "",
+    "verdicts": [
+      "🟡 tt posts as SELF_ONLY (pre-approval law) → they land PRIVATE on the account (🔒 on the profile, invisible to everyone else). That is expected until TikTok approves the app, then flip repo var TIKTOK_PRIVACY=PUBLIC_TO_EVERYONE.",
+      "🟡 the read-only canary saw no checkpoint flag — but it CANNOT prove you are unblocked (run #100: clean canary, real post still rejected with code 368). Trust the fb lane result in this receipt, not this line."
+    ],
+    "fb_token": "***",
+    "fb_page": {
+      "probed": true,
+      "ok": true,
+      "id": "1294240837106632",
+      "name": "Nix Speech",
+      "is_published": true,
+      "instagram_linked": true,
+      "instagram": {
+        "id": "17841421462783079",
+        "username": "nixspeech"
+      }
+    },
+    "fb_checkpoint": {
+      "probed": true,
+      "ok": true,
+      "readable_posts": 1,
+      "note": "page reads fine → no identity checkpoint right now"
+    },
+    "tt_status": {
+      "probed": false,
+      "why": "no publish_ids to check (set TT_PROBE_ID_1/2)"
+    }
+  }
+}

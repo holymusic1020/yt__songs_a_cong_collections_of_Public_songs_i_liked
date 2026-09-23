@@ -1,13 +1,13 @@
-# 📋 receipt · EP.049 · 2026-09-22
+# 📋 receipt · EP.050 · 2026-09-23
 
 | | |
 |---|---|
-| track | **cloverleaf drizzle** (drift_phonk) |
-| mode | publish · full |
-| youtube | https://youtu.be/8RIjyRqE1lY · short: https://youtu.be/G7IqfCfmnXE |
+| track | **gasoline ballroom** (villain_pop) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/9FtVh5Z6t6k |
 | multipost dial | `fb,tt,ig` |
-| took | 2624.6 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35741700710 @ 23e27eb |
+| took | 2042.7 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35877237391 @ f56197b |
 
 ## lanes
 
@@ -15,16 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122111543349453777 |
-| fb_video | published |
-| fb_video_id | 2318715722217348 |
+| fb_reel_id | 122111937573453777 |
 | ig | published (reel) |
-| ig_media_id | 18099447785620699 |
+| ig_media_id | 18118347319797196 |
 | ig_photo | published |
-| ig_photo_id | 17888633361460532 |
+| ig_photo_id | 18632805949018731 |
 | ig_user | nixspeech |
-| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
-| tiktok_publish_id | v_pub_file~v2-1.7688373403313080338 |
+| tiktok_publish_id | v_pub_file~v2-1.7688747744475662344 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
