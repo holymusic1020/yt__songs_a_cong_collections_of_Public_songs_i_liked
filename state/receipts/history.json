@@ -274,5 +274,33 @@
       "ig_photo_id": "18632805949018731",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-09-24",
+    "episode": 51,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "chart_pop",
+    "track": "taxi vinyl",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 2494.6,
+    "youtube": {
+      "video_id": null,
+      "short_id": "KUrLnbK6hBE",
+      "watch": null,
+      "short": "https://youtu.be/KUrLnbK6hBE"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122112297519453777",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7689118636426004488",
+      "ig": "published (reel)",
+      "ig_media_id": "17935882545388114",
+      "ig_user": "nixspeech",
+      "ig_photo": "published",
+      "ig_photo_id": "18177079945438292",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]

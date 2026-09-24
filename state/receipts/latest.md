@@ -1,13 +1,13 @@
-# 📋 receipt · EP.050 · 2026-09-23
+# 📋 receipt · EP.051 · 2026-09-24
 
 | | |
 |---|---|
-| track | **gasoline ballroom** (villain_pop) |
+| track | **taxi vinyl** (chart_pop) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/9FtVh5Z6t6k |
+| youtube | — · short: https://youtu.be/KUrLnbK6hBE |
 | multipost dial | `fb,tt,ig` |
-| took | 2042.7 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/35877237391 @ f56197b |
+| took | 2494.6 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36015904077 @ 97fd4a7 |
 
 ## lanes
 
@@ -15,13 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122111937573453777 |
+| fb_reel_id | 122112297519453777 |
 | ig | published (reel) |
-| ig_media_id | 18118347319797196 |
+| ig_media_id | 17935882545388114 |
 | ig_photo | published |
-| ig_photo_id | 18632805949018731 |
+| ig_photo_id | 18177079945438292 |
 | ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7688747744475662344 |
+| tiktok_publish_id | v_pub_file~v2-1.7689118636426004488 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
