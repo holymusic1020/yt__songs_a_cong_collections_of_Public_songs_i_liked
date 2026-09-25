@@ -1,13 +1,13 @@
-# 📋 receipt · EP.051 · 2026-09-24
+# 📋 receipt · EP.052 · 2026-09-25
 
 | | |
 |---|---|
-| track | **taxi vinyl** (chart_pop) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/KUrLnbK6hBE |
+| track | **silk slander** (melodic_trap) |
+| mode | publish · full |
+| youtube | https://youtu.be/4Tk-tCNPPH4 · short: https://youtu.be/z5LVB-sUqN4 |
 | multipost dial | `fb,tt,ig` |
-| took | 2494.6 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36015904077 @ 97fd4a7 |
+| took | 1926.8 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36152029950 @ 64360e0 |
 
 ## lanes
 
@@ -15,13 +15,16 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122112297519453777 |
+| fb_reel_id | 122112645669453777 |
+| fb_video | published |
+| fb_video_id | 1594096058830778 |
 | ig | published (reel) |
-| ig_media_id | 17935882545388114 |
+| ig_media_id | 18147448459553239 |
 | ig_photo | published |
-| ig_photo_id | 18177079945438292 |
+| ig_photo_id | 18074744015450372 |
 | ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7689118636426004488 |
+| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
+| tiktok_publish_id | v_pub_file~v2-1.7689494902832613396 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
