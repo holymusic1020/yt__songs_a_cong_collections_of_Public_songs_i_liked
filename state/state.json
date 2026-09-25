@@ -1,5 +1,5 @@
 {
-  "episode": 51,
+  "episode": 52,
   "history": [
     {
       "episode": 1,
@@ -663,6 +663,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-09-24T17:11:06Z",
       "at": "2026-09-24T15:07:56+00:00"
+    },
+    {
+      "episode": 52,
+      "kind": "full",
+      "youtube_id": "4Tk-tCNPPH4",
+      "video_id": "4Tk-tCNPPH4",
+      "short_id": "z5LVB-sUqN4",
+      "title": "silk slander — Nix Speech (official audio)",
+      "name": "silk slander",
+      "genre": "melodic_trap",
+      "publish_at": "2026-09-25T20:07:31Z",
+      "short_publish_at": "2026-09-25T18:09:39Z",
+      "at": "2026-09-25T15:29:17+00:00"
     }
   ],
   "receipts": [
@@ -876,6 +889,30 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18177079945438292",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-09-25",
+      "episode": 52,
+      "mode": "publish",
+      "kind": "full",
+      "genre": "melodic_trap",
+      "track": "silk slander",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122112645669453777",
+        "fb_video": "published",
+        "fb_video_id": "1594096058830778",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7689494902832613396",
+        "ig": "published (reel)",
+        "ig_media_id": "18147448459553239",
+        "ig_user": "nixspeech",
+        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+        "ig_photo": "published",
+        "ig_photo_id": "18074744015450372",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
