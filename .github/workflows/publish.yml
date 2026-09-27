@@ -48,7 +48,10 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest      # ffmpeg: brought in by our own step below
-    timeout-minutes: 180        # v23.6: MusicGen-local CPU lane needs headroom (install+download+gen ~40 min)
+    timeout-minutes: 240        # v23.6 (raised 2026-09-27): a normal day is 33-43 min; the 09-26 run
+                                # was killed by GitHub at exactly 180.4 min and shipped nothing. 240 only
+                                # ever affects an outlier day — concurrency cancel-in-progress still stops
+                                # pile-ups, so a slow run can never stack up behind itself.
     steps:
       - uses: actions/checkout@v4
 
@@ -133,6 +136,12 @@ jobs:
           # into git's http.extraheader (which is why the receipt's `git push` works but a raw
           # API call does not). This job already grants `permissions: contents: write`, so
           # mapping it here gives src.multi_post.vault_tokens() the second token it rotates to.
+          # 🪫 2026-09-27: `python -m src.main | tee` block-buffers stdout, so when a run is killed the
+          # unflushed buffer (EVERY line after the last flush=True) dies with it — the 09-26 log went
+          # silent at 14:19:24 for the remaining 179 minutes and we could not tell which stage ate them.
+          # Unbuffered output means the log survives any kill/cancel. Pure observability: zero behaviour
+          # change to rendering, mastering, subtitles or uploads.
+          PYTHONUNBUFFERED: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
