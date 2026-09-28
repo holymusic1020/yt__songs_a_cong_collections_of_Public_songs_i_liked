@@ -1,13 +1,13 @@
-# 📋 receipt · EP.053 · 2026-09-27
+# 📋 receipt · EP.054 · 2026-09-28
 
 | | |
 |---|---|
-| track | **asphalt dew** (summer_rap) |
+| track | **trenchcoat anthem** (phonk_mafia) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/gEWpikR0HsE |
+| youtube | — · short: https://youtu.be/gBBI6UFDGGE |
 | multipost dial | `fb,tt,ig` |
-| took | 7840.8 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36328199745 @ 0bfdead |
+| took | 1917.6 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36462548720 @ ef1358c |
 
 ## lanes
 
@@ -15,13 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122113297281453777 |
+| fb_reel_id | 122113696185453777 |
 | ig | published (reel) |
-| ig_media_id | 17894545137413552 |
+| ig_media_id | 18178614319439111 |
 | ig_photo | published |
-| ig_photo_id | 17953051239037998 |
+| ig_photo_id | 18489011866105828 |
 | ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7690235267571140609 |
+| tiktok_publish_id | v_pub_file~v2-1.7690653739539613714 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
