@@ -1,28 +1,19 @@
-# 📋 receipt · EP.054 · 2026-09-28
+# 📋 receipt · EP.055 · 2026-09-29
 
 | | |
 |---|---|
-| track | **trenchcoat anthem** (phonk_mafia) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/gBBI6UFDGGE |
+| track | **cold silk collar** (velvet_fang) |
+| mode | dry_run · full |
+| youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 1917.6 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36462548720 @ ef1358c |
+| took | 141.9 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36597809918 @ f09a6c7 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
-| fb | published |
-| fb_reel_id | 122113696185453777 |
-| ig | published (reel) |
-| ig_media_id | 18178614319439111 |
-| ig_photo | published |
-| ig_photo_id | 18489011866105828 |
-| ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7690653739539613714 |
-| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 

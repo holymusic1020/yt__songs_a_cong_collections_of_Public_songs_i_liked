@@ -389,5 +389,24 @@
       "ig_photo_id": "18489011866105828",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-09-29",
+    "episode": 55,
+    "mode": "dry_run",
+    "kind": "full",
+    "genre": "velvet_fang",
+    "track": "cold silk collar",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 141.9,
+    "youtube": {
+      "video_id": null,
+      "short_id": null,
+      "watch": null,
+      "short": null
+    },
+    "lanes": {
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]
