@@ -706,20 +706,6 @@
   ],
   "receipts": [
     {
-      "date": "2026-09-15",
-      "episode": 42,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "disco_house",
-      "track": "lobby telephone",
-      "multipost_dial": "fb,tt",
-      "lanes": {
-        "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"Aeuu4m4c08xsxgsNBQqaWCzaxxWpBo1GynHE1MWRX41ILPMdmicrsmAMzRt24fx-dKOKauF_zApDVvD1UFQo",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7685768192277252117"
-      }
-    },
-    {
       "date": "2026-09-16",
       "episode": 43,
       "mode": "publish",
@@ -955,6 +941,18 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18489011866105828",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-09-29",
+      "episode": 55,
+      "mode": "dry_run",
+      "kind": "full",
+      "genre": "velvet_fang",
+      "track": "cold silk collar",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
