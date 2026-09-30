@@ -408,5 +408,36 @@
     "lanes": {
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-09-30",
+    "episode": 55,
+    "mode": "publish",
+    "kind": "full",
+    "genre": "velvet_fang",
+    "track": "damp silk hem",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 383.9,
+    "youtube": {
+      "video_id": "LB1dZ-vxehg",
+      "short_id": "7drN3dYUn98",
+      "watch": "https://youtu.be/LB1dZ-vxehg",
+      "short": "https://youtu.be/7drN3dYUn98"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122114332713453777",
+      "fb_video": "published",
+      "fb_video_id": "1096037930063532",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7691366535654443016",
+      "ig": "published (reel)",
+      "ig_media_id": "18391944799166049",
+      "ig_user": "nixspeech",
+      "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+      "ig_photo": "published",
+      "ig_photo_id": "18408625483093088",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]

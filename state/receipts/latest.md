@@ -1,19 +1,31 @@
-# 📋 receipt · EP.055 · 2026-09-29
+# 📋 receipt · EP.055 · 2026-09-30
 
 | | |
 |---|---|
-| track | **cold silk collar** (velvet_fang) |
-| mode | dry_run · full |
-| youtube | — · short: — |
+| track | **damp silk hem** (velvet_fang) |
+| mode | publish · full |
+| youtube | https://youtu.be/LB1dZ-vxehg · short: https://youtu.be/7drN3dYUn98 |
 | multipost dial | `fb,tt,ig` |
-| took | 141.9 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36597809918 @ f09a6c7 |
+| took | 383.9 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36743629501 @ 88d8cc8 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
+| fb | published |
+| fb_reel_id | 122114332713453777 |
+| fb_video | published |
+| fb_video_id | 1096037930063532 |
+| ig | published (reel) |
+| ig_media_id | 18391944799166049 |
+| ig_photo | published |
+| ig_photo_id | 18408625483093088 |
+| ig_user | nixspeech |
+| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
+| tiktok_publish_id | v_pub_file~v2-1.7691366535654443016 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
