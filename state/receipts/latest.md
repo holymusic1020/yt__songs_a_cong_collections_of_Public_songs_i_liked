@@ -1,13 +1,13 @@
-# 📋 receipt · EP.055 · 2026-09-30
+# 📋 receipt · EP.056 · 2026-10-01
 
 | | |
 |---|---|
-| track | **damp silk hem** (velvet_fang) |
-| mode | publish · full |
-| youtube | https://youtu.be/LB1dZ-vxehg · short: https://youtu.be/7drN3dYUn98 |
+| track | **teardrop engine** (emo_rap) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/_Zvua6BFwkY |
 | multipost dial | `fb,tt,ig` |
-| took | 383.9 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36743629501 @ 88d8cc8 |
+| took | 1933.7 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36895995498 @ e3c453e |
 
 ## lanes
 
@@ -15,16 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122114332713453777 |
-| fb_video | published |
-| fb_video_id | 1096037930063532 |
+| fb_reel_id | 122114666901453777 |
 | ig | published (reel) |
-| ig_media_id | 18391944799166049 |
+| ig_media_id | 17934160020396714 |
 | ig_photo | published |
-| ig_photo_id | 18408625483093088 |
+| ig_photo_id | 18142291156598938 |
 | ig_user | nixspeech |
-| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
-| tiktok_publish_id | v_pub_file~v2-1.7691366535654443016 |
+| tiktok_publish_id | v_pub_file~v2-1.7691751063635953684 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
