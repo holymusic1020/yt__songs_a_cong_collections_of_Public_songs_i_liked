@@ -1,5 +1,5 @@
 {
-  "episode": 55,
+  "episode": 56,
   "history": [
     {
       "episode": 1,
@@ -715,23 +715,22 @@
       "publish_at": "2026-09-30T17:39:56Z",
       "short_publish_at": "2026-09-30T17:59:46Z",
       "at": "2026-09-30T16:30:50+00:00"
+    },
+    {
+      "episode": 56,
+      "kind": "short",
+      "youtube_id": "_Zvua6BFwkY",
+      "video_id": null,
+      "short_id": "_Zvua6BFwkY",
+      "title": "teardrop engine — Nix Speech (official audio)",
+      "name": "teardrop engine",
+      "genre": "emo_rap",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-01T20:47:49Z",
+      "at": "2026-10-01T17:23:11+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-09-17",
-      "episode": 44,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "baroque_waltz",
-      "track": "porcelain frost",
-      "multipost_dial": "fb,tt",
-      "lanes": {
-        "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AeswHCulHVVfk_I8PwBYns2WqXwz0YNvsfxd22MnfUH70kK6Q-QXtDEbqE0TORi1LYzwh9-CtIVwwGNiNeeZ",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7686513300670122004"
-      }
-    },
     {
       "date": "2026-09-18",
       "episode": 45,
@@ -976,6 +975,27 @@
         "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
         "ig_photo": "published",
         "ig_photo_id": "18408625483093088",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-01",
+      "episode": 56,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "emo_rap",
+      "track": "teardrop engine",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122114666901453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7691751063635953684",
+        "ig": "published (reel)",
+        "ig_media_id": "17934160020396714",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18142291156598938",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
