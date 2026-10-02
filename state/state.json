@@ -1,5 +1,5 @@
 {
-  "episode": 56,
+  "episode": 57,
   "history": [
     {
       "episode": 1,
@@ -728,24 +728,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-01T20:47:49Z",
       "at": "2026-10-01T17:23:11+00:00"
+    },
+    {
+      "episode": 57,
+      "kind": "short",
+      "youtube_id": "1H7fAaOfIiE",
+      "video_id": null,
+      "short_id": "1H7fAaOfIiE",
+      "title": "car park drizzle — Nix Speech (official audio)",
+      "name": "car park drizzle",
+      "genre": "templestep",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-02T17:52:19Z",
+      "at": "2026-10-02T16:14:47+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-09-18",
-      "episode": 45,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "dark_ambient",
-      "track": "wet asphalt steam",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AevuNQiRcQFe5D2iU5mY8to49H1xzJjqYuosXMQp7n891ZRG4LPqJoawWfmT_HopRUAmRlqm1CxpQVGoCdlq",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7686871279869642759",
-        "ig": "failed softly: ig container still POLL_ERROR after 420s (progress None)"
-      }
-    },
     {
       "date": "2026-09-19",
       "episode": 46,
@@ -996,6 +994,27 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18142291156598938",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-02",
+      "episode": 57,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "templestep",
+      "track": "car park drizzle",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122114949735453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7692104190730143751",
+        "ig": "published (reel)",
+        "ig_media_id": "17988627618075231",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18112855982111581",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
