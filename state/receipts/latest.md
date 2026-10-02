@@ -1,13 +1,13 @@
-# 📋 receipt · EP.056 · 2026-10-01
+# 📋 receipt · EP.057 · 2026-10-02
 
 | | |
 |---|---|
-| track | **teardrop engine** (emo_rap) |
+| track | **car park drizzle** (templestep) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/_Zvua6BFwkY |
+| youtube | — · short: https://youtu.be/1H7fAaOfIiE |
 | multipost dial | `fb,tt,ig` |
-| took | 1933.7 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/36895995498 @ e3c453e |
+| took | 199.1 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37032307091 @ 68cd63f |
 
 ## lanes
 
@@ -15,13 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122114666901453777 |
+| fb_reel_id | 122114949735453777 |
 | ig | published (reel) |
-| ig_media_id | 17934160020396714 |
+| ig_media_id | 17988627618075231 |
 | ig_photo | published |
-| ig_photo_id | 18142291156598938 |
+| ig_photo_id | 18112855982111581 |
 | ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7691751063635953684 |
+| tiktok_publish_id | v_pub_file~v2-1.7692104190730143751 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
