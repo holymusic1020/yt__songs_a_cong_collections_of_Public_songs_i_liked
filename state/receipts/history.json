@@ -526,5 +526,33 @@
       "ig_photo_id": "18108672686600870",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-10-04",
+    "episode": 59,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "ashrise",
+    "track": "unlocked foyer",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 1397.7,
+    "youtube": {
+      "video_id": null,
+      "short_id": "R2b69gM9nGE",
+      "watch": null,
+      "short": "https://youtu.be/R2b69gM9nGE"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122115568971453777",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7692834493015050261",
+      "ig": "published (reel)",
+      "ig_media_id": "18444765010131053",
+      "ig_user": "nixspeech",
+      "ig_photo": "published",
+      "ig_photo_id": "17969165271177642",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]
