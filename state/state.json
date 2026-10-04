@@ -1,5 +1,5 @@
 {
-  "episode": 58,
+  "episode": 59,
   "history": [
     {
       "episode": 1,
@@ -754,19 +754,22 @@
       "publish_at": "2026-10-03T17:32:06Z",
       "short_publish_at": "2026-10-03T17:23:46Z",
       "at": "2026-10-03T14:51:19+00:00"
+    },
+    {
+      "episode": 59,
+      "kind": "short",
+      "youtube_id": "R2b69gM9nGE",
+      "video_id": null,
+      "short_id": "R2b69gM9nGE",
+      "title": "unlocked foyer — Nix Speech (official audio)",
+      "name": "unlocked foyer",
+      "genre": "ashrise",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-04T16:54:06Z",
+      "at": "2026-10-04T15:27:42+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-09-19",
-      "episode": 47,
-      "mode": "dry_run",
-      "kind": "short",
-      "genre": "lofi",
-      "track": "porch light humming",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {}
-    },
     {
       "date": "2026-09-20",
       "episode": 47,
@@ -1039,6 +1042,27 @@
         "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
         "ig_photo": "published",
         "ig_photo_id": "18108672686600870",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-04",
+      "episode": 59,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "ashrise",
+      "track": "unlocked foyer",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122115568971453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7692834493015050261",
+        "ig": "published (reel)",
+        "ig_media_id": "18444765010131053",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "17969165271177642",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
