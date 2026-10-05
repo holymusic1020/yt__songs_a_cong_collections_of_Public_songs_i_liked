@@ -1,13 +1,13 @@
-# 📋 receipt · EP.059 · 2026-10-04
+# 📋 receipt · EP.060 · 2026-10-05
 
 | | |
 |---|---|
-| track | **unlocked foyer** (ashrise) |
+| track | **fumaça de diesel** (brazilian_phonk) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/R2b69gM9nGE |
+| youtube | — · short: https://youtu.be/xjd7h1cZe20 |
 | multipost dial | `fb,tt,ig` |
-| took | 1397.7 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37212300384 @ 0d92934 |
+| took | 1858.2 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37361601479 @ 20cac7b |
 
 ## lanes
 
@@ -15,13 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122115568971453777 |
+| fb_reel_id | 122115958455453777 |
 | ig | published (reel) |
-| ig_media_id | 18444765010131053 |
+| ig_media_id | 17960394165212647 |
 | ig_photo | published |
-| ig_photo_id | 17969165271177642 |
+| ig_photo_id | 17949840663338631 |
 | ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7692834493015050261 |
+| tiktok_publish_id | v_pub_file~v2-1.7693267568869787654 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
