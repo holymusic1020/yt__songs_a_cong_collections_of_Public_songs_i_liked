@@ -1,5 +1,5 @@
 {
-  "episode": 59,
+  "episode": 60,
   "history": [
     {
       "episode": 1,
@@ -767,29 +767,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-04T16:54:06Z",
       "at": "2026-10-04T15:27:42+00:00"
+    },
+    {
+      "episode": 60,
+      "kind": "short",
+      "youtube_id": "xjd7h1cZe20",
+      "video_id": null,
+      "short_id": "xjd7h1cZe20",
+      "title": "fumaça de diesel — Nix Speech (official audio)",
+      "name": "fumaça de diesel",
+      "genre": "brazilian_phonk",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-05T22:15:38Z",
+      "at": "2026-10-05T19:29:08+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-09-20",
-      "episode": 47,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "lofi",
-      "track": "damp kitchen tiles",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122110721691453777",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7687622047069390869",
-        "ig": "published (reel)",
-        "ig_media_id": "18003909099004511",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "18125562997893313"
-      }
-    },
     {
       "date": "2026-09-21",
       "episode": 48,
@@ -1063,6 +1056,27 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "17969165271177642",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-05",
+      "episode": 60,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "brazilian_phonk",
+      "track": "fumaça de diesel",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122115958455453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7693267568869787654",
+        "ig": "published (reel)",
+        "ig_media_id": "17960394165212647",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "17949840663338631",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
