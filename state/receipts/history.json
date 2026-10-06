@@ -582,5 +582,24 @@
       "ig_photo_id": "17949840663338631",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-10-06",
+    "episode": 61,
+    "mode": "dry_run",
+    "kind": "full",
+    "genre": "saint_of_leaving",
+    "track": "asphalt porch",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 151.1,
+    "youtube": {
+      "video_id": null,
+      "short_id": null,
+      "watch": null,
+      "short": null
+    },
+    "lanes": {
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]
