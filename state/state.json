@@ -784,27 +784,6 @@
   ],
   "receipts": [
     {
-      "date": "2026-09-21",
-      "episode": 48,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "deep_pop",
-      "track": "nectar bruise",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122111139621453777",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7688027478534998036",
-        "ig": "published (reel)",
-        "ig_media_id": "17905993251328989",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "18023354444860497",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
-    {
       "date": "2026-09-22",
       "episode": 49,
       "mode": "publish",
@@ -1077,6 +1056,18 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "17949840663338631",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-06",
+      "episode": 61,
+      "mode": "dry_run",
+      "kind": "full",
+      "genre": "saint_of_leaving",
+      "track": "asphalt porch",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
