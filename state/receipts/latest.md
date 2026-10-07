@@ -1,19 +1,31 @@
-# 📋 receipt · EP.061 · 2026-10-06
+# 📋 receipt · EP.061 · 2026-10-07
 
 | | |
 |---|---|
-| track | **asphalt porch** (saint_of_leaving) |
-| mode | dry_run · full |
-| youtube | — · short: — |
+| track | **asphalt humid** (saint_of_leaving) |
+| mode | publish · full |
+| youtube | https://youtu.be/q0HAi7v_4So · short: https://youtu.be/MG88EpxqVhI |
 | multipost dial | `fb,tt,ig` |
-| took | 151.1 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37497315145 @ b07166b |
+| took | 2009.2 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37658580131 @ b9c1d64 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
+| fb | published |
+| fb_reel_id | 122116542879453777 |
+| fb_video | published |
+| fb_video_id | 1805717837102852 |
+| ig | published (reel) |
+| ig_media_id | 18466215910143283 |
+| ig_photo | published |
+| ig_photo_id | 17902258887597604 |
+| ig_user | nixspeech |
+| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
+| tiktok_publish_id | v_pub_file~v2-1.7693981904942155797 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
