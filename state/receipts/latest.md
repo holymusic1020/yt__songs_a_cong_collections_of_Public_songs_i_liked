@@ -1,13 +1,13 @@
-# 📋 receipt · EP.061 · 2026-10-07
+# 📋 receipt · EP.062 · 2026-10-08
 
 | | |
 |---|---|
-| track | **asphalt humid** (saint_of_leaving) |
-| mode | publish · full |
-| youtube | https://youtu.be/q0HAi7v_4So · short: https://youtu.be/MG88EpxqVhI |
+| track | **wet asphalt hum** (indie_waves) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/QQMI64gg35o |
 | multipost dial | `fb,tt,ig` |
-| took | 2009.2 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37658580131 @ b9c1d64 |
+| took | 555.7 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37815729013 @ ee060f8 |
 
 ## lanes
 
@@ -15,16 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122116542879453777 |
-| fb_video | published |
-| fb_video_id | 1805717837102852 |
+| fb_reel_id | 122116861803453777 |
 | ig | published (reel) |
-| ig_media_id | 18466215910143283 |
+| ig_media_id | 18005496299790914 |
 | ig_photo | published |
-| ig_photo_id | 17902258887597604 |
+| ig_photo_id | 17911440156497124 |
 | ig_user | nixspeech |
-| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
-| tiktok_publish_id | v_pub_file~v2-1.7693981904942155797 |
+| tiktok_publish_id | v_pub_file~v2-1.7694348418616985607 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
