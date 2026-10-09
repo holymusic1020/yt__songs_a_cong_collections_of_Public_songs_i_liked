@@ -145,7 +145,7 @@ counted as a failed platform:
 Log proof: `📦 DSP pack: ep047-dsp-pack.zip · 3.9 MB · lane=ace-kaggle (Apache-2.0)` or
 `📦 DSP pack: skipped — rights: lane 'suno' is not commercial-safe`.
 
-## 🔁 11. One release per day — **automatic, no dial**
+## 🔁 11. One release per day — **automatic**, dial `RELEASE_GAP_H` (17)
 If a real release already went out today (your clock, BDT) — a manual run, a rescue, a boss drop —
 the evening cron **parks itself** and ships nothing. Log line:
 ```
@@ -155,6 +155,16 @@ Why it exists: GitHub's scheduler fires this cron **3–6 hours late** most days
 runs), so a midday release used to leave the evening slot free to ship a second episode — two
 uploads, two TikToks, two reels in one day. Your Run-workflow button is never blocked by this:
 that's your own hand.
+
+**v23.7 — the law measures the GAP, not the calendar day.** Measured on live receipts: GitHub fires this
+cron so late that a run finishing after 18:00 UTC lands on the *next* BDT date, so the following evening
+read "already released today" and parked a perfectly good slot. EP.054 (shipped 09-29 00:37 BDT) cost
+the 09-29 slot; EP.060 (10-06 01:44 BDT) cost the 10-06 slot. Two releases a fortnight, stolen by a
+timezone boundary, with the episode number re-used the next day.
+
+| Dial | Where | What it means |
+|---|---|---|
+| `RELEASE_GAP_H` | repo **Variables**, default `17` | hours a real release owns the slot. A normal nightly pair is 19–22 h apart, a real double-ship is 1–6 h apart, so 17 separates them cleanly. Set `24` to return to the old strictness, `12` to allow two a day |
 
 ## 📅 12. Daily time — **16:00 BDT (requested)** · lands ~19:30–22:00 BDT in practice
 `.github/workflows/publish.yml` ~line 27 — search `cron:`. It reads `0 10 * * *` (UTC).
@@ -180,6 +190,61 @@ engine resumes normal duty.
 - `WORLD_TOUR_EVERY=N` → every Nth episode ships a foreign-language version; `WORLD_LANGS` = list
 - `SHORT_SFX=1` → chirp sound effects on short caption flips (**OFF** by your order, 2026-09-15)
 - `LOOP_OFF=1` → no seamless loop-back tail on shorts · `MASCOT_OFF=1` → no NYX on the cover
+
+---
+
+## ✍️ 15. The songwriting core (v23.7 — "songs have no hype")
+
+Boss, 2026-10-09: the last releases had no hook, the lines did not rhyme with each other, and nothing
+came back at the end. All three were true in the code, and this is where you fix them from now on.
+
+| What you want to change | Where | How |
+|---|---|---|
+| **The hook (chorus) of a genre** | `src/sung_banks.py` — search `"<genre>": (` | 4 lines. Lines 1+2 must end on the same vowel sound and 3+4 too (AABB). `tools/v35_hype_ut.py` checks every couplet — run it after editing |
+| **The bridge of a genre** | same tuple, the 2 lines after the chorus | must rhyme with each other |
+| **Verse material** | `src/sung_banks.py` — search `VERSE_COUPLETS` | each entry is one rhymed couplet; the engine takes 4 different couplets per song (2 per verse) |
+| **Shorts caption lines** | `src/lyrics.py` — search `LINES = {` | unchanged, still one bank per genre |
+| **The rules a lyric must pass** | `src/craft.py` — search `def gate` | `min_rate=0.5` is the rhyme bar. `0.7` = stricter, `0.35` = looser |
+| **How hard Gemini is pushed** | `src/copy_ai.py` — search `CRAFT = (` | the brief the songwriter obeys. Keep rule 5 (the callback) unless you want to lose the ending-match feeling |
+
+**How it flows on a real day:** Gemini writes → `craft.gate` judges → miss = one targeted rewrite with the
+exact problems listed → still bad = the banks above. Never a crash, never a skipped release. The run log
+now says the verdict out loud:
+```
+✍️  craft: couplet rhyme 9/10 = 90% · 23 sung lines · median 8 syllables · gate PASSED
+```
+Two guard-rails on purpose: the gate is **English only** (an English rhyme dictionary would wrongly fail
+Portuguese/Spanish World-Tour lyrics), and the title being sung is a **soft note**, never a blocker.
+
+## 🥁 16. Beat-cut editing — `BEATCUT` (OFF until you arm it)
+
+`src/video_render.py`. Four Gemini scene images used to sit for 43 seconds each over a 172-second song —
+one crossfade a minute, nothing landing on the chorus. With `BEATCUT=1` (repo **Variable**):
+
+* cut length = a whole number of bars (`bar_s(bpm)`, 2 bars by default, clamped to 2.5–12 s),
+* **a cut is placed exactly on the chorus** (`metadata.chorus_start()` reads it off the karaoke map —
+  no guessing, so if the map is missing the graph just keeps its old timing),
+* the scene set cycles, so the frame changes every few seconds instead of freezing,
+* colour/saturation lift over the chorus window (`eq` with `enable='between(t,…)'`, timeline-safe).
+
+**It defaults OFF** because a render graph must be proven by a live dry run before it goes near a release —
+this is the "don't ruin anything" rule. Arm it with a dry run first (`run_mode: dry_run` +
+`BEATCUT=1` as a variable for that run), watch the mp4, then flip it on for real.
+Kill it any time: `BEATCUT=0` restores exactly today's graph. `KB_STILL=1` still overrides motion entirely.
+
+## 🎬 17. B-roll scene per genre — `src/video_gemini.py`
+
+`SCENES` now carries **one environment per wheel genre** (it had 9 while the wheel had 24, so 15 genres
+were all quietly getting the same dark-ambient fog shot). Environments only — no people, no faces, no text —
+that is the anti-plastic law and `tools/v35_hype_ut.py` block 15c enforces it. Add a genre to the wheel and
+you must add its scene here, or you get the fallback.
+
+## 🏷 18. Titles stop recycling words — automatic
+
+`naming.pick_name` used to reject only an *identical* title, which is how the channel shipped
+`asphalt porch`, `asphalt humid` and `wet asphalt hum` inside four days. It now re-rolls anything that reuses
+a content word from the **last 8 releases** (soft rule: after 6 attempts it ships the best candidate anyway —
+a release never dies over a name). No dial; the window is `-8` in `src/main.py` (search `avoid_words`).
 
 ---
 

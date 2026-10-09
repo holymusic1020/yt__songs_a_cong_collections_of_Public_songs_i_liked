@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -45,7 +46,21 @@ def real_release_today(path=None):
         hist = json.loads(q.read_text()).get("history", []) if q.exists() else []
     except Exception:
         return None
-    today = datetime.now(BDT).date()
+    # ⏱ v23.7 (2026-10-09): measure the GAP, not the calendar day.
+    # GitHub fires this cron 3-6 h late, so a release that finished after
+    # 18:00 UTC lands on the NEXT BDT date — and the calendar test then read
+    # "already released today" on the following evening and demoted a perfectly
+    # good slot to a dry run. Measured on live receipts: EP.054 shipped
+    # 09-29 00:37 BDT → the 09-29 22:30 cron demoted itself; EP.060 shipped
+    # 10-06 01:44 BDT → 10-06 22:41 demoted again. Two releases a fortnight,
+    # lost to a timezone boundary, with the episode number re-used the next day.
+    # A real double-ship is ~hours apart; a normal nightly pair is 19-22 h
+    # apart, so 17 h is the honest line. Dial: repo variable RELEASE_GAP_H.
+    try:
+        gap_h = float(os.environ.get("RELEASE_GAP_H", "") or 17.0)
+    except ValueError:
+        gap_h = 17.0
+    now = datetime.now(BDT)
     for e in reversed(hist if isinstance(hist, list) else []):
         if not isinstance(e, dict) or str(e.get("mode", "")).strip() == "dry_run":
             continue
@@ -53,9 +68,10 @@ def real_release_today(path=None):
         if not stamp or not isinstance(stamp, str):
             continue
         try:
-            day = datetime.fromisoformat(stamp.replace("Z", "+00:00")).astimezone(BDT).date()
+            when = datetime.fromisoformat(stamp.replace("Z", "+00:00")).astimezone(BDT)
         except Exception:
             continue
-        if day == today:
+        age_h = (now - when).total_seconds() / 3600.0
+        if age_h < 0 or age_h < gap_h:      # future-dated (scheduled) also counts
             return e
     return None

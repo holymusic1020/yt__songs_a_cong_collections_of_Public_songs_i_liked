@@ -56,7 +56,73 @@ SCENES = {
     "orbit_trap": ("a capsule window view of city lights at night, slow drift "
                    "over the neon grid, stars above, engine hum, cinematic "
                    "sci-fi calm"),
+    # 🎬 2026-10-09 (hype audit): the wheel grew to 24 labels but SCENES stayed
+    # at 9 — build_prompt() then handed 15 genres the dark_ambient fog shot, so
+    # a brazilian phonk night and a baroque waltz got the SAME footage. Every
+    # label on the wheel now has its own environment. Environments only: no
+    # people, no faces, no text (the anti-plastic law).
+    "chart_pop": ("a rooftop party just after the crowd has gone, streamers "
+                  "stuck to wet concrete, a single house light burning pink, "
+                  "city haze glowing under a low cloud ceiling, slow crane lift"),
+    "melodic_trap": ("an empty underpass at 4am lit by sodium orange, puddles "
+                     "carrying smeared reflections of a distant sign, chain "
+                     "fence moving in a wind nobody is in, slow tracking shot"),
+    "summer_rap": ("a coastal highway seen from a parked car's hood at golden "
+                   "hour, sea grass bending, dust in the headlight beams, the "
+                   "ocean flat and shining beyond the guardrail, creeping dolly"),
+    "phonk_mafia": ("a rain-black back alley behind a closed club, steel "
+                    "shutters, one flickering service light, wet asphalt "
+                    "reflecting a red exit sign, steam rising off a grate, "
+                    "locked-off wide shot with a slow push"),
+    "velvet_fang": ("an empty ballroom after the last dance, chandelier half "
+                    "dimmed, red velvet curtains moving slightly, scattered "
+                    "rose petals on parquet, long shadows, slow horizontal glide"),
+    "emo_rap": ("a bedroom at 3am lit only by a monitor's blue glow, rain on "
+                "the window, a hoodie on the chair, breath fog in the cold, "
+                "handheld micro-movement, nothing else in the frame"),
+    "templestep": ("stone temple steps at dusk with low incense smoke pooling "
+                   "on the flags, brass bells still swinging, torchlight "
+                   "flickering on carved lions, mountain dark behind, slow "
+                   "aerial push toward the doorway"),
+    "lastjuly": ("a drained public pool at the end of summer, a deflated "
+                 "ring on cracked tile, autumn leaves skittering across the "
+                 "deep end, chain-link fence and a burnt orange sky, static "
+                 "wide shot with drifting light"),
+    "ashrise": ("the blackened shell of a burned-out farmhouse at first light "
+                "with green shoots through the floor, smoke still lifting from "
+                "one corner, frost on the char, slow rising crane shot"),
+    "brazilian_phonk": ("a favela stairway at night strung with party lights, "
+                       "concrete walls painted teal, steam and dust in a single "
+                       "bare bulb, the whole alley empty and vibrating, handheld "
+                       "slow climb"),
+    "saint_of_leaving": ("an airport departure hall at 5am, nothing moving but "
+                         "the light through the glass, one suitcase standing in "
+                         "a pool of morning sun, dust in the beam, locked-off "
+                         "long lens"),
+    "indie_waves": ("a weathered beach road at sunrise behind dune grass, a "
+                    "faded surf shop with its sign unlit, sea fog rolling "
+                    "across the parking lot, gentle handheld drift"),
+    "lambs_teeth": ("a green pasture at storm's end, lamb's-wool clouds "
+                    "breaking, a rusted gate swinging in the wind, wet grass "
+                    "flattened where something ran, slow low-angle push"),
+    "god_in_the_bass": ("the interior of an empty megachurch at night, dust "
+                        "motes in a single shaft of light, a subwoofer cone "
+                        "visible in the aisle trembling, candles rippling, "
+                        "slow dolly toward the altar"),
+    "anime_titan": ("a ruined city wall at dawn with steam rising off broken "
+                    "concrete, birds circling far above the breach, dust "
+                    "falling like snow through god-rays, epic slow crane up"),
+    "disco_house": ("a mirrored disco floor under a motorised mirrorball in a "
+                    "closed warehouse, light dots orbiting across stacked "
+                    "chairs, haze in the beams, slow rotating camera"),
+    "skyline_anthem": ("a skyscraper rooftop edge at sunrise, wind whipping a "
+                       "flag, the whole sleeping grid of the city below turning "
+                       "gold, aerial rise from behind the railing"),
+    "baroque_waltz": ("a candlelit gallery of gilded frames with dust in the "
+                      "air, checkerboard marble floor, one tall window throwing "
+                      "a long blue shaft, slow glide parallel to the walls"),
 }
+
 
 
 def build_prompt(meta: dict) -> str:

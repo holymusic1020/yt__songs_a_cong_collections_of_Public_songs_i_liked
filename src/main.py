@@ -208,6 +208,15 @@ def _iso(dt: datetime) -> str:
 def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
                   sung_lines=None, lrc_entries=None):
     scenes, clip, long_mp4 = [], None, None
+    # 🥁 where the chorus lands, so the cut can hit it (BEATCUT=1 uses this)
+    chorus_at = None
+    bpm_for_cut = None
+    try:
+        from src import metadata as _md
+        chorus_at = _md.chorus_start(meta, lrc_entries, dur)
+        bpm_for_cut = float((meta or {}).get("bpm") or 0) or None
+    except Exception:
+        pass
     have_ff = shutil.which("ffmpeg")
 
     if mode in ("auto", "clip"):
@@ -282,7 +291,11 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
             long_mp4 = video_render.from_images(
                 [OUT / f"ep{ep:03d}_scene{i}.png" for i in range(len(scenes))],
                 dur, OUT / f"ep{ep:03d}.mp4", wav=wav, chip=chip,
-                lyrics=lrc_entries, mascot=mascot, hud=hud)
+                lyrics=lrc_entries, mascot=mascot, hud=hud,
+                bpm=bpm_for_cut, chorus_at=chorus_at)
+            if chorus_at:
+                print(f"  🥁 chorus lands at {chorus_at:.1f}s "
+                      f"({'beat cuts ON' if os.environ.get('BEATCUT','').strip()=='1' else 'beat cuts OFF — BEATCUT=1 to arm'})")
     return long_mp4, clip, scenes
 
 
@@ -680,6 +693,17 @@ def main() -> None:
             song, info = composer.compose(genre_key, rng, target)
             song = composer.arrange_arc(song, info.get("bpm", 120))
     used_names = {h.get("name") for h in st.get("history", []) if h.get("name")}
+    # 🏷 v23.7: the vocabulary of the last 8 releases — a new title must not
+    # just be new, it must not be "asphalt" for the fourth time this week.
+    _recent = [h.get("name", "") for h in (st.get("history") or [])[-8:]
+               if h.get("name")]
+    avoid_words = set()
+    try:
+        from src.naming import _words as _nw
+        for _nm in _recent:
+            avoid_words |= _nw(_nm)
+    except Exception:
+        avoid_words = set()
     dur = info["duration_s"]
 
     # words actually SUNG on today's queue song (if any) — feed cards + tags
@@ -714,12 +738,14 @@ def main() -> None:
             ai_namer = _c.song_name
         except Exception:
             pass
-    name = naming.pick_name(genre_key, used_names, rng, probe, ai_fn=ai_namer)
+    name = naming.pick_name(genre_key, used_names, rng, probe, ai_fn=ai_namer,
+                            avoid_words=avoid_words)
     if ext_name:
         name = ext_name            # a hand-dropped file names its own song
     meta = metadata.build(genre_key, info, ep, rng_py,
                           used_names=used_names, name=name,
                           lang=ext_lang, vocal=bool(lyr_today))
+    meta["lyric_text"] = lyr_today or ""   # ⏱ chapters now name the SECTION they land on
     nch = 0
     if lrc_entries and video_today:            # ⏱ v23: chapters in description
         try:

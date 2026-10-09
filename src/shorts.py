@@ -93,6 +93,78 @@ def pick_hook_window(x: np.ndarray, sr: int, bpm: float,
     t0 = float(max(0.0, min(t0, dur - L - 0.5)))
     return t0, L
 
+_DANGLERS = {"a", "an", "the", "and", "or", "but", "nor", "so", "yet", "of", "in",
+             "on", "at", "to", "for", "with", "from", "by", "as", "is", "are", "was",
+             "were", "be", "been", "being", "do", "does", "did", "have", "has", "had",
+             "my", "your", "his", "her", "its", "our", "their", "this", "that",
+             "these", "those", "it", "i", "you", "he", "she", "we", "they", "me",
+             "him", "us", "them", "who", "what", "when", "where", "why", "how",
+             "not", "just", "than", "then", "if", "while", "because", "till", "until"}
+
+
+def _phrase_complete(phrase: str) -> bool:
+    """False when the last word leaves the sentence hanging ('Every mile is a')."""
+    ws = str(phrase or "").split()
+    if not ws:
+        return False
+    return ws[-1].lower().strip('",.;:!?\'') not in _DANGLERS
+
+
+def _snap(phrase: str, limit: int = 46) -> str:
+    """Trim to WHOLE words under a limit — never mid-word, never on a dangler."""
+    out = " ".join(str(phrase or "").split()).strip().strip('"')
+    if len(out) > limit:
+        out = out[:limit].rsplit(" ", 1)[0]
+        while len(out.split()) > 3 and not _phrase_complete(out):
+            out = out.rsplit(" ", 1)[0]
+    return out.rstrip(" ,;:-")
+
+
+def _hook_title(lines: list[str], meta: dict | None = None) -> str:
+    """One COMPLETE line for the short's title (2026-10-09 hype audit).
+
+    `pack["hook_line"]` was `lines[0]` — and `lines` at that point is the
+    card list, which `_chunk_lines` / the transcript clock shatter into ~2-second
+    word groups. So the channel's titles read like a subtitle accident:
+    `"Every mile is a" 🤍 asphalt humid`, `"The street Hearts be" 🩶 wet asphalt hum`.
+    Titles are the first thing a human judges, so now we take the actual sung
+    chorus line from the lyric text; if that is unavailable we stitch the
+    fragments back into one phrase. Either way: never cut mid-word, never
+    longer than 46 chars.
+    """
+    import re as _re
+    txt = ((meta or {}).get("lyric_text") or "").strip()
+    if txt:
+        cur = None
+        chorus: list[str] = []
+        sung: list[str] = []
+        for raw in txt.splitlines():
+            ln = raw.strip()
+            if not ln:
+                continue
+            if ln.startswith("["):
+                cur = _re.sub(r"[\[\]]", "", ln).lower().strip()
+                continue
+            sung.append(ln)
+            if cur and cur.startswith("chorus"):
+                chorus.append(ln)
+        for cand in chorus[:1] + sung[:1]:
+            c = cand.strip().strip('"').strip()
+            if 8 <= len(c) <= 46 and len(c.split()) >= 3:
+                return c
+    # No lyric text (engine / instrumental day): stitch the card fragments back
+    # into a phrase that at least ENDS on a real word — a title hanging on
+    # "a", "the" or "is" reads like a broken subtitle.
+    out = ""
+    for ln in list(lines or [])[:6]:
+        cand = (out + " " + ln).strip() if out else ln.strip()
+        if len(cand.split()) > 9:
+            break
+        out = cand
+        if len(out.split()) >= 4 and _phrase_complete(out):
+            return _snap(out)
+    return _snap(out or (lines[0] if lines else ""))
+
 
 def _slice_with_fades(x: np.ndarray, sr: int, t0: float, L: float) -> np.ndarray:
     seg = x[int(t0 * sr): int((t0 + L) * sr)].copy()
@@ -397,7 +469,7 @@ def build(wav_path: Path, cover_path: Path, meta: dict, info: dict,
 
     pack = {"wav": short_wav, "base": base, "cards": cards,
             "card_times": card_times, "duration_s": L, "hook_t0": t0,
-            "hook_line": lines[0]}
+            "hook_line": _hook_title(lines, meta)}
     (out_dir / f"ep{ep:03d}_short_pack.json").write_text(
         json.dumps({k: (str(v) if isinstance(v, Path) else
                         [str(c) for c in v] if k == "cards" else v)

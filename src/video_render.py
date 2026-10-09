@@ -191,6 +191,79 @@ def _signoff_chain(w: int, h: int, dur: float) -> str:
             f"enable='between(t,{t0:.2f},{dur:.2f})'")
 
 
+# ─────────────────────────🥁 v23.7 BEATCUT — cuts on the grid, cut ON the chorus
+# Boss, 2026-10-09: "the video editing is really so much s***". He was right in a
+# measurable way: four scene images over a 172-second song = ONE 43-second slab
+# with a single crossfade in it, and nothing in the frame cared where the chorus
+# began. Opt-in until a live dry run has proved the graph (BEATCUT=1).
+def bar_s(bpm: float, beats: int = 8) -> float:
+    """Seconds in `beats` quarter notes (2 bars of 4/4 by default)."""
+    try:
+        b = float(bpm)
+    except (TypeError, ValueError):
+        return 0.0
+    if b <= 0:
+        return 0.0
+    return max(0.5, 60.0 / b * max(1, int(beats)))
+
+
+def beat_plan(dur: float, bpm: float, chorus_at: float | None = None,
+              xfade: float | None = None) -> float:
+    """Segment length: a whole number of bars, and — when we know where the
+    chorus starts — a CUT that lands exactly on it.
+
+    The trick is the period between cuts: `p = per - xfade` is what the xfade
+    graph actually advances by, so we solve p = chorus_at / k for the integer k
+    closest to the target bar length. No guesswork in the filter graph, just
+    arithmetic, and it degrades to the bar grid when chorus_at is unknown.
+    """
+    xf = XFADE_S if xfade is None else float(xfade)
+    target = bar_s(bpm) or 4.0
+    target = min(12.0, max(2.5, target))              # never a slideshow, never a seizure
+    if chorus_at and chorus_at > target and dur > chorus_at + target:
+        k = max(1, int(round(chorus_at / target)))
+        p = chorus_at / k
+        if 1.6 <= p <= 14.0:
+            return p + xf
+    p = target
+    if dur and dur < p * 2:                            # short film: one cut at most
+        p = max(1.2, dur / 2 - xf)
+    return p + xf
+
+
+def beat_layout(images: list, dur: float, per: float) -> list:
+    """Cycle the scene set so the whole song is cut on the grid (n = dur/period).
+
+    Same four Gemini images — they are just no longer left to sit still for
+    40 seconds at a time. Order is preserved and never repeats twice in a row.
+    """
+    if not images or per <= 0:
+        return list(images)
+    n = max(len(images), int(dur / max(0.5, per - XFADE_S)) + 1)
+    out = []
+    for i in range(n):
+        if len(images) > 1 and i and out[i - 1] == images[i % len(images)]:
+            out.append(images[(i + 1) % len(images)])   # no double frame
+        else:
+            out.append(images[i % len(images)])
+    return out
+
+
+def chorus_lift(dur: float, chorus_at: float | None) -> str:
+    """The colour/energy lift over the chorus window (empty string = off).
+
+    `eq` supports timeline editing, so `enable='between(t,…)’` is legal and the
+    graph is IDENTICAL outside that window — worst case the effect does nothing,
+    it can never break the render.
+    """
+    if not chorus_at or chorus_at <= 0 or chorus_at >= dur - 2:
+        return ""
+    a, b = float(chorus_at), max(float(chorus_at) + 1.2, dur - 3.5)
+    return (f"eq=saturation=1.18:brightness=0.012:"
+            f"enable='between(t,{a:.2f},{b:.2f})',")
+
+
+
 def _image_segments(images: list, per_s: float, w: int, h: int) -> list[str]:
     frames = max(1, int(FPS * per_s))
     parts = []
@@ -201,12 +274,15 @@ def _image_segments(images: list, per_s: float, w: int, h: int) -> list[str]:
         # spans the WHOLE scene (1.06→~1.30 computed per scene length) and a
         # slow sinusoidal sway keeps the frame breathing — background never
         # holds still again. Kill-switch: KB_STILL=1 restores the frozen look.
+        # 🥁 BEATCUT: a 5-second cut needs a much shallower move than a
+        # 40-second one, or the frame lurches. Travel scales with the shot.
+        depth = min(0.24, max(0.06, 0.022 * float(per_s)))
         if os.environ.get("KB_STILL", "") == "1":
             zoom = "min(1.04+0.0007*on,1.28)"
             x = "iw/2-(iw/zoom/2)"
             y = "ih/2-(ih/zoom/2)"
         else:
-            slope = f"1.06+0.24*on/{frames}"
+            slope = f"1.06+{depth:g}*on/{frames}"
             zoom = slope
             sway = f"sin(on/{max(FPS * 6, 90)})*9"           # ±9 px, ~6 s breath
             sway2 = f"cos(on/{max(FPS * 7, 120)})*7"         # out-of-phase drift
@@ -220,7 +296,7 @@ def _image_segments(images: list, per_s: float, w: int, h: int) -> list[str]:
             f"format=yuv420p[s{i}]")
         if i and not (i % 2):                                  # alternate zoom-out
             parts[-1] = parts[-1].replace(
-                f"z='{zoom}'", f"z='1.30-0.24*on/{frames}'", 1)
+                f"z='{zoom}'", f"z='{1.06 + depth:.2f}-{depth:g}*on/{frames}'", 1)
     return parts
 
 
@@ -235,7 +311,7 @@ def _audio_branch(idx: int, fc: list[str], want_spec: bool) -> str | None:
 
 
 def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
-              lyrics=None, masc_idx=None, hud_idx=None):
+              lyrics=None, masc_idx=None, hud_idx=None, chorus_at=None):
     has_audio = wav is not None
     want_spec = has_audio and not _env_off("SPECTRUM_OFF")
     maps = (["-map", "[vout]", "-map", "[aout]"] if has_audio
@@ -256,6 +332,11 @@ def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
                   f"offset={off:.3f}[{lbl}]")
         prev = lbl
     spec = _audio_branch(audio_idx, fc, want_spec) if has_audio else None
+    if os.environ.get("BEATCUT", "").strip() == "1":
+        lift = chorus_lift(dur, chorus_at) if chorus_at is not None else ""
+        if lift:
+            fc.append(f"[{prev}]{lift}format=yuv420p[lp]")
+            prev = "lp"
     _decorate(fc, prev, w, h, dur, chip_idx=chip_idx, masc_idx=masc_idx,
               hud_idx=hud_idx, spec_label=spec, lyrics=lyrics)
     cmd1 = ["-y"] + inputs + ["-filter_complex", ";".join(fc)] + maps + tail
@@ -274,10 +355,20 @@ def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
 def from_images(images: list[Path], dur: float, out_path: Path,
                 wav: Path | None = None, chip: Path | None = None,
                 size=LONG, lyrics=None, mascot: Path | None = None,
-                hud: Path | None = None) -> Path:
+                hud: Path | None = None, bpm: float | None = None,
+                chorus_at: float | None = None) -> Path:
     w, h = size
+    # 🥁 BEATCUT=1 (default OFF — needs one live dry run to prove the graph):
+    # cut on the bar grid, put a cut exactly on the chorus, and cycle the scene
+    # set instead of leaving one image on screen for 40 seconds.
+    beat = os.environ.get("BEATCUT", "").strip() == "1"
+    per = dur / max(1, len(images))
+    if beat and images:
+        per = beat_plan(dur, bpm or 0.0, chorus_at)
+        images = beat_layout(images, dur, per)
+        if chorus_at:
+            images = images  # (the lift itself is applied on the assembled label)
     n = len(images)
-    per = dur / n
     inputs = []
     for img in images:
         inputs += ["-i", str(img)]
@@ -302,7 +393,7 @@ def from_images(images: list[Path], dur: float, out_path: Path,
     segs = _image_segments(images, per, w, h)
     cmds = _assemble(segs, inputs, wav, chip, out_path, dur, n, w, h,
                      audio_idx, chip_idx, lyrics=lyrics,
-                     masc_idx=masc_idx, hud_idx=hud_idx)
+                     masc_idx=masc_idx, hud_idx=hud_idx, chorus_at=chorus_at)
     _run_variants("slideshow", cmds)
     return out_path
 

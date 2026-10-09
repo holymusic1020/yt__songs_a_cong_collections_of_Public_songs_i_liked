@@ -121,6 +121,50 @@ def scene_prompt(meta: dict, sung_lines: list[str] | None = None) -> str:
         ln = re.sub(r"[\*\"#>]", "", raw).strip().rstrip(".")
         if 20 <= len(ln) <= 180 and " " in ln:
             return ln
+def _report_craft(txt: str, gated: bool, label: str = "") -> None:
+    """One honest line in the run log about what the words actually do.
+
+    2026-10-09 lesson: nobody could tell from a run whether the lyrics rhymed,
+    so 'the song has no hype' was undiagnosable. Now the number is on screen.
+    """
+    try:
+        from src import craft as _c
+        secs = _c.section_lines(txt)
+        lines = [l for tag, ls in secs if tag in ("verse", "chorus") for l in ls]
+        hit, tot = _c.couplets(lines)
+        sung = [l for l in (txt or "").splitlines() if not l.startswith("[")]
+        med = _c.syllables(sung[len(sung) // 2]) if sung else 0
+        rate = f"{hit}/{tot} = {hit / tot:.0%}" if tot else "n/a"
+        tail = label or ("gate PASSED" if gated
+                         else "foreign-language day (no EN rhyme gate)")
+        print(f"  ✍️  craft: couplet rhyme {rate} · {len(sung)} sung lines · "
+              f"median {med} syllables · {tail}", flush=True)
+    except Exception:
+        pass
+
+
+def _strip_to_tagged(raw: str) -> str:
+    """Model prose -> clean [tag]/line lyrics. Shared by the first pass and the
+    rewrite pass, so both are judged on exactly the same text shape."""
+    out: list[str] = []
+    for ln_raw in (raw or "").splitlines():
+        ln = re.sub(r"[*_`#>]", "", ln_raw).strip().strip('"').strip()
+        if not ln:
+            continue
+        low = re.sub(r"[\[\]\s]", "", ln.lower())
+        if low in _TAG_NAMES or low.startswith("verse") or \
+           (low.startswith("chorus") and len(low) < 12) or \
+           low.startswith("bridge") or low.startswith("outro"):
+            out.append(next((v for k, v in _TAG_NAMES.items() if low.startswith(k)),
+                            "[verse]"))
+            continue
+        if ln.startswith("[") or low in ("lyrics", "song", "here"):
+            continue
+        if 2 <= len(ln) <= 90:
+            out.append(ln.lstrip("-• ").strip())
+    return "\n".join(out)
+
+
 def song_lyrics(meta: dict, lang: str = "en", seconds: float = 150) -> str:
     """Fresh SUNG lyrics with [verse]/[chorus] tags for the ACE-Step space.
 
@@ -131,6 +175,21 @@ def song_lyrics(meta: dict, lang: str = "en", seconds: float = 150) -> str:
     from src import lyrics as _lyr
     info_ = _lyr.LANGS.get(lang, _lyr.LANGS["en"])
     lang_line = info_["label"] + (f" ({info_['hint']})" if info_["hint"] else "")
+    CRAFT = (
+        "CRAFT RULES — these are the reason the song sticks, follow them exactly:\n"
+        "  1. RHYME IN COUPLETS. Inside every [verse] and every [chorus], lines 1+2 "
+        "end on the SAME vowel sound and lines 3+4 do the same (AABB). A near-rhyme "
+        "is a miss: \'go/show\', \'stone/alone\', never \'go/back\'.\n"
+        "  2. METRE ON ONE GRID: 5-9 syllables in every sung line. Count them.\n"
+        "  3. THE CHORUS RETURNS WORD-FOR-WORD. Every [chorus] block is the same 4 "
+        "lines, identical characters, every time. Do not rewrite it.\n"
+        "  4. THE CHORUS SELLS THE TITLE: the title phrase appears in the chorus "
+        "(line 1 or line 4 is ideal).\n"
+        "  5. THE PAYOFF (this is the part my listeners miss): the LAST line of the "
+        "FINAL [chorus] must be the FIRST line of the FIRST [verse], repeated "
+        "exactly. That callback is what makes an ending feel earned.\n"
+        "  6. NO line may repeat anywhere except inside [chorus].\n"
+    )
     prompt = (
         f"You are the songwriter for the music project Nix Speech. "
         f"Write complete, original lyrics for a song named \"{meta['name']}\" — "
@@ -139,32 +198,56 @@ def song_lyrics(meta: dict, lang: str = "en", seconds: float = 150) -> str:
         f"STRUCTURE (use these tags exactly, each on its own line):\n"
         f"[verse] + 4 lines, [chorus] + 4 lines, [verse] + 4 lines, "
         f"[chorus] + 4 lines, [bridge] + 2 lines, [chorus] + 4 lines.\n"
-        f"RULES: each sung line 3-7 words, singable, no profanity, no artist "
+        + CRAFT +
+        f"OTHER RULES: each sung line 3-8 words, singable, no profanity, no artist "
         f"names, nothing copied or paraphrased from any existing song, "
-        f"concrete night/drive/love imagery tied to the title, memorable "
+        f"concrete imagery tied to the title and to {meta['genre']}, memorable "
         f"chorus (short, repeatable), lowercase, no translations, no "
         f"explanations, no markdown.\nReturn ONLY the tagged lyrics."
     )
-    raw = _generate(prompt)
-    out: list[str] = []
-    for ln_raw in raw.splitlines():
-        ln = re.sub(r"[*_`#>]", "", ln_raw).strip().strip('"').strip()
-        if not ln:
-            continue
-        low = re.sub(r"[\[\]\s]", "", ln.lower())
-        if low in _TAG_NAMES or low.startswith("verse") or \
-           (low.startswith("chorus") and len(low) < 12) or \
-           low.startswith("bridge") or low.startswith("outro"):
-            tag = next((v for k, v in _TAG_NAMES.items() if low.startswith(k)),
-                       "[verse]")
-            out.append(tag)
-            continue
-        if ln.startswith("[") or low in ("lyrics", "song", "here"):
-            continue
-        if 2 <= len(ln) <= 90:
-            out.append(ln.lstrip("-• ").strip())
-    txt = "\n".join(out)
-    sung = [l for l in out if not l.startswith("[")]
-    if "[verse]" not in out or out.count("[chorus]") < 2 or len(sung) < 12:
-        raise RuntimeError("gemini lyrics failed structure check")
+    txt = _strip_to_tagged(_generate(prompt))
+
+    # v23.7 hype audit: the tags check used to be the ONLY check, so free verse
+    # with no rhyme scheme and no callback sailed into a 3-minute render. Now
+    # the lyric must pass src/craft.gate — or we ask once, precisely, for the
+    # lines that missed, and only then let the caller drop to the banks.
+    from src import craft as _craft
+    # English only: ARPAbet rhyme scanning is an English dictionary, and a
+    # Portuguese/Spanish verse would "fail" it while being perfectly good —
+    # World Tour days must never be pushed back onto the fallback banks.
+    if lang == "en":
+        ok, problems = _craft.gate(txt, meta.get("name", ""))
+    else:
+        ok, problems = ("[verse]" in txt.splitlines()
+                        and txt.count("[chorus]") >= 2
+                        and len([l for l in txt.splitlines()
+                                 if not l.startswith("[")]) >= 12), \
+                       ["foreign-language structure check"]
+    if not ok and lang == "en":
+        print(f"  ✍️  lyrics missed the craft gate ({'; '.join(problems)[:150]}) "
+              "— one rewrite pass…", flush=True)
+        raw2 = _generate(prompt + "\n\n" + _craft.repair_note(problems))
+        txt2 = _strip_to_tagged(raw2)
+        ok2, problems2 = _craft.gate(txt2, meta.get("name", ""))
+        if ok2:
+            print("  ✅ rewrite pass cleared the gate", flush=True)
+            _report_craft(txt2, gated=True)
+            return txt2
+        # 2026-10-09: the rewrite that is *closer* still beats free verse — ship it
+        # when the shape is right (chorus returns + callback) even if one couplet
+        # is a slant rhyme; otherwise the caller's bank fallback is the better song.
+        shape = [p for p in problems2 if "come back with the SAME words" in p
+                 or "call back" in p]
+        if not shape:
+            print(f"  ✍️  second pass: couplets still slant, but the hook returns "
+                  "and the callback lands — shipping it", flush=True)
+            _report_craft(txt2, gated=False,
+                          label="hook returns + callback ✓, couplets slant")
+            return txt2
+        raise RuntimeError("gemini lyrics failed the craft gate: "
+                           + "; ".join(problems2)[:180])
+    if not ok:
+        raise RuntimeError("gemini lyrics failed the craft gate: "
+                           + "; ".join(problems)[:180])
+    _report_craft(txt, gated=(lang == "en"))
     return txt

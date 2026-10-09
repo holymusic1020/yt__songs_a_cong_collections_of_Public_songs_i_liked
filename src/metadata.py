@@ -263,26 +263,97 @@ def build(genre_key: str, info: dict, ep: int, rng: random.Random,
     }
 
 
+def chorus_start(meta: dict, lrc_entries, dur: float) -> float | None:
+    """When the first chorus lands, in seconds, from the karaoke map (v23.7).
+
+    Same order-preserving scaling the chapter builder uses: sung lines are
+    counted per section in the lyric text and mapped onto the timestamped
+    entries. Returns None whenever the answer would be a guess — the video
+    renderer then just keeps its old timing.
+    """
+    try:
+        txt = (meta or {}).get("lyric_text") or ""
+        entries = [(float(a), str(b)) for a, b in (lrc_entries or []) if str(b).strip()]
+        if not txt or len(entries) < 4 or dur <= 12:
+            return None
+        labels = _section_map(txt)
+        if not labels:
+            return None
+        total = sum(n for _l, n in labels) or 1
+        acc = 0
+        for lab, n in labels:
+            if lab.startswith("chorus"):
+                k = int(round(acc * len(entries) / total))
+                k = max(0, min(k, len(entries) - 1))
+                t0 = entries[k][0]
+                return t0 if 2.0 <= t0 < dur - 4.0 else None
+            acc += n
+        return None
+    except Exception:
+        return None
 def add_chapters(meta: dict, lrc_entries, dur: float) -> int:
-    """⏱ YouTube chapters from the karaoke map (v23).
+    """⏱ YouTube chapters from the karaoke map (v23.7: section names).
 
     Rules of the platform: first stamp must be 0:00, need >= 3 chapters,
-    each >= 10 s apart — else YouTube silently ignores them. We take sung
-    lines >= 10 s apart as chapter names ('0:00 intro' leads). Returns the
-    chapter count written (0 = description untouched).
+    each >= 10 s apart — else YouTube silently ignores them.
+
+    v23 (old) used the *sung words* as chapter names, which on a real release
+    printed "0:10 Oooooo Headlights cut through" and "0:40 The engine sighs a"
+    — clipped mid-phrase, random caps, plus a "0:00 intro" on a song that has
+    no intro at all. Boss: it looks broken. Now chapters are named for the
+    SECTION they land on — `0:00 wet asphalt hum`, `0:22 verse 1`, `0:49 chorus`,
+    … — which is what every real official-audio description does.
+
+    The section map comes from the lyric text: sung lines are counted per
+    section and scaled onto the timestamped entries (the karaoke file is the
+    same lines in the same order, so the mapping is order-preserving). If the
+    lyric text is unavailable we fall back to the old behaviour — clipped
+    words beat no chapters at all.
     """
-    picks: list[tuple[float, str]] = [(0.0, "intro")]
-    for t, txt in (lrc_entries or []):
-        if t < 8 or t > dur - 8:
-            continue
-        if t - picks[-1][0] < 10:
-            continue
-        label = " ".join(str(txt).split()[:6])[:34].strip(" .,;:-")
-        if len(label) < 3 or label.lower() == picks[-1][1].lower():
-            continue
-        picks.append((float(t), label))
-        if len(picks) >= 10:
-            break
+    entries = [(float(t), str(x)) for t, x in (lrc_entries or []) if str(x).strip()]
+    if not entries:
+        return 0
+    labels = _section_map(meta.get("lyric_text") or "")
+    picks: list[tuple[float, str]] = []
+    if labels and len(entries) >= 4:
+        # scale each section's line-count onto the timestamped entry list
+        total_lines = sum(n for _l, n in labels) or 1
+        spans: list[tuple[str, int, int]] = []
+        for i, (lab, _n) in enumerate(labels):
+            through = sum(x[1] for x in labels[:i + 1])
+            prev_hi = spans[-1][2] if spans else 0
+            hi = len(entries) if i == len(labels) - 1 else \
+                max(prev_hi + 1, round(through * len(entries) / total_lines))
+            hi = min(max(hi, prev_hi + 1), len(entries))
+            spans.append((lab, prev_hi, hi))
+        seen: set[str] = set()
+        for lab, lo, hi in spans:
+            t0 = entries[lo][0]
+            name = lab
+            if name in seen:                       # 2nd/3rd chorus → number them
+                k = 2
+                while f"{name} {k}" in seen:
+                    k += 1
+                name = f"{name} {k}"
+            if picks and t0 - picks[-1][0] < 10:    # platform: >= 10 s apart
+                continue
+            seen.add(name)
+            picks.append((round(t0, 2), name))
+        first = (meta.get("name") or "Nix Speech").strip()
+        picks.insert(0, (0.0, first[:38]))         # 0:00 is the song, not "intro"
+    else:
+        picks = [(0.0, (meta.get("name") or "intro").strip()[:38] or "intro")]
+        for t, txt in entries:
+            if t < 8 or t > dur - 8 or t - picks[-1][0] < 10:
+                continue
+            label = " ".join(str(txt).split()[:6])[:34].strip(" .,;:-")
+            if len(label) < 3 or label.lower() == picks[-1][1].lower():
+                continue
+            picks.append((float(t), label))
+            if len(picks) >= 10:
+                break
+    # never end on a chapter inside the last 8 s, and never exceed 10
+    picks = [p for p in picks if p[0] <= max(12.0, dur - 6.0)][:10]
     if len(picks) < 3:
         return 0
     block = "\n\n⏱ chapters\n" + "\n".join(
@@ -294,6 +365,61 @@ def add_chapters(meta: dict, lrc_entries, dur: float) -> int:
     else:
         meta["description"] = desc + block
     return len(picks)
+
+
+def _section_map(lyric_text: str) -> list[tuple[str, int]]:
+    """'[verse]/[chorus]/…' text -> [('verse 1', 4), ('chorus', 4), …].
+
+    Repeated chorus/verse tags get numbered (that is what a listener calls
+    them); an [outro] line is folded into the previous section so a chapter
+    never exists for two words.
+    """
+    if not lyric_text:
+        return []
+    import re as _re
+    raw: list[tuple[str, int]] = []
+    cur = None
+    for ln in lyric_text.splitlines():
+        s = ln.strip()
+        if not s:
+            continue
+        m = _re.match(r"^\[\s*([a-zA-Z \-]+)\]\s*$", s)
+        if m:
+            tag = m.group(1).strip().lower()
+            if tag in ("outro", "end", "outro tag"):
+                cur = None                          # its lines fold into the last
+                continue                            # section (no chapter, no double)
+            cur = tag if tag in ("verse", "chorus", "bridge", "pre-chorus",
+                                  "intro", "hook") else (cur or "verse")
+            raw.append((cur, 0))
+            continue
+        if cur is None:
+            if raw:                                  # trailing lines (an outro tag,
+                raw[-1] = (raw[-1][0], raw[-1][1] + 1)   # say) belong to the last
+            else:                                    # section; never a new "verse"
+                cur, _ = "verse", raw.append((cur, 0))
+            continue
+        raw[-1] = (raw[-1][0], raw[-1][1] + 1)
+    out: list[tuple[str, int]] = []
+    tally: dict[str, int] = {}
+    for tag, n in raw:
+        if n <= 0:
+            continue
+        if tag in ("verse", "chorus"):
+            tally[tag] = tally.get(tag, 0) + 1
+            label = f"{tag} {tally[tag]}" if tally[tag] > 1 or tag == "verse" else tag
+            if tag == "chorus" and tally[tag] == 1:
+                label = "chorus"
+        elif tag == "bridge":
+            label = "bridge"
+        elif tag == "intro":
+            label = "intro"
+        else:
+            label = tag
+        out.append((label, n))
+    if out and out[0][0] == "intro":
+        out = out[1:]
+    return out
 
 
 
@@ -310,10 +436,17 @@ def short_meta(meta: dict, hook_line: str, slowed: bool = False) -> dict:
     """Shorts packaging: hook line first (psych trigger), clean official copy.
     v23: every short carries the 'use this sound' CTA (original-sound pages
     compound), and the slowed+reverb twin gets honest, searchable packaging."""
+    # 🪪 v23.7: the hook is the whole sales pitch — capitalise its first letter
+    # and never let a stray quote inside it break the "…" frame.
+    hook = " ".join(str(hook_line or "").split()).strip().strip('"').strip()
+    if hook and len(hook) > 46:                       # word-snapped, never mid-word
+        hook = hook[:46].rsplit(" ", 1)[0].rstrip(" ,;:-")
+    if hook:
+        hook = hook[0].upper() + hook[1:]
     if slowed:
-        title = f'"{hook_line}" {SLOWED_EMOJI} {meta["name"]} (slowed + reverb)'
+        title = f'"{hook}" {SLOWED_EMOJI} {meta["name"]} (slowed + reverb)'
     else:
-        title = f'"{hook_line}" {TITLE_EMOJI} {meta["name"]}'
+        title = f'"{hook}" {TITLE_EMOJI} {meta["name"]}'
     desc = (f"{meta['name']} — full version on the channel.\n"
             f"by Nix Speech\n"
             f"🎧 use this sound — tap the audio below\n"

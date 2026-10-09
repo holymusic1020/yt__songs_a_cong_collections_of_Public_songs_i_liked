@@ -40,13 +40,24 @@ print("── 3. yesterday's release → today is still free")
 assert run([{"episode": 45, "kind": "short", "at": iso(yday)}]) is None
 print("   ✅ a new BDT day re-arms the engine")
 
-print("── 4. a late-night UTC stamp still belongs to the boss's day")
-# 18:30 UTC = 00:30 BDT next day → must NOT count as today's release
-late = today.replace(hour=18, minute=30, second=0)
-got = run([{"episode": 48, "kind": "short", "at": iso(late)}])
-expect = None if late.astimezone(BDT).date() != now_bdt.date() else got
-assert got == expect, (got, expect)
-print(f"   ✅ BDT day boundary honoured (18:30 UTC → {late.astimezone(BDT).strftime('%d %H:%M')} BDT)")
+print("── 4. v23.7: the guard measures the GAP, not the BDT calendar day")
+# The old day-boundary rule STEAL a release: EP.054 shipped 09-28 18:37Z
+# (= 09-29 00:37 BDT) and the 09-29 16:30Z cron read "already released today"
+# and parked; same on 10-06 with EP.060 (01:44 BDT → 22:41 cron). GitHub fires
+# this cron 3-6 h late, so "same BDT day" and "same release cycle" are not the
+# same thing. The law is now: a real release inside RELEASE_GAP_H (17 h default)
+# owns the slot; anything older re-arms the engine.
+from datetime import timedelta as _td
+got_old = run([{"episode": 60, "kind": "short",
+                "at": (now_bdt - _td(hours=21)).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")}])
+assert got_old is None, ("a 21 h-old release must NOT steal tonight's slot", got_old)
+got_recent = run([{"episode": 61, "kind": "short",
+                   "at": (now_bdt - _td(hours=3)).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")}])
+assert got_recent and got_recent["episode"] == 61, ("3 h apart IS a double-ship", got_recent)
+got_future = run([{"episode": 62, "kind": "full", "short_publish_at":
+                   (now_bdt + _td(hours=2)).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")}])
+assert got_future and got_future["episode"] == 62, "a scheduled publish ahead also owns the slot"
+print("   ✅ 21 h → free · 3 h → parked · future-dated → parked")
 
 print("── 5. junk state never crashes the run")
 TMP.write_text("{not json")

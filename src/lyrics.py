@@ -403,19 +403,41 @@ def build_lines(genre_key: str, name: str, rng: random.Random, n: int = 5) -> li
 
 def song_lyrics(genre_key: str, title: str, rng: random.Random,
                 lang: str = "en") -> str:
-    """Tagged sung lyrics for the ACE-Step space — bank fallback shape.
+    """Tagged sung lyrics for the singer — the NO-AI fallback shape (v23.7).
 
-    Always: verse / chorus / verse / chorus / bridge / chorus (~24 sung
-    lines ≈ 2-3 min of song). Genre only seasons one swapped-in line so the
-    fallback stays genre-aware without pretending to be poetry.
+    English days are built from `src/sung_banks`: a chorus that belongs to
+    THIS genre (24 genres → 24 different hooks), four distinct authored
+    couplets across the two verses, the chorus returned word-for-word, and the
+    final chorus closing on the song's opening line — the callback.
+
+    What this replaces (2026-10-09 hype audit, boss: "the lines don't match
+    each other, the ending doesn't come back"): one shared EN bank for every
+    genre, plus `verse2 = [flavor] + rng.sample(b["verse"], 3)` — sampling 3
+    lines from the SAME 4-line verse, i.e. verse 2 was verse 1 shuffled, and
+    only one flavour line made a release feel genre-specific.
+
+    Foreign-language days keep the per-language banks below (World Tour weeks;
+    ARPAbet rhyme checking does not apply to them).
     """
+    if lang == "en":
+        from src import sung_banks as _sb
+        chorus = list(_sb.chorus_for(genre_key))
+        bridge = list(_sb.bridge_for(genre_key))
+        v1, v2 = _sb.verses_for(genre_key, rng)
+        final = chorus[:-1] + [v1[0]]          # ending calls back the opening line
+        parts: list[str] = ["[verse]", *v1,
+                            "[chorus]", *chorus,
+                            "[verse]", *v2,
+                            "[chorus]", *chorus,
+                            "[bridge]", *bridge,
+                            "[chorus]", *final]
+        tag = (title or "").strip().strip('"').lower()
+        if tag and tag not in v1 + v2 + chorus:
+            parts += ["[outro]", tag]          # the name is the last thing you hear
+        return "\n".join(parts)
     b = SONG_BANKS.get(lang, SONG_BANKS["en"])
-    flavor = rng.choice(LINES.get(genre_key, LINES["drift_phonk"]))
-    if lang == "en":                      # steal one bank caption for cohesion
-        verse2 = [flavor] + rng.sample(b["verse"], 3)
-    else:
-        verse2 = list(b["verse"])
-        verse2[rng.randrange(4)] = b["bridge"][0]   # rotate, keep language pure
+    verse2 = list(b["verse"])
+    verse2[rng.randrange(4)] = b["bridge"][0]   # rotate, keep the language pure
     parts = [
         "[verse]", *b["verse"],
         "[chorus]", *b["chorus"],
