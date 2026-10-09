@@ -1,13 +1,13 @@
-# 📋 receipt · EP.062 · 2026-10-08
+# 📋 receipt · EP.063 · 2026-10-09
 
 | | |
 |---|---|
-| track | **wet asphalt hum** (indie_waves) |
+| track | **damp wool radiator** (lambs_teeth) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/QQMI64gg35o |
+| youtube | — · short: https://youtu.be/91O-EGX-IvE |
 | multipost dial | `fb,tt,ig` |
-| took | 555.7 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37815729013 @ ee060f8 |
+| took | 766.1 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/37962624524 @ 639af6d |
 
 ## lanes
 
@@ -15,13 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122116861803453777 |
+| fb_reel_id | 122117160921453777 |
 | ig | published (reel) |
-| ig_media_id | 18005496299790914 |
+| ig_media_id | 18103911317306213 |
 | ig_photo | published |
-| ig_photo_id | 17911440156497124 |
+| ig_photo_id | 17948568459339606 |
 | ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7694348418616985607 |
+| tiktok_publish_id | v_pub_file~v2-1.7694715806260676628 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit

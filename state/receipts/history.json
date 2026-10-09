@@ -660,5 +660,33 @@
       "ig_photo_id": "17911440156497124",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-10-09",
+    "episode": 63,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "lambs_teeth",
+    "track": "damp wool radiator",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 766.1,
+    "youtube": {
+      "video_id": null,
+      "short_id": "91O-EGX-IvE",
+      "watch": null,
+      "short": "https://youtu.be/91O-EGX-IvE"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122117160921453777",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7694715806260676628",
+      "ig": "published (reel)",
+      "ig_media_id": "18103911317306213",
+      "ig_user": "nixspeech",
+      "ig_photo": "published",
+      "ig_photo_id": "17948568459339606",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]
