@@ -1,5 +1,5 @@
 {
-  "episode": 62,
+  "episode": 63,
   "history": [
     {
       "episode": 1,
@@ -806,30 +806,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-08T20:25:31Z",
       "at": "2026-10-08T17:22:50+00:00"
+    },
+    {
+      "episode": 63,
+      "kind": "short",
+      "youtube_id": "91O-EGX-IvE",
+      "video_id": null,
+      "short_id": "91O-EGX-IvE",
+      "title": "damp wool radiator — Nix Speech (official audio)",
+      "name": "damp wool radiator",
+      "genre": "lambs_teeth",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-09T18:29:09Z",
+      "at": "2026-10-09T17:07:41+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-09-24",
-      "episode": 51,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "chart_pop",
-      "track": "taxi vinyl",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122112297519453777",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7689118636426004488",
-        "ig": "published (reel)",
-        "ig_media_id": "17935882545388114",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "18177079945438292",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-09-25",
       "episode": 52,
@@ -1094,6 +1086,27 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "17911440156497124",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-09",
+      "episode": 63,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "lambs_teeth",
+      "track": "damp wool radiator",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122117160921453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7694715806260676628",
+        "ig": "published (reel)",
+        "ig_media_id": "18103911317306213",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "17948568459339606",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
