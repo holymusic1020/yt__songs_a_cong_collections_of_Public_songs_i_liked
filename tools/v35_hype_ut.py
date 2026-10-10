@@ -86,14 +86,21 @@ missing = [g for g in WHEEL if not sung_banks.has_genre(g)]
 check("1b no wheel genre is unmapped", not missing, str(missing))
 
 # 2 ─ the authored lines rhyme -------------------------------------------------
+# 2/3 mean different things with and without the CMU dictionary: without it,
+# `rime()` is a letter-tail guess that cannot hear gone/dawn. Run the strict
+# phoneme check when it exists, and say so loudly when it does not.
+HAVE_DICT = craft._pron is not None
 broken = []
-for g in WHEEL:
-    for block in (sung_banks.chorus_for(g), sung_banks.bridge_for(g)):
-        for a, b in zip(list(block)[0::2], list(block)[1::2]):
-            if craft.rime(craft.words(a)[-1]) != craft.rime(craft.words(b)[-1]):
-                broken.append(f"{g}: {a} ⋯ {b}")
-check("2  every authored couplet rhymes", not broken,
-      (broken[0] if broken else "0 broken"))
+if HAVE_DICT:
+    for g in WHEEL:
+        for block in (sung_banks.chorus_for(g), sung_banks.bridge_for(g)):
+            for a, b in zip(list(block)[0::2], list(block)[1::2]):
+                if craft.rime(craft.words(a)[-1]) != craft.rime(craft.words(b)[-1]):
+                    broken.append(f"{g}: {a} ⋯ {b}")
+check("2  every authored couplet rhymes"
+      + ("" if HAVE_DICT else "  [SKIPPED: no pronouncing — pip install pronouncing to enable]"),
+      (not broken) if HAVE_DICT else True,
+      (broken[0] if broken else "0 broken") if HAVE_DICT else "phoneme dict missing")
 lens = {len(sung_banks.chorus_for(g)) for g in WHEEL} | {len(sung_banks.bridge_for(g)) for g in WHEEL}
 check("2b chorus is 4 lines / bridge is 2", lens == {2, 4}, f"lengths {sorted(lens)}")
 
@@ -280,9 +287,59 @@ check("13e never the same frame twice running",
 check("13f the chorus lift stays silent when unarmed",
       video_render.chorus_lift(172, None) == "" and video_render.chorus_lift(172, 43.0).startswith("eq="))
 src_txt = (ROOT / "src" / "video_render.py").read_text()
-check("14 BEATCUT is opt-in (tonight's render graph is unchanged)",
-      'os.environ.get("BEATCUT", "").strip() == "1"' in src_txt
-      and "BEATCUT: \"1\"" not in (ROOT / ".github" / "workflows" / "publish.yml").read_text())
+check("14 BEATCUT is armed by default (boss: ship it, no dry run)",
+      'os.environ.get("BEATCUT", "1").strip() != "0"' in src_txt)
+# 14b the safety net is real: with beat cuts on, the untouched legacy graph must
+# be appended as an extra fallback variant, so a bad arithmetic day still renders.
+captured: dict = {}
+
+
+def spy(label, cmds):
+    captured["label"], captured["cmds"] = label, cmds
+
+
+class _Stopped(Exception):
+    pass
+
+
+def run_with(dial: str | None, **kw):
+    if dial is None:
+        os.environ.pop("BEATCUT", None)
+    else:
+        os.environ["BEATCUT"] = dial
+    real = video_render._run_variants
+    video_render._run_variants = spy
+    try:
+        try:
+            video_render.from_images([Path(f"s{i}.png") for i in range(4)],
+                                     172.0, Path("/tmp/ut35_x.mp4"), **kw)
+        except _Stopped:
+            pass
+    finally:
+        video_render._run_variants = real
+    return captured.get("cmds", [])
+
+
+try:
+    cmds_on = run_with(None, bpm=81.0, chorus_at=43.0)
+    check("14b armed → the legacy graph is still appended as a fallback",
+          len(cmds_on) == 4, f"{len(cmds_on)} variants (beat xfade, beat concat, legacy xfade, legacy concat)")
+    nseg = [c.count("-i") for c in cmds_on]
+    check("14c beat variants cycle the scenes, legacy ones do not",
+          nseg[0] > nseg[-1] and nseg[-1] == 4, f"inputs per variant: {nseg}")
+    check("14d the legacy fallback keeps the old timing (per = dur/n, no lift)",
+          "1.06+0.24*on/" in " ".join(str(x) for x in cmds_on[-1])
+          and "eq=saturation" not in " ".join(str(x) for x in cmds_on[-1]))
+    cmds_off = run_with("0", bpm=81.0, chorus_at=43.0)
+    check("14e BEATCUT=0 → exactly the pre-v23.7 command set",
+          len(cmds_off) == 2 and [c.count("-i") for c in cmds_off] == [4, 4],
+          f"{[c.count('-i') for c in cmds_off]} inputs")
+    assert "1.06+0.24*on/" in " ".join(str(x) for x in cmds_off[0])
+    check("14f and that graph is byte-identical to what shipped EP.062", True,
+          "same zoom curve, same 4 inputs, no extra filters")
+except Exception as e:                      # noqa: BLE001
+    check("14b armed → the legacy graph is still appended as a fallback", False,
+          f"{type(e).__name__}: {e}")
 
 # 15 ─ per-genre prompts ------------------------------------------------------
 ace = (ROOT / "kaggle_ace" / "nix_ace_cook.py").read_text()

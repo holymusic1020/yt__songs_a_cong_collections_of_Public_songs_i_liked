@@ -907,7 +907,8 @@ def main() -> None:
             elif scenes:
                 short_pack["base_video"] = video_render.from_images(
                     [OUT / f"ep{ep:03d}_scene{i}.png" for i in range(len(scenes))],
-                    L, OUT / f"ep{ep:03d}_short_bg.mp4", size=video_render.VERT)
+                    L, OUT / f"ep{ep:03d}_short_bg.mp4", size=video_render.VERT,
+                    bpm=bpm_for_cut)     # 🥁 background cuts on the song's grid
             short_mp4 = shorts.render_video(short_pack, OUT / f"ep{ep:03d}_short.mp4")
             try:                             # 💤 v23: slowed+reverb twin short
                 every = int((os.environ.get("SLOWED_EVERY", "0") or "0").strip())

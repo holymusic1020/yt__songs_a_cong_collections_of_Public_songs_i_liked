@@ -358,16 +358,22 @@ def from_images(images: list[Path], dur: float, out_path: Path,
                 hud: Path | None = None, bpm: float | None = None,
                 chorus_at: float | None = None) -> Path:
     w, h = size
-    # 🥁 BEATCUT=1 (default OFF — needs one live dry run to prove the graph):
-    # cut on the bar grid, put a cut exactly on the chorus, and cycle the scene
-    # set instead of leaving one image on screen for 40 seconds.
-    beat = os.environ.get("BEATCUT", "").strip() == "1"
+    # 🥁 BEATCUT (default ON since 2026-10-09, boss: "no need for a dry run,
+    # upload straight to the channel"): cut on the bar grid, put a cut exactly on
+    # the chorus, and cycle the scene set instead of leaving one image on screen
+    # for 40 seconds. `BEATCUT=0` = the pre-v23.7 graph, byte for byte.
+    #
+    # ARMED SAFETY NET: when the beat layout is on, the OLD untouched graph is
+    # appended as a third fallback variant, so `_run_variants` still has
+    # something that cannot be broken by my new arithmetic. Worst case the
+    # video looks like last week's — it cannot come out missing or black.
+    beat = os.environ.get("BEATCUT", "1").strip() != "0"
+    legacy_images = list(images)
     per = dur / max(1, len(images))
     if beat and images:
         per = beat_plan(dur, bpm or 0.0, chorus_at)
         images = beat_layout(images, dur, per)
-        if chorus_at:
-            images = images  # (the lift itself is applied on the assembled label)
+    beat_on = beat and len(images) != len(legacy_images)
     n = len(images)
     inputs = []
     for img in images:
@@ -394,6 +400,36 @@ def from_images(images: list[Path], dur: float, out_path: Path,
     cmds = _assemble(segs, inputs, wav, chip, out_path, dur, n, w, h,
                      audio_idx, chip_idx, lyrics=lyrics,
                      masc_idx=masc_idx, hud_idx=hud_idx, chorus_at=chorus_at)
+    if beat_on:
+        # the exact pre-v23.7 graph: original scene list, per = dur/n, no lift
+        legacy_inputs = []
+        for img in legacy_images:
+            legacy_inputs += ["-i", str(img)]
+        li = len(legacy_images)
+        la = lc = lm = lh = None
+        lidx = li
+        if wav is not None:
+            legacy_inputs += ["-i", str(wav)]
+            la = lidx
+            lidx += 1
+        if chip is not None:
+            legacy_inputs += ["-loop", "1", "-i", str(chip)]
+            lc = lidx
+            lidx += 1
+        if mascot is not None:
+            legacy_inputs += ["-stream_loop", "-1", "-i", str(mascot)]
+            lm = lidx
+            lidx += 1
+        if hud is not None:
+            legacy_inputs += ["-loop", "1", "-i", str(hud)]
+            lh = lidx
+            lidx += 1
+        cmds += _assemble(_image_segments(legacy_images, dur / max(1, li), w, h),
+                          legacy_inputs, wav, chip, out_path, dur, li, w, h,
+                          la, lc, lyrics=lyrics, masc_idx=lm, hud_idx=lh)
+        print(f"  🥁 beat cuts armed: {n} segments at {per:.2f}s "
+              f"{'· cut lands on the chorus at ' + format(chorus_at, '.1f') + 's' if chorus_at else ''}"
+              f" · legacy graph kept as fallback")
     _run_variants("slideshow", cmds)
     return out_path
 

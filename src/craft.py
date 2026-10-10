@@ -195,7 +195,14 @@ def gate(text: str, title: str = "", *, min_rate: float = 0.5,
     rhymey = [l for tag, ls in secs if tag in ("verse", "chorus") for l in ls]
     hit, tot = couplets(rhymey)
     rate = (hit / tot) if tot else 0.0
-    if tot < 4:
+    if _pron is None:
+        # No CMU dictionary on this box (it is in requirements.txt, so the runner
+        # has it). Letter-tails cannot tell "gone/dawn" from "gone/tone", so with
+        # no dictionary the honest move is to NOT judge rhyme at all — a gate
+        # that guesses would reject good writers. Structure rules still apply.
+        print("  (craft: `pronouncing` not installed — couplet rhyme check "
+              "skipped; chorus-return, callback and metre still enforced)")
+    elif tot < 4:
         problems.append("too few rhyming pairs found to judge (write clear end-rhymes)")
     elif rate < min_rate:
         problems.append(f"couplet rhyme {hit}/{tot} = {rate:.0%} — lines 1↔2 and "

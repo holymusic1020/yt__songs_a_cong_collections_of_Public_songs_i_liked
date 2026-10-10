@@ -216,7 +216,7 @@ now says the verdict out loud:
 Two guard-rails on purpose: the gate is **English only** (an English rhyme dictionary would wrongly fail
 Portuguese/Spanish World-Tour lyrics), and the title being sung is a **soft note**, never a blocker.
 
-## 🥁 16. Beat-cut editing — `BEATCUT` (OFF until you arm it)
+## 🥁 16. Beat-cut editing — `BEATCUT` (**ON** since 2026-10-09)
 
 `src/video_render.py`. Four Gemini scene images used to sit for 43 seconds each over a 172-second song —
 one crossfade a minute, nothing landing on the chorus. With `BEATCUT=1` (repo **Variable**):
@@ -227,10 +227,14 @@ one crossfade a minute, nothing landing on the chorus. With `BEATCUT=1` (repo **
 * the scene set cycles, so the frame changes every few seconds instead of freezing,
 * colour/saturation lift over the chorus window (`eq` with `enable='between(t,…)'`, timeline-safe).
 
-**It defaults OFF** because a render graph must be proven by a live dry run before it goes near a release —
-this is the "don't ruin anything" rule. Arm it with a dry run first (`run_mode: dry_run` +
-`BEATCUT=1` as a variable for that run), watch the mp4, then flip it on for real.
-Kill it any time: `BEATCUT=0` restores exactly today's graph. `KB_STILL=1` still overrides motion entirely.
+**Armed by default on purpose** (boss, 2026-10-09: *"no need for a dry run… upload straight to the
+channel"*), but with a hard safety net: when the beat layout is on, the **untouched pre-v23.7 graph is
+appended as a third and fourth ffmpeg variant**, so `_run_variants` always has the exact old command set to
+fall back to. Worst case a video looks like last week's; it cannot come out black or missing. `tools/v35`
+block 14 proves both halves (4 variants armed → `[29, 29, 4, 4]` inputs; `BEATCUT=0` → 2 variants, `[4, 4]`).
+
+Kill switch: **`BEATCUT=0`** (repo Variable) → exactly the graph that shipped EP.062. `KB_STILL=1` still
+overrides motion entirely, and the short's background now rides the same bpm grid.
 
 ## 🎬 17. B-roll scene per genre — `src/video_gemini.py`
 
