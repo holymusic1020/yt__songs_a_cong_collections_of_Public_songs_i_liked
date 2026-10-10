@@ -133,6 +133,7 @@ def fetch(genre: str, budget_s: float = 90.0) -> bool:
                     break
                 f.write(chunk)
                 got += len(chunk)
+        extracted = 0
         with tarfile.open(tmp, "r:xz") as tf:          # no path traversal, no exec
             safe = [m for m in tf.getmembers()
                     if m.isfile() and Path(m.name).name.startswith("broll-")
@@ -140,8 +141,18 @@ def fetch(genre: str, budget_s: float = 90.0) -> bool:
             d.mkdir(parents=True, exist_ok=True)
             for m in safe:
                 m.name = f"{d.name}/{Path(m.name).name}"
-                tf.extract(m, d.parent, filter="data")
-        return len(scan(genre)) > before
+                try:                       # `filter=` needs 3.12 / the 3.11.4 security
+                    tf.extract(m, d.parent, filter="data")     # backport; on an older
+                    extracted += 1                              # patch fall back by hand
+                except TypeError:
+                    member = tf.extractfile(m)
+                    if member is None:
+                        continue
+                    dest = d.parent / m.name
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    dest.write_bytes(member.read())
+                    extracted += 1
+        return extracted > 0 or len(scan(genre)) > before
     except Exception as e:
         print(f"  (b-roll: nothing to fetch for {genre}: {type(e).__name__})")
         return False
