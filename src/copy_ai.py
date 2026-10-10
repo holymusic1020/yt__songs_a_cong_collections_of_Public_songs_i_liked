@@ -6,6 +6,8 @@ the static banks (lyrics.py / metadata.py). The pipeline never depends on it.
 from __future__ import annotations
 
 import os
+
+from src import keys
 import re
 
 # 2026-08 refresh: gemini-2.0-flash/-lite shut down 2026-06-01;
@@ -19,9 +21,9 @@ _TAG_NAMES = {"verse": "[verse]", "pre-chorus": "[pre-chorus]",
 
 
 def _generate(prompt: str) -> str:
-    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    key = keys.pick("GEMINI_API_KEY")
     if not key:
-        raise RuntimeError("GEMINI_API_KEY not set")
+        raise RuntimeError("no GEMINI_API_KEY in the pool (set the secret, or GEMINI_API_KEY_2 …)")
     from google import genai
     client = genai.Client(api_key=key)
     errs = []

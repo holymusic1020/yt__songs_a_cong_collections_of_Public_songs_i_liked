@@ -337,6 +337,15 @@ try:
     assert "1.06+0.24*on/" in " ".join(str(x) for x in cmds_off[0])
     check("14f and that graph is byte-identical to what shipped EP.062", True,
           "same zoom curve, same 4 inputs, no extra filters")
+    # 14g the lift must actually be IN the armed graph. `BEATCUT` defaulting to
+    # ON means the env var is usually unset, so any reader that still tests
+    # == "1" silently disables its half of the dial — this caught exactly that.
+    armed = " ".join(str(x) for x in cmds_on[0])
+    lift = video_render.chorus_lift(172.0, 43.0)
+    check("14g the chorus lift is present in the armed graph",
+          lift and lift.split(",")[0].split("=")[-1] in armed, lift[:52])
+    off_txt = " ".join(str(x) for x in cmds_off[0])
+    check("14h and gone when BEATCUT=0", "eq=saturation" not in off_txt)
 except Exception as e:                      # noqa: BLE001
     check("14b armed → the legacy graph is still appended as a fallback", False,
           f"{type(e).__name__}: {e}")

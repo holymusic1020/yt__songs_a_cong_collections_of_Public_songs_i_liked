@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import json
 import os
+
+from src import keys
 import re
 import time
 import urllib.request
@@ -61,7 +63,7 @@ _TAG_RE = re.compile(r"\[[^\]]+\]")
 
 
 def _key() -> str:
-    return os.environ.get("SUNO_API_KEY", "").strip()
+    return keys.pick("SUNO_API_KEY")
 
 
 def available() -> bool:

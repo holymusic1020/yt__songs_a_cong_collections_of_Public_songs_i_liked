@@ -17,6 +17,8 @@ Same contract as music_suno / music_space:
 from __future__ import annotations
 
 import os
+
+from src import keys
 from pathlib import Path
 
 MODEL = "lyria-3-pro-preview"        # full songs, vocals, returns lyrics
@@ -35,7 +37,7 @@ def generate(genre_key: str, seconds: float, out_path: Path,
              lrc_out: Path | None = None,
              model: str = MODEL) -> Path | None:
     """Cook one song on Google Lyria. None = 'next provider, please'."""
-    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    key = keys.pick("GEMINI_API_KEY")
     if not key:
         print("  ⚠ lyria: GEMINI_API_KEY not set — skipping lane")
         return None

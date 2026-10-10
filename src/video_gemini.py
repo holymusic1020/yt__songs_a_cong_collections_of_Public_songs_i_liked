@@ -15,6 +15,8 @@ Optional env: VEO_MODEL (pin one), VEO_CLIPS=1 (how many distinct clips to try)
 from __future__ import annotations
 
 import os
+
+from src import keys
 import time
 from pathlib import Path
 
@@ -139,7 +141,7 @@ def build_prompt(meta: dict) -> str:
 
 
 def generate_clip(meta: dict, out_path: Path, timeout_s: int = 480) -> Path:
-    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    key = keys.pick("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("GEMINI_API_KEY not set")
     from google import genai

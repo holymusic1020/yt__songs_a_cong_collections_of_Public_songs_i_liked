@@ -282,3 +282,25 @@ posts nothing, and sends you the checklist on Telegram. If the checklist arrives
 | 🔁 one release per day | **ON** (automatic) |
 | 📅 schedule | cron says 16:00 BDT · GitHub fires it ~19:30–22:00 BDT |
 | 🔇 SHORT_SFX / LOOP_OFF / MASCOT_OFF / POSTS_OFF | all **OFF** |
+
+## 🎬 19. The b-roll farm (`BROLL`, `broll-farm.yml`) — generated video, offline
+
+The release pipeline no longer only paints stills: if the **shelf** has clips for tonight's genre, the
+video is cut from real moving b-roll; if it doesn't (or the download is slow, or ffmpeg is unhappy, or
+`BROLL=0`), it renders the exact Ken Burns graph that shipped EP.001→EP.063. Nothing in between.
+
+* write side: `.github/workflows/broll-farm.yml` → `tools/broll_farm.py` → Kaggle kernel
+  `kaggle_cook/broll/broll_farm.py` (Wan2.1-1.3B, 8 s clips, normalised to 1080p/24 fps **on the farm**,
+  so the runner pays nothing) → assets on release `broll-lab`.
+* read side: `src/broll.py` (`plan()` can only return a list or `[]`; it never raises).
+* 🔒 the song is protected by construction: publish.yml does not call the farm, the farm never uploads
+  anything, and it refuses to start if its 7-day GPU spend would cross `BROLL_WEEK_HOURS` (default 9 of
+  Kaggle's 30) while the vocal lane needs ~2. Full design + the measured timings: `docs/BROLL-FARM.md`.
+* kill it: repo Variable `BROLL=0` (release side) and/or `BROLL_FARM=0` (stop the nightly GPU spend).
+
+## 🔑 20. Key pools — every service takes a fallback list
+
+`GEMINI_API_KEY`, `GEMINI_API_KEY_2` … `GEMINI_API_KEY_6` (or `k1,k2,k3` in one secret) for Gemini —
+art, copy, scenes, Lyria; `SUNO_API_KEY(_2…)` for the studio lane. `src/keys.py::pool()` dedupes and
+keeps order; `lane_audit` prints how many keys exist, never which. A dead key is now a rename, not a
+bug hunt. (Kaggle creds stay single-account deliberately — the weekly GPU quota is per account.)

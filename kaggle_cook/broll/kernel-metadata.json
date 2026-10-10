@@ -1,0 +1,16 @@
+{
+  "id": "nixspeech/nix-speech-broll-farm",
+  "title": "Nix Speech B-roll Farm",
+  "code_file": "broll_farm.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "competition_sources": [],
+  "dataset_sources": [],
+  "kernel_sources": [],
+  "model_sources": [
+    "Wan-AI/Wan2.1-T2V-1.3B-Diffusers"
+  ]
+}

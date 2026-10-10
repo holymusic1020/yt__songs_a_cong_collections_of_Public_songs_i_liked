@@ -26,6 +26,8 @@ from __future__ import annotations
 
 import json
 import os
+
+from src import keys
 import time
 import urllib.error
 import urllib.parse
@@ -283,7 +285,7 @@ def audit(net: bool | None = None, publish_ids: list | None = None,
                 "GH_TOKEN/GITHUB_TOKEN": _present("GH_TOKEN") if _env("GH_TOKEN") else _present("GITHUB_TOKEN"),
                 "TELEGRAM_BOT_TOKEN": _present("TELEGRAM_BOT_TOKEN"),
                 "YT_REFRESH_TOKEN": _present("YT_REFRESH_TOKEN"),
-                "SUNO_API_KEY": _present("SUNO_API_KEY"),
+                "SUNO_API_KEY": _present("SUNO_API_KEY") or len(keys.pool("SUNO_API_KEY")),
                 "KAGGLE_USERNAME": _present("KAGGLE_USERNAME"),
                 "GEMINI_API_KEY": _present("GEMINI_API_KEY"),
                 "HF_TOKEN": _present("HF_TOKEN"),

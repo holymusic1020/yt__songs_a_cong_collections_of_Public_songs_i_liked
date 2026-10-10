@@ -264,6 +264,16 @@ def chorus_lift(dur: float, chorus_at: float | None) -> str:
 
 
 
+def _beat_on() -> bool:
+    """ONE gate for the whole BEATCUT dial (v23.8).
+
+    `BEATCUT` went default-ON on 2026-10-09, which means the env var is usually
+    UNSET, not "1" — every reader must use this helper or the dial silently
+    half-applies (that exact bug: the beat layout armed but chorus_lift stayed
+    dead because it still tested == "1")."""
+    return os.environ.get("BEATCUT", "1").strip() != "0"
+
+
 def _image_segments(images: list, per_s: float, w: int, h: int) -> list[str]:
     frames = max(1, int(FPS * per_s))
     parts = []
@@ -332,7 +342,7 @@ def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
                   f"offset={off:.3f}[{lbl}]")
         prev = lbl
     spec = _audio_branch(audio_idx, fc, want_spec) if has_audio else None
-    if os.environ.get("BEATCUT", "").strip() == "1":
+    if _beat_on():
         lift = chorus_lift(dur, chorus_at) if chorus_at is not None else ""
         if lift:
             fc.append(f"[{prev}]{lift}format=yuv420p[lp]")
@@ -352,6 +362,85 @@ def _assemble(segs, inputs, wav, chip, out, dur, n, w, h, audio_idx, chip_idx,
     return [cmd1, cmd2]
 
 
+def _clip_segments(n: int, per_s: float, w: int, h: int) -> list[str]:
+    """One trimmed clip per beat slot.
+
+    Deliberately NOT a copy of `_image_segments`: there is no zoompan here,
+    because the motion is real camera motion from the farm. Same label contract
+    ([s0..sn]) and same exact `per_s` length, so `_assemble` — the crossfades,
+    the karaoke overlay, the mascot, the spectrum, the loudness chain — is
+    reused untouched. Subtitles and audio math cannot drift because they were
+    never rewritten.
+    """
+    parts = []
+    for i in range(n):
+        parts.append(
+            f"[{i}:v]trim=duration={per_s:.3f},setpts=PTS-STARTPTS,fps={FPS},"
+            f"scale={w}:{h}:force_original_aspect_ratio=increase,"
+            f"crop={w}:{h},setsar=1,format=yuv420p[s{i}]")
+    return parts
+
+
+def from_clips(clips: list[Path], dur: float, out_path: Path,
+               wav: Path | None = None, chip: Path | None = None,
+               lyrics=None, mascot: Path | None = None,
+               hud: Path | None = None, size=LONG, bpm: float | None = None,
+               chorus_at: float | None = None) -> Path:
+    """🎬 The b-roll render (v24): generated video in place of stills.
+
+    Inputs are `-stream_loop -1` so a 6-second clip still fills an 8-second
+    slot — the farm's clip length is a floor, not a contract. The beat grid is
+    the same `beat_plan` the slideshow uses, so a cut still lands on the chorus
+    whether the shot is a still or a moving frame.
+
+    The caller (main.build_visuals) keeps the Ken Burns path as the fallback:
+    this function may raise, and the release must not.
+    """
+    w, h = size
+    if not clips:
+        raise ValueError("from_clips needs at least one clip")
+    per = beat_plan(dur, bpm or 0.0, chorus_at) if _beat_on() else dur / len(clips)
+    n = max(2, int(round(dur / max(per, 0.5))))
+    seq: list[Path] = []
+    while len(seq) < n:
+        for c in clips:
+            if len(seq) >= n:
+                break
+            if seq and c == seq[-1]:
+                continue
+            seq.append(c)
+    inputs = []
+    for c in seq:
+        inputs += ["-stream_loop", "-1", "-i", str(c)]
+    idx = len(seq)
+    audio_idx = chip_idx = masc_idx = hud_idx = None
+    if wav is not None:
+        inputs += ["-i", str(wav)]
+        audio_idx = idx
+        idx += 1
+    if chip is not None:
+        inputs += ["-loop", "1", "-i", str(chip)]
+        chip_idx = idx
+        idx += 1
+    if mascot is not None:
+        inputs += ["-stream_loop", "-1", "-i", str(mascot)]
+        masc_idx = idx
+        idx += 1
+    if hud is not None:
+        inputs += ["-loop", "1", "-i", str(hud)]
+        hud_idx = idx
+        idx += 1
+    segs = _clip_segments(len(seq), dur / len(seq), w, h)
+    cmds = _assemble(segs, inputs, wav, chip, out_path, dur, len(seq), w, h,
+                     audio_idx, chip_idx, lyrics=lyrics,
+                     masc_idx=masc_idx, hud_idx=hud_idx,
+                     chorus_at=chorus_at if _beat_on() else None)
+    print(f"  🎬 b-roll: {len(seq)} generated clips at {dur / len(seq):.2f}s "
+          f"({'beat grid ' + format(per, '.2f') + 's' if _beat_on() else 'even'})")
+    _run_variants("b-roll", cmds)
+    return out_path
+
+
 def from_images(images: list[Path], dur: float, out_path: Path,
                 wav: Path | None = None, chip: Path | None = None,
                 size=LONG, lyrics=None, mascot: Path | None = None,
@@ -367,7 +456,7 @@ def from_images(images: list[Path], dur: float, out_path: Path,
     # appended as a third fallback variant, so `_run_variants` still has
     # something that cannot be broken by my new arithmetic. Worst case the
     # video looks like last week's — it cannot come out missing or black.
-    beat = os.environ.get("BEATCUT", "1").strip() != "0"
+    beat = _beat_on()
     legacy_images = list(images)
     per = dur / max(1, len(images))
     if beat and images:

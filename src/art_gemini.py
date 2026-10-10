@@ -12,6 +12,8 @@ from __future__ import annotations
 import io
 import os
 
+from src import keys
+
 from PIL import Image
 
 # Tried in order; first one that returns an image wins.
@@ -182,9 +184,9 @@ def generate(meta: dict) -> Image.Image:
     """Return the base scene as a PIL Image. Raises if every model fails."""
     from google import genai                      # imported lazily (CI dep)
 
-    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    key = keys.pick("GEMINI_API_KEY")
     if not key:
-        raise RuntimeError("GEMINI_API_KEY not set")
+        raise RuntimeError("no GEMINI_API_KEY in the pool (set the secret, or GEMINI_API_KEY_2 …)")
 
     client = genai.Client(api_key=key)
     models = ([os.environ["GEMINI_IMAGE_MODEL"]] if os.environ.get("GEMINI_IMAGE_MODEL")
@@ -211,9 +213,9 @@ SHOT_TYPES = [
 def generate_scenes(meta: dict, n: int = 4, scene_text: str | None = None) -> list[Image.Image]:
     """N matching but varied scenes of the SAME song-world (slideshow fuel)."""
     mood = scene_text or MOODS.get(meta["genre_key"], MOODS["dark_ambient"])
-    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    key = keys.pick("GEMINI_API_KEY")
     if not key:
-        raise RuntimeError("GEMINI_API_KEY not set")
+        raise RuntimeError("no GEMINI_API_KEY in the pool (set the secret, or GEMINI_API_KEY_2 …)")
     from google import genai
     client = genai.Client(api_key=key)
     models = ([os.environ["GEMINI_IMAGE_MODEL"]] if os.environ.get("GEMINI_IMAGE_MODEL")

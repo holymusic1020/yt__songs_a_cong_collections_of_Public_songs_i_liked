@@ -25,6 +25,9 @@ from pathlib import Path
 
 import numpy as np
 
+from src import broll
+from src import keys
+
 from src import art, composer, lyrics, metadata, state
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -280,22 +283,46 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
         if lrc_entries:
             print(f"  🎤⏱ burning {len(lrc_entries)} synced lyric lines "
                   f"into the video (karaoke!)")
-        if clip:
-            print("  🎞  looping clip to song length…")
-            long_mp4 = video_render.from_clip(clip, dur, OUT / f"ep{ep:03d}.mp4",
-                                              wav=wav, chip=chip,
-                                              lyrics=lrc_entries,
-                                              mascot=mascot, hud=hud)
-        elif scenes:
+        def _stills() -> Path:
+            """The path that shipped EP.001→EP.063. Kept as a closure so both
+            the no-library case and a b-roll failure land here."""
             print("  🎞  Ken Burns slideshow (xfades)…")
-            long_mp4 = video_render.from_images(
+            out = video_render.from_images(
                 [OUT / f"ep{ep:03d}_scene{i}.png" for i in range(len(scenes))],
                 dur, OUT / f"ep{ep:03d}.mp4", wav=wav, chip=chip,
                 lyrics=lrc_entries, mascot=mascot, hud=hud,
                 bpm=bpm_for_cut, chorus_at=chorus_at)
             if chorus_at:
                 print(f"  🥁 chorus lands at {chorus_at:.1f}s "
-                      f"({'beat cuts ON' if os.environ.get('BEATCUT','').strip()=='1' else 'beat cuts OFF — BEATCUT=1 to arm'})")
+                      f"({'beat cuts ON' if video_render._beat_on() else 'beat cuts OFF — BEATCUT=1 to arm'})")
+            return out
+
+        # 🎬 v24: real generated b-roll when the farm has stock for this genre.
+        # `broll.plan` cannot raise and returns [] when anything is missing, so
+        # the default path is exactly the one above; and if ffmpeg itself chokes
+        # on a clip we still ship the stills instead of failing the release.
+        picks = [] if clip else broll.plan((meta or {}).get("genre") or "", dur,
+                                          video_render.beat_plan(dur, bpm_for_cut or 0.0, chorus_at))
+        if clip:
+            print("  🎞  looping clip to song length…")
+            long_mp4 = video_render.from_clip(clip, dur, OUT / f"ep{ep:03d}.mp4",
+                                              wav=wav, chip=chip,
+                                              lyrics=lrc_entries,
+                                              mascot=mascot, hud=hud)
+        elif picks and scenes:
+            print(f"  🎬 b-roll library: {broll.describe(picks)}")
+            try:
+                long_mp4 = video_render.from_clips(
+                    picks, dur, OUT / f"ep{ep:03d}.mp4", wav=wav, chip=chip,
+                    lyrics=lrc_entries, mascot=mascot, hud=hud,
+                    bpm=bpm_for_cut, chorus_at=chorus_at)
+                if chorus_at:
+                    print(f"  🥁 chorus lands at {chorus_at:.1f}s (beat cuts ON, on video)")
+            except Exception as e:                                  # noqa: BLE001
+                print(f"  ⚠️  b-roll render failed — releasing with stills instead: {e}")
+                long_mp4 = _stills()
+        elif scenes:
+            long_mp4 = _stills()
     return long_mp4, clip, scenes
 
 
@@ -732,7 +759,7 @@ def main() -> None:
              "key": info["key"], "bpm": info["bpm"], "name": "(untitled)",
              "lang": ext_lang}
     ai_namer = None
-    if os.environ.get("GEMINI_API_KEY", "").strip():
+    if keys.have("GEMINI_API_KEY"):
         try:
             from src import copy_ai as _c
             ai_namer = _c.song_name
@@ -799,7 +826,7 @@ def main() -> None:
     art_clean = None        # 📦 un-branded art for the streaming pack (may stay None)
     art_mode = args.art_mode
     if art_mode == "auto":
-        art_mode = "gemini" if os.environ.get("GEMINI_API_KEY", "").strip() else "procedural"
+        art_mode = "gemini" if keys.have("GEMINI_API_KEY") else "procedural"
     if art_mode == "gemini":
         try:
             from src import art_gemini

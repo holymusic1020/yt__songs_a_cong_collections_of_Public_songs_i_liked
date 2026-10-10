@@ -1,0 +1,57 @@
+# 🎬 b-roll farm — the ONLY thing that spends GPU hours on pretty pictures.
+#
+# This workflow is deliberately NOT part of publish.yml. It runs at 22:00 UTC
+# (04:00 BDT), 6 h away from the 16:00 BDT release, on its own Kaggle kernel,
+# and its output is only a shelf of mp4s. If it breaks, is slow, is empty or
+# is deleted, the daily release renders exactly what it rendered last week.
+# That is the boss's rule from 2026-10-10: "it must not affect my song even an
+# inch" — so this file shares no lock, no temp dir, no kernel and no code path
+# with the upload lane except `src/broll.py`, which can only ever return [].
+name: 🎬 b-roll farm (offline video library)
+
+on:
+  schedule:
+    - cron: "0 22 * * *"          # 04:00 BDT — never near a release
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: "GPU hours to spend this session (0 = skip)"
+        required: false
+        default: "3"
+
+concurrency:
+  group: broll-farm
+  cancel-in-progress: false        # a half-rendered shelf is still a shelf
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  farm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300            # a 3 h session plus a slow download is fine
+    env:
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      BROLL_FARM: ${{ vars.BROLL_FARM || '1' }}
+      BROLL_HOURS: ${{ github.event.inputs.hours || vars.BROLL_HOURS || '3' }}
+      BROLL_WEEK_HOURS: ${{ vars.BROLL_WEEK_HOURS || '9' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: kaggle cli
+        run: pip install --quiet kaggle || pip install --quiet --break-system-packages kaggle
+      - name: run the farm (always a soft exit — a failed shelf costs nothing)
+        run: python tools/broll_farm.py
+      - name: what is on the shelf
+        if: always()
+        run: |
+          echo "── release assets (broll-lab) ──"
+          gh release view broll-lab --json assets --jq '.assets[] | "\(.name)  \(.size/1e6|floor)MB"' 2>/dev/null || echo "  (no shelf yet — publish will use stills)"

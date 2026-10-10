@@ -27,6 +27,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from src import keys
+
 
 class _LaneSkipped(Exception):
     """Raise inside a lane to skip it without retrying (no key, OFF, empty)."""
@@ -49,7 +51,7 @@ def _lane_suno(genre_key, seconds, out_path, lyrics, lang, lrc_out):
 def _lane_lyria(genre_key, seconds, out_path, lyrics, lang, lrc_out):
     if os.environ.get("LYRA_OFF", "") == "1":
         raise _LaneSkipped("LYRA_OFF=1")
-    if not (os.environ.get("GEMINI_API_KEY", "") or "").strip():
+    if not keys.have("GEMINI_API_KEY"):
         raise _LaneSkipped("no GEMINI_API_KEY")
     from src import music_lyria
     return music_lyria.generate(genre_key, seconds, out_path,
