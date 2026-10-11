@@ -297,6 +297,13 @@ video is cut from real moving b-roll; if it doesn't (or the download is slow, or
   anything, and it refuses to start if its 7-day GPU spend would cross `BROLL_WEEK_HOURS` (default 9 of
   Kaggle's 30) while the vocal lane needs ~2. Full design + the measured timings: `docs/BROLL-FARM.md`.
 * kill it: repo Variable `BROLL=0` (release side) and/or `BROLL_FARM=0` (stop the nightly GPU spend).
+* 🎟 **which account**: `BROLL_ACCOUNT=auto` (default, set) — the spare first; while Kaggle's identity
+  check blocks it, the farm steps over it for a week (`gpu_block.json` on the shelf) and uses the
+  leftovers of your main account instead. `=spare` = "no b-roll rather than one GPU minute of mine",
+  `=main` = stop knocking on the spare. Spare sessions get 18 h/wk (`BROLL_SPARE_WEEK_HOURS`), main 6 h.
+* The spare account `uhn896` is **GPU-blocked** for now: Persona refused his ID ~7 times, and Kaggle
+  gives CPU-only to accounts that haven't cleared that check — which is why the kernel pre-flights
+  `torch.cuda.is_available()` and quits in 40 s instead of burning 3 h on a CPU. Re-probes weekly.
 * 🔋 it spends **½ of what the week leaves** of a 6 h/week allowance on your Kaggle account (`BROLL_SHARE`,
   `BROLL_WEEK_HOURS`) and skips a session under 0.4 h — GitHub's own GPU runners are $0.052/min and
   Team/Enterprise-only, so Kaggle is the only free GPU here and the vocals come first, by arithmetic.
