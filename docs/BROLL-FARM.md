@@ -8,6 +8,43 @@ local model on kaggle or smtg, u should think really hard so it doesnt effect to
 
 This is the whole answer, in that order.
 
+## 0a. "Run it on GitHub, not Kaggle" — the number that closes that door
+
+Asked and answered with the live pricing page, 2026-10-10:
+
+| what GitHub offers | rate | can we use it? |
+|---|---|---|
+| Standard hosted runner (public repo) | **free, unlimited minutes** | ✅ but it is **2 vCPU / 7 GB, no GPU** |
+| GPU larger runner `linux_4_core_gpu` | **$0.052 / min** (~$3.12/h) | ❌ larger runners are **Team/Enterprise only**, and *"the larger runners are not free for public repositories"* |
+
+So GitHub gives us unlimited **CPU** (which is exactly what the render chain already uses — 13 min) and
+zero access to a GPU. A video diffusion model on 2 CPU cores is not slow, it is *not a thing*: 7 GB of
+RAM is under the weight footprint of Wan-1.3B at 81 frames, and the encode budget would be measured in
+hours per clip against a 6 h job cap. Kaggle's free T4 is the only free GPU this project has — so it
+stays, but as a **guest in the song's quota**, which is what §0b is about.
+
+## 0b. The leftovers law (boss: *"you may use Kaggle but not all the time, like half or a little"*)
+
+`tools/broll_farm.py::budget()` — every session, before a single GPU second is spent:
+
+```
+left  = BROLL_WEEK_HOURS − our own 7-day spend        (default 6 h/week on YOUR account)
+hours = min(BROLL_HOURS, left × BROLL_SHARE)          (SHARE = 0.5 → “half of what’s left”)
+if hours < 0.4 h → skip the whole session, exit 0     (not worth waking a kernel)
+```
+
+* the ledger is `quota.json` on the shelf and counts **only the farm's** wall clock — the vocal lane's
+  hours are never charged to b-roll, and never reserved against it either;
+* it is deliberately conservative (counts model-load and failed clips too), so the account always loses
+  *less* than we set aside;
+* the daily release runs at 10:00 UTC, the farm at 22:00 UTC — 6 hours later, never competing;
+* **a second Kaggle account makes all of this moot**: set `BROLL_KAGGLE_USERNAME` +
+  `BROLL_KAGGLE_API_TOKEN` as secrets and the farm speaks as *that* account from `~/.kaggle-broll`
+  (its own config dir, so it cannot push, poll or overwrite the vocal kernel even by accident), gets the
+  full `BROLL_WEEK_HOURS=18`, no haircut, and your main 30 h stays 100 % the song's. Honest caveat:
+  Kaggle's terms are one account per person, so a spare is a grey-area speed-up — worst case the *video*
+  account gets limited, which is why the song lane never reads its credentials.
+
 ## 0. First, the measurement (because the premise was "2-3 days")
 
 A release is **not** 2-3 days. From the Actions API, just now, on the live repo:
@@ -92,7 +129,9 @@ purpose: rotating accounts would silently rotate the GPU quota the song lane dep
 | `BROLL_MAX_MB` | `220` | hard byte cap on that download |
 | `BROLL_FARM` | `1` | farm workflow on/off |
 | `BROLL_HOURS` | `3` | GPU hours per session (kernel self-kills at the line) |
-| `BROLL_WEEK_HOURS` | `9` | rolling 7-day ceiling, so the vocals always win |
+| `BROLL_WEEK_HOURS` | `6` (main) / `18` (spare account) | rolling 7-day ceiling |
+| `BROLL_SHARE` | `0.5` | how much of what's left we may take — his "half or a little" |
+| `BROLL_KAGGLE_USERNAME` / `BROLL_KAGGLE_API_TOKEN` | *unset* | secrets: a spare Kaggle account, so the shelf costs your quota nothing |
 
 Sources: crepal.ai open-source video generators 2026 [1], ltx.io best open-source video models [2],
 videotoprompt model comparison [3], apatero VRAM/speed table [4], videodubber licence/feature matrix [5].

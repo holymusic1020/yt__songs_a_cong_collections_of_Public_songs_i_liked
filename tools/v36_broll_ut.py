@@ -174,6 +174,7 @@ try:
     import importlib.util
     spec = importlib.util.spec_from_file_location("broll_farm", ROOT / "tools" / "broll_farm.py")
     farm = importlib.util.module_from_spec(spec)
+    sys.modules["broll_farm"] = farm          # so importlib.reload() can find it
     spec.loader.exec_module(farm)
     lib = farm.build_prompts()
     lib2 = farm.build_prompts(night=datetime.date.today().timetuple().tm_yday + 1)
@@ -194,11 +195,39 @@ try:
     farm.STAGE = TMP / "stage"
     (farm.STAGE / "quota.json").write_text(json.dumps(
         {"runs": [{"at": "2026-10-10T00:00:00Z", "hours": 9.5, "clips": 3}]}))
-    farm.run = lambda *a, **k: subprocess.run(["true"])
+    farm.run = lambda *a, **k: subprocess.run(["true"])   # no network in a UT
     check("18 the farm refuses to start when the week's budget is gone",
-          farm.quota_left() < 0.5, f"{farm.quota_left():.1f} h spare left")
+          farm.quota_left() < 0.5, f"{farm.quota_left():.1f} h of the allowance left")
     check("19 …and that refusal is exit 0 (a dry shelf is not an alarm)",
           farm.ok("test") == 0)
+    # 19b the LEFTOVERS law (boss: "use kaggle but not all the time, like half
+    # or a little"): on HIS account the farm may take only BROLL_SHARE of what
+    # the week leaves, and the more it used, the less it gets next time.
+    b0, why0 = farm.budget(0.0)
+    b1, _ = farm.budget(4.0)
+    b2, _ = farm.budget(6.0)
+    check("19b leftovers: 0 h used of 6 → half of 6 capped at the 3 h session",
+          b0 == 3.0, f"{b0:.1f} h ({why0[:58]}…)")
+    check("19c leftovers shrink as the week fills: 4 h used → 1 h, 6 h used → 0",
+          abs(b1 - 1.0) < 1e-9 and b2 == 0.0, f"{b1:.1f} h / {b2:.1f} h")
+    check("19d under MIN_HOURS the session is skipped, not squeezed",
+          b2 < farm.MIN_HOURS and farm.SPARE is False,
+          f"min session {farm.MIN_HOURS} h")
+    check("19e the ledger counts OUR spend only (the song's hours are never charged)",
+          abs(farm.quota_used() - 9.5) < 1e-6, f"{farm.quota_used():.1f} h on the shelf ledger")
+    os.environ["BROLL_KAGGLE_USERNAME"] = "spare-account"
+    os.environ["BROLL_KAGGLE_API_TOKEN"] = "spare-token"
+    import importlib
+    importlib.reload(farm)
+    s0, swhy = farm.budget(0.0)
+    check("19f a spare Kaggle account = full allowance, no haircut",
+          farm.SPARE and farm.WEEK_HOURS == 18.0 and s0 == 3.0,
+          f"{s0:.1f} h · {swhy[:64]}…")
+    check("19g …and it authenticates from a private dir, never ~/.kaggle",
+          "kaggle-broll" not in str(Path.home() / ".kaggle")
+          and (Path.home() / ".kaggle-broll").parent.exists())
+    os.environ.pop("BROLL_KAGGLE_USERNAME"); os.environ.pop("BROLL_KAGGLE_API_TOKEN")
+    importlib.reload(farm)
     k = (ROOT / "kaggle_cook" / "broll" / "broll_farm.py").read_text()
     check("20 the kernel self-kills before the clock runs out", "left < 420" in k)
     check("21 the kernel normalises to 1920x1080/24fps once, off the release runner",

@@ -32,7 +32,29 @@ FARM_DIR = ROOT / "kaggle_cook" / "broll"
 PROMPTS_DIR = ROOT / "kaggle_cook" / "broll_prompts"
 STAGE = Path(os.environ.get("BROLL_STAGE", "/tmp/broll-stage"))
 REL_TAG = "broll-lab"
-WEEK_HOURS = float(os.environ.get("BROLL_WEEK_HOURS", "9") or 9)
+
+# 🎟 WHICH Kaggle account renders — the boss's 2026-10-10 concern, in code.
+#
+# "I didn't mean to use video renderer on Kaggle … simply it will drain my
+#  quota. … if we have quota left in my account then you may use Kaggle, but
+#  not all the time, like half or a little. Or do you wanna — should I give you
+#  another new Kaggle acc key?"
+#
+# Answer, both halves:
+#  · GitHub has no GPU for us at all (docs/BROLL-FARM.md §1: the GPU larger
+#    runner is $0.052/min, is Team/Enterprise-only, and larger runners are
+#    explicitly NOT free for public repos), so Kaggle's free T4 is the only free
+#    GPU in this project. It stays — but only on LEFTOVERS.
+#  · If BROLL_KAGGLE_USERNAME + BROLL_KAGGLE_API_TOKEN secrets exist the farm
+#    speaks as the SPARE account and touches your main quota not at all. If they
+#    don't, it spends at most BROLL_SHARE (½) of whatever the week leaves.
+SPARE_USER = os.environ.get("BROLL_KAGGLE_USERNAME", "").strip()
+SPARE_TOKEN = (os.environ.get("BROLL_KAGGLE_API_TOKEN", "").strip()
+               or os.environ.get("BROLL_KAGGLE_KEY", "").strip())
+SPARE = bool(SPARE_USER and SPARE_TOKEN)
+WEEK_HOURS = float(os.environ.get("BROLL_WEEK_HOURS", "6" if not SPARE else "18") or 6)
+SHARE = float(os.environ.get("BROLL_SHARE", "0.5") or 0.5)
+MIN_HOURS = 0.4          # below this a session makes 3-5 clips; not worth a kernel
 POLL_S = int(os.environ.get("BROLL_POLL_S", "60") or 60)
 MAX_WAIT_S = int(os.environ.get("BROLL_MAX_WAIT_S", "14400") or 14400)  # 4 h
 
@@ -86,10 +108,18 @@ def build_prompts(shots_per_genre: int = 4, night: int | None = None) -> dict:
     return lib
 
 
-def quota_left() -> float:
-    """Hours we may still spend this week, from our own ledger."""
+def quota_used() -> float:
+    """Our own b-roll spend over the rolling 7 days, read from the shelf ledger.
+
+    Kaggle's remaining-hours number is not in the public API, so we keep our own
+    books: every session appends its wall-clock hours to `quota.json` on the
+    shelf release. Deliberately conservative — it counts the WHOLE session
+    (model load, failed clips included), so what we reserve is always >= what
+    the account actually lost.
+    """
     used = 0.0
     try:
+        STAGE.mkdir(parents=True, exist_ok=True)
         run(["curl", "-sfL", "-o", str(STAGE / "quota.json"),
              f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', '')}/releases/download/"
              f"{REL_TAG}/quota.json"], timeout=60, check=False)
@@ -98,8 +128,33 @@ def quota_left() -> float:
             if when > datetime.now(timezone.utc) - timedelta(days=7):
                 used += float(row.get("hours", 0) or 0)
     except Exception:
-        pass
-    return WEEK_HOURS - used
+        pass                      # no ledger yet = nothing spent yet
+    return used
+
+
+def quota_left() -> float:
+    """Back-compat + tests: hours of the weekly b-roll allowance still unspent."""
+    return WEEK_HOURS - quota_used()
+
+
+def budget(used_h: float) -> tuple[float, str]:
+    """Hours we may spend tonight, given what the shelf already used this week.
+
+    Main account  -> half of what the b-roll allowance leaves (the vocals drink
+                     from the same 30 h/week pot; the song outranks the
+                     pictures, boss's law).
+    Spare account -> the whole allowance, no haircut: there is nothing to
+                     protect because your main quota is not in play.
+    """
+    left = max(0.0, WEEK_HOURS - used_h)
+    want = float(os.environ.get("BROLL_HOURS", "3") or 3)
+    if SPARE:
+        return min(want, left), (f"spare account {SPARE_USER}: {left:.1f} h of "
+                                 f"{WEEK_HOURS:.0f} h left, your main quota untouched")
+    hours = min(want, left * SHARE)
+    return hours, (f"main account: {left:.1f} h left of the {WEEK_HOURS:.0f} h we allow "
+                   f"b-roll, taking {SHARE:.0%} of it -> {hours:.1f} h "
+                   f"(every other hour this week belongs to the song)")
 
 
 def push_prompts(lib: dict, env: dict) -> None:
@@ -120,20 +175,31 @@ def push_prompts(lib: dict, env: dict) -> None:
 def main() -> int:
     if os.environ.get("BROLL_FARM", "1").strip() == "0":
         return ok("BROLL_FARM=0 — farm parked, shelf untouched")
-    from src import music_kaggle as mk
-    cfg = mk._setup_creds()
-    if cfg is None:
-        return ok("no Kaggle creds in this repo — farm idle (stills keep shipping)")
     env = dict(os.environ)
-    env["KAGGLE_CONFIG_DIR"] = str(cfg)
-    user = os.environ.get("KAGGLE_USERNAME", "").strip()
+    if SPARE:
+        # its own config dir, so this can never push/poll/overwrite the kernel the
+        # VOCAL lane uses even by accident — different account, different dir
+        cfg = Path.home() / ".kaggle-broll"
+        cfg.mkdir(exist_ok=True)
+        (cfg / "access_token").write_text(SPARE_TOKEN)
+        (cfg / "access_token").chmod(0o600)
+        env["KAGGLE_CONFIG_DIR"] = str(cfg)
+        env["KAGGLE_USERNAME"] = SPARE_USER
+        user = SPARE_USER
+        print("  [farm] speaking as the SPARE Kaggle account (main quota untouched)")
+    else:
+        from src import music_kaggle as mk
+        cfg = mk._setup_creds()
+        if cfg is None:
+            return ok("no Kaggle creds in this repo — farm idle (stills keep shipping)")
+        env["KAGGLE_CONFIG_DIR"] = str(cfg)
+        user = os.environ.get("KAGGLE_USERNAME", "").strip()
 
-    left = quota_left()
-    if left < 0.5:
-        return ok(f"weekly Kaggle budget used ({left:.1f} h left of {WEEK_HOURS} h) "
-                  "— the song lane gets every GPU hour this week")
-    hours = min(3.0, max(0.5, left))
-    print(f"  [farm] spending up to {hours:.1f} of {left:.1f} spare GPU hours this run")
+    hours, why = budget(quota_used())
+    print(f"  [farm] {why}")
+    if hours < MIN_HOURS:
+        return ok(f"only {hours:.1f} h of b-roll budget left this week — skipping. "
+                  "The shelf stays as it is and the song is unaffected")
 
     STAGE.mkdir(parents=True, exist_ok=True)
     lib = build_prompts()

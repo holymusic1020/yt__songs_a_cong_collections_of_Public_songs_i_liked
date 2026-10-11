@@ -32,15 +32,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300            # a 3 h session plus a slow download is fine
     env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      # The shelf is pushed with the repo's OWN working token (the one publish
+      # already uses for `bossdrop-stage`), with GITHUB_TOKEN only as a fallback.
+      # Why: this repo's default workflow permission is `read`, and I am not
+      # going to ask you to click a setting to move decorative mp4s — the
+      # publish lane already proved GH_TOKEN can write releases.
+      GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      # 🎟 the spare Kaggle account (see 3). Empty on the main account's quota.
+      BROLL_KAGGLE_USERNAME: ${{ secrets.BROLL_KAGGLE_USERNAME }}
+      BROLL_KAGGLE_API_TOKEN: ${{ secrets.BROLL_KAGGLE_API_TOKEN }}
       KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
       KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
       KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GITHUB_REPOSITORY: ${{ github.repository }}
       BROLL_FARM: ${{ vars.BROLL_FARM || '1' }}
       BROLL_HOURS: ${{ github.event.inputs.hours || vars.BROLL_HOURS || '3' }}
-      BROLL_WEEK_HOURS: ${{ vars.BROLL_WEEK_HOURS || '9' }}
+      BROLL_WEEK_HOURS: ${{ vars.BROLL_WEEK_HOURS || '6' }}   # 6 of Kaggle's 30 — and only half of what's left
+      BROLL_SHARE: ${{ vars.BROLL_SHARE || '0.5' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

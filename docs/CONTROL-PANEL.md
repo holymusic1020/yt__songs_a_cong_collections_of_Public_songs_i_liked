@@ -297,6 +297,12 @@ video is cut from real moving b-roll; if it doesn't (or the download is slow, or
   anything, and it refuses to start if its 7-day GPU spend would cross `BROLL_WEEK_HOURS` (default 9 of
   Kaggle's 30) while the vocal lane needs ~2. Full design + the measured timings: `docs/BROLL-FARM.md`.
 * kill it: repo Variable `BROLL=0` (release side) and/or `BROLL_FARM=0` (stop the nightly GPU spend).
+* 🔋 it spends **½ of what the week leaves** of a 6 h/week allowance on your Kaggle account (`BROLL_SHARE`,
+  `BROLL_WEEK_HOURS`) and skips a session under 0.4 h — GitHub's own GPU runners are $0.052/min and
+  Team/Enterprise-only, so Kaggle is the only free GPU here and the vocals come first, by arithmetic.
+* Want more b-roll without touching your quota? Two secrets — `BROLL_KAGGLE_USERNAME` +
+  `BROLL_KAGGLE_API_TOKEN` — and the farm moves to that account (own `~/.kaggle-broll` config dir, 18 h/wk,
+  no haircut). The song lane never reads those two, so a limit on the spare can't reach a release.
 
 ## 🔑 20. Key pools — every service takes a fallback list
 
