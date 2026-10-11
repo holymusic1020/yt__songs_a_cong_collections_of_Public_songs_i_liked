@@ -42,9 +42,18 @@ def bound_names(fn: ast.AST) -> set[str]:
     names: set[str] = set()
 
     def add_target(t):
-        for n in ast.walk(t):
-            if isinstance(n, ast.Name):
-                names.add(n.id)
+        # A *binding* target is a Name, or a Tuple/List/Starred of those.
+        # `mod.attr = x` and `d[key] = x` walk to a Name too — but they MUTATE
+        # an object, they do not bind the name — and test scripts monkeypatch
+        # (`video_render._run_variants = spy`) all the time. Counting those was
+        # 6 false alarms on this file's first run.
+        if isinstance(t, ast.Name):
+            names.add(t.id)
+        elif isinstance(t, (ast.Tuple, ast.List)):
+            for e in t.elts:
+                add_target(e)
+        elif isinstance(t, ast.Starred):
+            add_target(t.value)
 
     for st in ast.walk(fn):
         if isinstance(st, ast.Assign):
@@ -52,9 +61,7 @@ def bound_names(fn: ast.AST) -> set[str]:
                 add_target(t)
         elif isinstance(st, (ast.AugAssign, ast.AnnAssign)):
             add_target(st.target)
-        elif isinstance(st, ast.For):
-            add_target(st.target)
-        elif isinstance(st, ast.comprehension):
+        elif isinstance(st, (ast.For, ast.comprehension)):
             add_target(st.target)
         elif isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef)) and st is not fn:
             # nested defs bind their own name in the outer function
