@@ -1,5 +1,5 @@
 {
-  "episode": 63,
+  "episode": 64,
   "history": [
     {
       "episode": 1,
@@ -819,6 +819,19 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-09T18:29:09Z",
       "at": "2026-10-09T17:07:41+00:00"
+    },
+    {
+      "episode": 64,
+      "kind": "full",
+      "youtube_id": "2t2F4N6rEYI",
+      "video_id": "2t2F4N6rEYI",
+      "short_id": "qRsFOW8nQgo",
+      "title": "wet copper sill — Nix Speech (official audio)",
+      "name": "wet copper sill",
+      "genre": "god_in_the_bass",
+      "publish_at": "2026-10-11T13:27:44Z",
+      "short_publish_at": "2026-10-11T13:08:38Z",
+      "at": "2026-10-11T09:46:08+00:00"
     }
   ],
   "receipts": [
@@ -1089,12 +1102,24 @@
     {
       "date": "2026-10-11",
       "episode": 64,
-      "mode": "dry_run",
+      "mode": "publish",
       "kind": "full",
       "genre": "god_in_the_bass",
-      "track": "cold halogen stairwell",
+      "track": "wet copper sill",
       "multipost_dial": "fb,tt,ig",
       "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122117699451453777",
+        "fb_video": "published",
+        "fb_video_id": "1431924732410441",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7695343832510285876",
+        "ig": "published (reel)",
+        "ig_media_id": "17942393307359646",
+        "ig_user": "nixspeech",
+        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+        "ig_photo": "published",
+        "ig_photo_id": "17888819004630031",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
