@@ -220,6 +220,60 @@ jobs:
           echo "RUN_ARGS=${RUN_ARGS} (event=${{ github.event_name }})"
           python -m src.main $RUN_ARGS 2>&1 | tee out/run.log
 
+      # 🔓 BOSS LAW (2026-10-11, after the release my `keys` rename ate): "do a dry run;
+      # if the dry run succeeds then just flip the switch to public." So a night that was
+      # DEMOTED to dry-run by PUBLISH_OFF=1 flips its own Variable back to 0 — but only once
+      # out/latest.json proves an actual rendered mp4 exists. A night that half-fails stays
+      # parked, because half a proof must never push a broken video onto the channel.
+      # The whole step is a decoration: `continue-on-error`, and the script ends in `exit 0`.
+      - name: 🔓 Dry run proved itself → flip to public
+        if: success()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}   # PAT when present (Variables API needs admin scope)
+          PUBLISH_OFF: ${{ vars.PUBLISH_OFF }}
+          REPO: ${{ github.repository }}
+        run: |
+          set +e                                    # a decoration step: never marks the run red
+          [ "${PUBLISH_OFF:-0}" = "1" ] || { echo "🔓 PUBLISH_OFF=0 — already public, nothing to flip"; exit 0; }
+          [ -n "${GH_TOKEN:-}" ] || { echo "🔓 no GH_TOKEN — cannot flip; flip it by hand (repo Variable PUBLISH_OFF=0)"; exit 0; }
+          V=$(python3 - <<'PY'
+          import json, os, pathlib
+          p = pathlib.Path("out/latest.json")
+          if not p.exists():
+              print("no"); raise SystemExit
+          try:
+              m = json.loads(p.read_text(encoding="utf-8"))
+          except Exception:
+              print("no"); raise SystemExit
+          big = []
+          for f in m.get("files", []):
+              try:
+                  if os.path.getsize(f) >= 3_000_000 and str(f).endswith(".mp4"):
+                      big.append(str(f))
+              except OSError:
+                  pass
+          print("yes" if (m.get("video_today") and big and m.get("episode")) else "no")
+          PY
+          )
+          if [ "$V" != "yes" ]; then
+            echo "🔓 dry run did NOT prove itself (no rendered episode in out/latest.json) — PUBLISH_OFF stays 1"
+            echo "🔓 Dry run incomplete → **staying parked** (PUBLISH_OFF stays 1; nothing goes public until a night that renders a real mp4)." >> "$GITHUB_STEP_SUMMARY" 2>/dev/null
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/flip.out -w '%{http_code}' -X PATCH \
+            -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${REPO}/actions/variables/PUBLISH_OFF" \
+            -d '{"value":"0"}')
+          if [ "$code" = "204" ] || [ "$code" = "200" ]; then
+            echo "🔓 dry run GREEN — PUBLISH_OFF flipped 1 → 0 (next cron is a real release)"
+            echo "🔓 **Dry run succeeded → flipped to public.** PUBLISH_OFF 1 → 0; the next cron (10:00 UTC / 16:00 BDT) uploads for real. No card, no cost — this is the free engine." >> "$GITHUB_STEP_SUMMARY" 2>/dev/null
+          else
+            echo "🔓 could not flip the Variable (HTTP $code: $(head -c 200 /tmp/flip.out 2>/dev/null)) — flip it by hand: repo Variable PUBLISH_OFF=0"
+            echo "🔓 Dry run succeeded but the auto-flip failed (HTTP $code) — set repo Variable \`PUBLISH_OFF=0\` by hand for a public release." >> "$GITHUB_STEP_SUMMARY" 2>/dev/null
+          fi
+          exit 0
+
       - name: 📋 Release summary
         if: always()
         run: cat out/summary.md >> "$GITHUB_STEP_SUMMARY" || true

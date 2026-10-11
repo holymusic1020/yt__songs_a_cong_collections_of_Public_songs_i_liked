@@ -321,3 +321,27 @@ video is cut from real moving b-roll; if it doesn't (or the download is slow, or
 art, copy, scenes, Lyria; `SUNO_API_KEY(_2…)` for the studio lane. `src/keys.py::pool()` dedupes and
 keeps order; `lane_audit` prints how many keys exist, never which. A dead key is now a rename, not a
 bug hunt. (Kaggle creds stay single-account deliberately — the weekly GPU quota is per account.)
+
+## §20 · 🔓 The dry-run → public protocol (boss law, 2026-10-11)
+
+**His rule:** "I'm not spending a cent. Do a dry run; if the dry run succeeds, just flip the
+switch to public." So the switch is now self-driving:
+
+| knob | value | meaning |
+|---|---|---|
+| repo Variable `PUBLISH_OFF` | `1` | every cron run is demoted to `--dry-run`: song cooked, video rendered, **nothing uploaded**, state untouched, Telegram preview only |
+| same | `0` | normal real release |
+| step **🔓 Dry run proved itself → flip to public** | — | runs after Compose+render, and flips `PUBLISH_OFF` back to `0` **only if** `out/latest.json` proves a real ≥3 MB `.mp4` was rendered for tonight's episode |
+
+* The proof is the artifact manifest, never the log text — a night that printed nice words and
+  rendered nothing keeps the switch parked.
+* `if: success()` + `continue-on-error: true` + the script ends in `exit 0`: this step can
+  **never** turn a red night redder or a green night red. If the Variable API rejects it, the run
+  summary says "flip it by hand" and nothing else changes.
+* Needs `secrets.GH_TOKEN` (repo default workflow permissions are `read`, so `GITHUB_TOKEN`
+  alone cannot PATCH Variables — the fallback prints the manual line).
+* `tools/v38_flip_ut.py` (in the sweep) executes the **shipped YAML text** against fake nights:
+  green → flips; no mp4 / 1 MB mp4 / half-written manifest → refuses; `PUBLISH_OFF=0` → inert.
+* Money: nothing here ever asks for a card. `DSP_PACK=0` stays, the 0-credit Suno/Apiframe keys
+  are tried and skipped in favour of the free Kaggle ACE lane, and the render is ffmpeg on a
+  GitHub runner. Free forever is the design, not the fallback.
