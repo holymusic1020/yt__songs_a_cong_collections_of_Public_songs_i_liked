@@ -238,6 +238,44 @@ try:
     meta = json.loads((ROOT / "kaggle_cook" / "broll" / "kernel-metadata.json").read_text())
     check("23 the farm kernel is private, GPU-on, internet-on",
           meta["is_private"] and meta["enable_gpu"] and meta["enable_internet"])
+    # ── 29-36 · the parts that only show up when you actually run the driver
+    drv = (ROOT / "tools" / "broll_farm.py").read_text()
+    check("29 the driver cannot end in a traceback (it renders decorations)",
+          "def guarded() -> int:" in drv and "sys.exit(guarded())" in drv)
+    check("30 a rejected kernel push is a shrug, not a red ❌",
+          'run(["kaggle", "kernels", "push", "-p", str(kern)], timeout=240, env=env,\n            check=False)' in drv.replace("  ", "  "))
+    check("31 🐛 the poll loop matches Kaggle's actual word (COMPLETE, not 'completed')",
+          '"complete" in low' in drv and '"completed" in out.lower()' not in drv,
+          "this bug would have polled to MAX_WAIT_S every night, forever")
+    kn = (ROOT / "kaggle_cook" / "broll" / "kernel-metadata.json").read_text()
+    check("32 kernel id and title slugify to the same thing (409 otherwise)",
+          json.loads(kn)["id"].split("/")[1] == "nix-speech-broll-farm"
+          and "nix-speech-broll-farm" in json.loads(kn)["title"].lower().replace(" ", "-"),
+          f"id={json.loads(kn)['id']} title={json.loads(kn)['title']!r}")
+    # 33 the prompt transport, for real: stage a kernel and decode what landed
+    farm.STAGE = TMP / "stage2"
+    (TMP / "stage2").mkdir(exist_ok=True)
+    lib33 = {"deep_pop": ["a window, rain", "a street, neon"], "phonk_mafia": ["a garage"]}
+    k33 = farm.stage_kernel(lib33)
+    src33 = (k33 / "broll_farm.py").read_text()
+    import base64 as _b64
+    line = [l for l in src33.splitlines() if l.startswith("PROMPTS_B64 = ")][0]
+    back = json.loads(_b64.b64decode(line.split('"')[1]).decode())
+    check("33 prompts ride into the kernel as base64 and come back identical",
+          back == lib33, f"{len(line)} chars pasted, {len(back)} genres recovered")
+    check("33b the tracked kernel still has the empty anchor (no payload committed)",
+          'PROMPTS_B64 = ""' in (ROOT / "kaggle_cook" / "broll" / "broll_farm.py").read_text())
+    check("34 the farm rests a week after 3 no-GPU sessions instead of nagging",
+          'NO_GPU_LIMIT = 3' in drv and "def blocked() -> str:" in drv,
+          "found by hand: a fresh Kaggle account gets CPU until phone verification")
+    check("35 the GPU pre-flight writes an honest empty manifest and leaves",
+          "def gpu_or_bail()" in (ROOT / "kaggle_cook" / "broll" / "broll_farm.py").read_text()
+          and '"skipped": "no GPU on this Kaggle account"' in (ROOT / "kaggle_cook" / "broll" / "broll_farm.py").read_text())
+    check("36 🚫 no Kaggle dataset API anywhere (a young account gets 403 on it)",
+          "datasets version" not in drv and "dataset-metadata" not in drv
+          and "PROMPTS_DIR" not in drv
+          and "'dataset_sources': []" in drv.replace('"', "'"),
+          "prompts travel inside the kernel, nothing touches the dataset API")
     wf = (ROOT / ".github" / "workflows" / "broll-farm.yml").read_text()
     check("24 farm runs at 22:00 UTC — 6 h from the 10:00 UTC release",
           'cron: "0 22 * * *"' in wf)

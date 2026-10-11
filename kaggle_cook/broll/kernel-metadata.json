@@ -1,6 +1,6 @@
 {
   "id": "nixspeech/nix-speech-broll-farm",
-  "title": "Nix Speech B-roll Farm",
+  "title": "Nix Speech Broll Farm",
   "code_file": "broll_farm.py",
   "language": "python",
   "kernel_type": "script",

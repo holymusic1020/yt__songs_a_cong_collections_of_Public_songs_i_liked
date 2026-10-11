@@ -29,7 +29,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 FARM_DIR = ROOT / "kaggle_cook" / "broll"
-PROMPTS_DIR = ROOT / "kaggle_cook" / "broll_prompts"
 STAGE = Path(os.environ.get("BROLL_STAGE", "/tmp/broll-stage"))
 REL_TAG = "broll-lab"
 
@@ -51,11 +50,16 @@ REL_TAG = "broll-lab"
 SPARE_USER = os.environ.get("BROLL_KAGGLE_USERNAME", "").strip()
 SPARE_TOKEN = (os.environ.get("BROLL_KAGGLE_API_TOKEN", "").strip()
                or os.environ.get("BROLL_KAGGLE_KEY", "").strip())
-SPARE = bool(SPARE_USER and SPARE_TOKEN)
+SPARE = bool(SPARE_TOKEN)      # the username is optional — see KERNEL_ID
+# `me/<slug>` is accepted by the Kaggle CLI for push/status/output (verified on
+# the spare account 2026-10-10), so a second account needs only its token:
+# nothing to remember, nothing to typo. The real slug is read back out of the
+# push response for logging and polls.
+KERNEL_ID = f"{SPARE_USER or 'me'}/nix-speech-broll-farm"
 WEEK_HOURS = float(os.environ.get("BROLL_WEEK_HOURS", "6" if not SPARE else "18") or 6)
 SHARE = float(os.environ.get("BROLL_SHARE", "0.5") or 0.5)
 MIN_HOURS = 0.4          # below this a session makes 3-5 clips; not worth a kernel
-POLL_S = int(os.environ.get("BROLL_POLL_S", "60") or 60)
+POLL_S = int(os.environ.get("BROLL_POLL_S", "45") or 45)
 MAX_WAIT_S = int(os.environ.get("BROLL_MAX_WAIT_S", "14400") or 14400)  # 4 h
 
 
@@ -108,6 +112,35 @@ def build_prompts(shots_per_genre: int = 4, night: int | None = None) -> dict:
     return lib
 
 
+NO_GPU_LIMIT = 3           # consecutive "no GPU" sessions, then rest until next week
+
+
+def blocked() -> str:
+    """Why we should not wake a session tonight, from the shelf ledger.
+
+    The spare account answered "no GPU on this Kaggle account" three nights in a
+    row (2026-10-11: the account exists, the kernel runs, but a fresh Kaggle
+    account gets CPU until the owner verifies a phone number). Re-pushing a
+    kernel nightly to be told the same thing is 40 s of noise on 7 nights; one
+    week of rest instead, and it retries by itself.
+    """
+    try:
+        runs = json.loads((STAGE / "quota.json").read_text()).get("runs", [])
+    except Exception:
+        return ""
+    streak = 0
+    for row in reversed(runs):
+        if row.get("no_gpu"):
+            streak += 1
+        else:
+            break
+    if streak >= NO_GPU_LIMIT:
+        return (f"{streak} sessions in a row had no GPU on this account — resting a "
+                f"week. Fix: Kaggle → Settings → Phone Verification, then accept the "
+                f"rules; the farm resumes by itself")
+    return ""
+
+
 def quota_used() -> float:
     """Our own b-roll spend over the rolling 7 days, read from the shelf ledger.
 
@@ -157,19 +190,32 @@ def budget(used_h: float) -> tuple[float, str]:
                    f"(every other hour this week belongs to the song)")
 
 
-def push_prompts(lib: dict, env: dict) -> None:
-    PROMPTS_DIR.mkdir(parents=True, exist_ok=True)
-    (PROMPTS_DIR / "broll_prompts.json").write_text(
-        json.dumps(lib, indent=1), encoding="utf-8")
-    (PROMPTS_DIR / "dataset-metadata.json").write_text(json.dumps({
-        "title": "Nix Speech b-roll prompts",
-        "id": f"{os.environ['KAGGLE_USERNAME'].strip()}/broll-prompts",
-        "resources": [{"path": "broll_prompts.json",
-                       "description": "shot prompts per genre", "mediaType": "json"}],
-    }, indent=2), encoding="utf-8")
-    run(["kaggle", "datasets", "version", "-p", str(PROMPTS_DIR),
-         "-q", "-m", f"prompts {time.strftime('%Y-%m-%d %H:%M UTC')}"],
-        timeout=240, env=env, check=False)
+def stage_kernel(lib: dict) -> Path:
+    """A copy of the farm kernel in /tmp with tonight's prompts pasted in.
+
+    Base64 because the payload must survive being dropped into a string
+    literal, and prompts contain every kind of quote a writer can produce.
+    The tracked file stays clean; only the copy changes.
+    """
+    import base64
+    dst = STAGE / 'kern'
+    dst.mkdir(parents=True, exist_ok=True)
+    src = (FARM_DIR / 'broll_farm.py').read_text(encoding='utf-8')
+    blob = base64.b64encode(json.dumps(lib).encode('utf-8')).decode('ascii')
+    assert 'PROMPTS_B64 = ""' in src, 'kernel lost its injection anchor'
+    src = src.replace('PROMPTS_B64 = ""', f'PROMPTS_B64 = "{blob}"', 1)
+    (dst / 'broll_farm.py').write_text(src, encoding='utf-8')
+    meta = json.loads((FARM_DIR / 'kernel-metadata.json').read_text())
+    meta.update({'id': KERNEL_ID, 'dataset_sources': [], 'kernel_sources': [],
+                 'competition_sources': [], 'model_sources': []})
+    # Kaggle derives the kernel slug from the TITLE; a title that doesn't match
+    # the id's slug earns a warning and surprising behaviour, so pin it here.
+    meta['title'] = 'Nix Speech Broll Farm'   # must slugify to the id's slug
+    meta['code_file'] = 'broll_farm.py'
+    meta['kernel_type'] = 'script'
+    meta['is_private'] = True
+    (dst / 'kernel-metadata.json').write_text(json.dumps(meta, indent=2))
+    return dst
 
 
 def main() -> int:
@@ -177,15 +223,20 @@ def main() -> int:
         return ok("BROLL_FARM=0 — farm parked, shelf untouched")
     env = dict(os.environ)
     if SPARE:
-        # its own config dir, so this can never push/poll/overwrite the kernel the
-        # VOCAL lane uses even by accident — different account, different dir
+        # Its own config dir AND its token in the environment. Both, because the
+        # CLI shipped today (2.2.4) reads KAGGLE_API_TOKEN from the env and does
+        # NOT accept a bare KAGGLE_CONFIG_DIR/access_token file — proved against
+        # this account on 2026-10-10. Separate dir = it cannot push, poll or
+        # overwrite the kernel the vocal lane uses, even by accident.
         cfg = Path.home() / ".kaggle-broll"
         cfg.mkdir(exist_ok=True)
         (cfg / "access_token").write_text(SPARE_TOKEN)
         (cfg / "access_token").chmod(0o600)
         env["KAGGLE_CONFIG_DIR"] = str(cfg)
-        env["KAGGLE_USERNAME"] = SPARE_USER
-        user = SPARE_USER
+        env["KAGGLE_API_TOKEN"] = SPARE_TOKEN
+        env.pop("KAGGLE_KEY", None)
+        env["KAGGLE_USERNAME"] = SPARE_USER or "me"
+        user = SPARE_USER or "me"
         print("  [farm] speaking as the SPARE Kaggle account (main quota untouched)")
     else:
         from src import music_kaggle as mk
@@ -195,6 +246,9 @@ def main() -> int:
         env["KAGGLE_CONFIG_DIR"] = str(cfg)
         user = os.environ.get("KAGGLE_USERNAME", "").strip()
 
+    why_blocked = blocked()
+    if why_blocked:
+        return ok(why_blocked)
     hours, why = budget(quota_used())
     print(f"  [farm] {why}")
     if hours < MIN_HOURS:
@@ -205,20 +259,38 @@ def main() -> int:
     lib = build_prompts()
     print(f"  [farm] prompts for {len(lib)} genres "
           f"({sum(len(v) for v in lib.values())} shots queued)")
-    push_prompts(lib, env)
 
-    meta = json.loads((FARM_DIR / "kernel-metadata.json").read_text())
-    meta["id"] = f"{user}/nix-speech-broll-farm"
-    meta["dataset_sources"] = [f"{user}/broll-prompts"]
+    kern = stage_kernel(lib)
+    meta = json.loads((kern / "kernel-metadata.json").read_text())
     meta["env_vars"] = [{"description": "hours", "name": "BROLL_HOURS", "value": f"{hours:.2f}"},
                         {"description": "shots", "name": "BROLL_SHOTS", "value": "8"},
                         {"description": "hf", "name": "HF_TOKEN",
                          "value": os.environ.get("HF_TOKEN", "")}]
-    (FARM_DIR / "kernel-metadata.json").write_text(json.dumps(meta, indent=2))
-    r = run(["kaggle", "kernels", "push", "-p", str(FARM_DIR)], timeout=240, env=env)
+    (kern / "kernel-metadata.json").write_text(json.dumps(meta, indent=2))
+    # check=False: a rejected push (title/id slug mismatch, a Kaggle 409, an
+    # account that has not accepted the rules) must be a one-line shrug here, not
+    # a traceback — a traceback is a red ❌ on a feature that cannot hurt a
+    # release, and red marks on decorative things are how real alarms get ignored.
+    r = run(["kaggle", "kernels", "push", "-p", str(kern)], timeout=240, env=env,
+            check=False)
     if r.returncode != 0:
         return ok(f"kernel push failed ({(r.stdout + r.stderr)[:120]})")
-    kid = meta["id"]
+    kid = KERNEL_ID
+    if user in ("", "me"):
+        # ⚠ `me/<slug>` is accepted by kernels PUSH but NOT by kernels STATUS or
+        # OUTPUT (proved on the spare account 2026-10-10: push returns the real
+        # URL, then status answers "not found / private"). So the owner slug is
+        # read back out of that URL and used for every later call — otherwise the
+        # poll loop would never resolve and the job would sit out its 4 h wait
+        # for a session that had already finished in 40 seconds.
+        m = __import__("re").search(r"/code/([A-Za-z0-9_.-]+)/",
+                                    (r.stdout or "") + (r.stderr or ""))
+        if not m:
+            return ok("pushed, but Kaggle would not tell us whose account it "
+                      "landed on — set BROLL_KAGGLE_USERNAME and retry")
+        user = m.group(1)
+        kid = f"{user}/{KERNEL_ID.split('/', 1)[1]}"
+        print(f"  [farm] account: {user} → polling {kid}")
 
     t0 = time.monotonic()
     done = False
@@ -226,11 +298,17 @@ def main() -> int:
         time.sleep(POLL_S)
         s = run(["kaggle", "kernels", "status", kid], timeout=90, env=env, check=False)
         out = (s.stdout or "") + (s.stderr or "")
-        if "completed" in out.lower():
+        # ⚠ Kaggle's own words are "KernelWorkerStatus.COMPLETE" — not
+        # "completed". A "completed" test never matches, so every night would
+        # poll to MAX_WAIT_S and then give up on a session that had finished in
+        # 40 seconds. Found by running this against the spare account
+        # (2026-10-10), where the poll loop visibly would not stop.
+        low = out.lower()
+        if "complete" in low or "finished" in low:
             done = True
             break
-        if "failed" in out.lower() or "error" in out.lower():
-            return ok(f"farm session died: {out[:140]}")
+        if "failed" in low or "stopped" in low:
+            return ok(f"farm session ended badly: {out[:140]}")
     if not done:
         return ok(f"farm still running after {MAX_WAIT_S/3600:.1f} h — leaving it, "
                   "shelf unchanged, nothing was waited on")
@@ -246,7 +324,24 @@ def main() -> int:
     clips = [c for c in data.get("clips", []) if Path(str(c.get("file", ""))).exists()
              or (out_dir / str(c.get("file", ""))).exists()]
     if not clips:
-        return ok("farm session produced no clips (usually: out of time) — shelf unchanged")
+        why = str(data.get("skipped") or data.get("hint") or "out of time")
+        # remember WHY, so `blocked()` can rest instead of nagging
+        led = {"runs": []}
+        lp = STAGE / "quota.json"
+        if lp.exists():
+            try:
+                led = json.loads(lp.read_text())
+            except Exception:
+                pass
+        led["runs"] = (led.get("runs") or [])[-40:] + [{
+            "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "hours": 0.0, "clips": 0, "no_gpu": "gpu" in why.lower()}]
+        lp.write_text(json.dumps(led, indent=1))
+        repo = os.environ.get("GITHUB_REPOSITORY", "")
+        if repo and os.environ.get("GH_TOKEN"):
+            run(["gh", "release", "upload", "--cfile", REL_TAG, str(lp)],
+                timeout=300, env=env, check=False)
+        return ok(f"farm session produced no clips ({why}) — shelf unchanged")
 
     # one tarball per genre so a release downloads only its own genre's stock
     by_genre: dict[str, list[dict]] = {}
@@ -293,5 +388,13 @@ def main() -> int:
               f"{hours_used:.1f} GPU hours spent")
 
 
+def guarded() -> int:
+    """Nothing this file does may end in a traceback. It renders decorations."""
+    try:
+        return main()
+    except Exception as e:                                  # noqa: BLE001
+        return ok(f"aborted by {type(e).__name__}: {str(e)[:160]} — shelf unchanged")
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(guarded())

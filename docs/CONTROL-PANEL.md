@@ -300,8 +300,12 @@ video is cut from real moving b-roll; if it doesn't (or the download is slow, or
 * 🔋 it spends **½ of what the week leaves** of a 6 h/week allowance on your Kaggle account (`BROLL_SHARE`,
   `BROLL_WEEK_HOURS`) and skips a session under 0.4 h — GitHub's own GPU runners are $0.052/min and
   Team/Enterprise-only, so Kaggle is the only free GPU here and the vocals come first, by arithmetic.
-* Want more b-roll without touching your quota? Two secrets — `BROLL_KAGGLE_USERNAME` +
-  `BROLL_KAGGLE_API_TOKEN` — and the farm moves to that account (own `~/.kaggle-broll` config dir, 18 h/wk,
+* ✅ **done 2026-10-11**: the spare account is wired — secrets `BROLL_KAGGLE_USERNAME=uhn896` +
+  `BROLL_KAGGLE_API_TOKEN` are set, so the farm runs there and your main 30 h/week is untouched. One
+  gate is his: a fresh Kaggle account gets **CPU only** until a phone number is verified on it
+  (Settings → Phone Verification). The kernel now checks and bails in 40 s with an honest manifest
+  instead of rendering junk for 3 h, and rests a week after three such sessions.
+* Want more b-roll than the leftovers? That spare account is exactly it (own `~/.kaggle-broll` config dir, 18 h/wk,
   no haircut). The song lane never reads those two, so a limit on the spare can't reach a release.
 
 ## 🔑 20. Key pools — every service takes a fallback list

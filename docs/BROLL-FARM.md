@@ -135,3 +135,41 @@ purpose: rotating accounts would silently rotate the GPU quota the song lane dep
 
 Sources: crepal.ai open-source video generators 2026 [1], ltx.io best open-source video models [2],
 videotoprompt model comparison [3], apatero VRAM/speed table [4], videodubber licence/feature matrix [5].
+
+## 6. What running it for real found (2026-10-11, against the spare account)
+
+He sent a second Kaggle key, so I wired it and then **actually executed the driver** here instead of
+shipping reviewed-only code. Three bugs died in that run, none of which reading the file would have
+shown:
+
+| what I found | why it mattered | the fix |
+|---|---|---|
+| `me/<slug>` is accepted by `kernels push` but **not** by `kernels status`/`output` | the poll would never resolve → 4 h of waiting per night, forever | read the owner slug out of the push response URL and poll `uhn896/nix-speech-broll-farm` |
+| Kaggle's status word is **`KernelWorkerStatus.COMPLETE`**, my test looked for `"completed"` | every session would poll to `MAX_WAIT_S` and then discard a finished shelf | match `"complete"`/`"finished"`, and `"failed"`/`"stopped"` |
+| `kernels push` **409s** when the title doesn't slugify to the id (`Nix Speech B-roll Farm` → `nix-speech-b-roll-farm`) | the very first push of the real farm, rejected | title pinned to `Nix Speech Broll Farm`, in the tracked metadata *and* at stage time; UT-36 #32 asserts they agree |
+| the dataset API 403s on a young account (`Key licenses not found in data`) | the prompts-dataset design was DOA on the spare account | **no dataset at all**: prompts ride inside the kernel as base64 (UT-36 #33 round-trips it) |
+| a push error raised a traceback out of `main()` | a red ❌ on a decorative feature trains us to ignore red ❌s | `check=False` on the push, and the whole driver wrapped in `guarded()` → always `exit 0` with one line |
+
+And the honest headline from the live session: the kernel **ran, bailed in 40 seconds and wrote**
+
+```json
+{ "clips": [], "skipped": "no GPU on this Kaggle account",
+  "hint": "Kaggle -> Settings -> Phone Verification, then accept the competition rules; the next session gets the T4",
+  "torch": "2.11.0+cpu" }
+```
+
+A brand-new Kaggle account gets CPU despite `enable_gpu: true`. The pre-flight is exactly what makes
+that a 40-second discovery instead of a 3-hour waste, and `blocked()` now rests a week after three such
+sessions (it retries itself once the account is verified). Nothing was uploaded, nothing was blocked,
+the daily release never noticed.
+
+### Repo state, as set by me with his token (no clicking needed)
+
+* **Secrets** `BROLL_KAGGLE_USERNAME=uhn896`, `BROLL_KAGGLE_API_TOKEN` → the farm speaks as the spare;
+  the vocal lane's `~/.kaggle` is never used or overwritten. **Your main 30 h/week stays the song's.**
+* **Variables** `BROLL=1`, `BROLL_FARM=1`, `BROLL_HOURS=3`, `BROLL_WEEK_HOURS=6`, `BROLL_SHARE=0.5`.
+* Deleted `LANE_RETRIES=1` — I had created that variable and `publish.yml` never read it, so it was a
+  lie in the UI. Behaviour unchanged (code default 2 retries).
+* The one thing only he can do: **verify a phone number on `uhn896`** (Kaggle → Settings → Phone
+  Verification, then accept the rules when prompted). Until then the shelf stays empty and every video
+  uses the Ken Burns look — which is the look that shipped 63 episodes, not a downgrade.

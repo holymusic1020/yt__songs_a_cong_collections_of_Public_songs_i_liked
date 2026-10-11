@@ -39,20 +39,51 @@ def log(msg):
     print(f"[broll-farm] {msg}", flush=True)
 
 
-def prompts():
-    """genre -> list of shot descriptions, from the repo's own scene banks.
+# The driver pastes tonight's prompt list in here as base64 before pushing the
+# kernel. Deliberately NOT a Kaggle dataset: a young account cannot use the
+# dataset API at all (403 / "Key licenses not found in data") until the profile
+# is in good standing, and 6 KB of text is not worth an account gate. The
+# input-dataset path is still tried first, in case anyone wires one later.
+PROMPTS_B64 = ""
 
-    `broll_prompts.json` is committed by GitHub (tools/broll_farm.py writes it
-    from video_gemini.SCENES, so a shot always matches what that genre's video
-    is about). If it is missing, the kernel exits quietly and the shelf simply
-    does not grow — the release is unaffected either way.
-    """
+
+def prompts():
+    """genre -> shot descriptions, injected by the driver."""
     for cand in ("/kaggle/input/broll-prompts/broll_prompts.json",
                  "/kaggle/working/broll_prompts.json"):
         p = Path(cand)
         if p.exists():
             return json.loads(p.read_text())
+    if PROMPTS_B64.strip():
+        import base64
+        return json.loads(base64.b64decode(PROMPTS_B64).decode("utf-8"))
     return {}
+
+
+def gpu_or_bail():
+    """The pre-flight that protects the account.
+
+    A Kaggle account that is not in good standing yet runs GPU-requested
+    kernels on CPU with no warning in the status — verified on the spare
+    account 2026-10-10 (torch 2.11.0+cpu, no nvidia-smi). Diffusion on 2 CPU
+    cores is not slow, it is meaningless, so we look first, write an honest
+    empty manifest and leave in 20 seconds instead of burning a 3 h session
+    that would produce junk. Returns a device name, or "" to stop.
+    """
+    import torch
+    if torch.cuda.is_available():
+        return torch.cuda.get_device_name(0)
+    MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+    MANIFEST.write_text(json.dumps({
+        "clips": [],
+        "skipped": "no GPU on this Kaggle account",
+        "hint": "Kaggle -> Settings -> Phone Verification, then accept the "
+                "competition rules; the next session gets the T4",
+        "torch": torch.__version__,
+        "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}, indent=1))
+    log("no CUDA visible — refusing to render on CPU. Verify the phone number "
+        "in Kaggle settings for this account, then re-run.")
+    return ""
 
 
 def main():
@@ -64,6 +95,10 @@ def main():
         MANIFEST.write_text(json.dumps({"clips": [], "skipped": "no prompts"}))
         return
     OUT.mkdir(parents=True, exist_ok=True)
+    device = gpu_or_bail()
+    if not device:
+        return
+    log(f"gpu: {device}")
     import torch                                  # noqa: E402
     from diffusers import AutoencoderKLWan, WanPipeline   # noqa: E402
     from diffusers.schedulers.scheduling_unipc_multistep import (
