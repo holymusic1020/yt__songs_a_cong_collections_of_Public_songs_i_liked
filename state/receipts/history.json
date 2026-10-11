@@ -688,5 +688,24 @@
       "ig_photo_id": "17948568459339606",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-10-11",
+    "episode": 64,
+    "mode": "dry_run",
+    "kind": "full",
+    "genre": "god_in_the_bass",
+    "track": "cold halogen stairwell",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 729.4,
+    "youtube": {
+      "video_id": null,
+      "short_id": null,
+      "watch": null,
+      "short": null
+    },
+    "lanes": {
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]
