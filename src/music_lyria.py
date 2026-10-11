@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import os
 
-from src import keys
+from src import keys as keypool   # never `keys`: main() has a local named keys (a list of weights) — shadowing it was the UnboundLocalError that killed the 2026-10-10 release
 from pathlib import Path
 
 MODEL = "lyria-3-pro-preview"        # full songs, vocals, returns lyrics
@@ -37,7 +37,7 @@ def generate(genre_key: str, seconds: float, out_path: Path,
              lrc_out: Path | None = None,
              model: str = MODEL) -> Path | None:
     """Cook one song on Google Lyria. None = 'next provider, please'."""
-    key = keys.pick("GEMINI_API_KEY")
+    key = keypool.pick("GEMINI_API_KEY")
     if not key:
         print("  ⚠ lyria: GEMINI_API_KEY not set — skipping lane")
         return None

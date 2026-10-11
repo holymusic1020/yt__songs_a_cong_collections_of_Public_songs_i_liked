@@ -26,7 +26,7 @@ from pathlib import Path
 import numpy as np
 
 from src import broll
-from src import keys
+from src import keys as keypool   # never `keys`: main() has a local named keys (a list of weights) — shadowing it was the UnboundLocalError that killed the 2026-10-10 release
 
 from src import art, composer, lyrics, metadata, state
 
@@ -759,7 +759,7 @@ def main() -> None:
              "key": info["key"], "bpm": info["bpm"], "name": "(untitled)",
              "lang": ext_lang}
     ai_namer = None
-    if keys.have("GEMINI_API_KEY"):
+    if keypool.have("GEMINI_API_KEY"):
         try:
             from src import copy_ai as _c
             ai_namer = _c.song_name
@@ -826,7 +826,7 @@ def main() -> None:
     art_clean = None        # 📦 un-branded art for the streaming pack (may stay None)
     art_mode = args.art_mode
     if art_mode == "auto":
-        art_mode = "gemini" if keys.have("GEMINI_API_KEY") else "procedural"
+        art_mode = "gemini" if keypool.have("GEMINI_API_KEY") else "procedural"
     if art_mode == "gemini":
         try:
             from src import art_gemini

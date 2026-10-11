@@ -27,7 +27,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from src import keys
+from src import keys as keypool   # never `keys`: main() has a local named keys (a list of weights) — shadowing it was the UnboundLocalError that killed the 2026-10-10 release
 
 
 class _LaneSkipped(Exception):
@@ -51,7 +51,7 @@ def _lane_suno(genre_key, seconds, out_path, lyrics, lang, lrc_out):
 def _lane_lyria(genre_key, seconds, out_path, lyrics, lang, lrc_out):
     if os.environ.get("LYRA_OFF", "") == "1":
         raise _LaneSkipped("LYRA_OFF=1")
-    if not keys.have("GEMINI_API_KEY"):
+    if not keypool.have("GEMINI_API_KEY"):
         raise _LaneSkipped("no GEMINI_API_KEY")
     from src import music_lyria
     return music_lyria.generate(genre_key, seconds, out_path,

@@ -12,7 +12,7 @@ from __future__ import annotations
 import io
 import os
 
-from src import keys
+from src import keys as keypool   # never `keys`: main() has a local named keys (a list of weights) — shadowing it was the UnboundLocalError that killed the 2026-10-10 release
 
 from PIL import Image
 
@@ -184,7 +184,7 @@ def generate(meta: dict) -> Image.Image:
     """Return the base scene as a PIL Image. Raises if every model fails."""
     from google import genai                      # imported lazily (CI dep)
 
-    key = keys.pick("GEMINI_API_KEY")
+    key = keypool.pick("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("no GEMINI_API_KEY in the pool (set the secret, or GEMINI_API_KEY_2 …)")
 
@@ -213,7 +213,7 @@ SHOT_TYPES = [
 def generate_scenes(meta: dict, n: int = 4, scene_text: str | None = None) -> list[Image.Image]:
     """N matching but varied scenes of the SAME song-world (slideshow fuel)."""
     mood = scene_text or MOODS.get(meta["genre_key"], MOODS["dark_ambient"])
-    key = keys.pick("GEMINI_API_KEY")
+    key = keypool.pick("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("no GEMINI_API_KEY in the pool (set the secret, or GEMINI_API_KEY_2 …)")
     from google import genai

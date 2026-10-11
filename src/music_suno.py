@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import os
 
-from src import keys
+from src import keys as keypool   # never `keys`: main() has a local named keys (a list of weights) — shadowing it was the UnboundLocalError that killed the 2026-10-10 release
 import re
 import time
 import urllib.request
@@ -63,7 +63,7 @@ _TAG_RE = re.compile(r"\[[^\]]+\]")
 
 
 def _key() -> str:
-    return keys.pick("SUNO_API_KEY")
+    return keypool.pick("SUNO_API_KEY")
 
 
 def available() -> bool:

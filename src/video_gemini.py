@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import os
 
-from src import keys
+from src import keys as keypool   # never `keys`: main() has a local named keys (a list of weights) — shadowing it was the UnboundLocalError that killed the 2026-10-10 release
 import time
 from pathlib import Path
 
@@ -141,7 +141,7 @@ def build_prompt(meta: dict) -> str:
 
 
 def generate_clip(meta: dict, out_path: Path, timeout_s: int = 480) -> Path:
-    key = keys.pick("GEMINI_API_KEY")
+    key = keypool.pick("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("GEMINI_API_KEY not set")
     from google import genai

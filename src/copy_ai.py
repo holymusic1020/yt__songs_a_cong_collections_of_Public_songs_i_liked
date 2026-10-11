@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 
-from src import keys
+from src import keys as keypool   # never `keys`: main() has a local named keys (a list of weights) — shadowing it was the UnboundLocalError that killed the 2026-10-10 release
 import re
 
 # 2026-08 refresh: gemini-2.0-flash/-lite shut down 2026-06-01;
@@ -21,7 +21,7 @@ _TAG_NAMES = {"verse": "[verse]", "pre-chorus": "[pre-chorus]",
 
 
 def _generate(prompt: str) -> str:
-    key = keys.pick("GEMINI_API_KEY")
+    key = keypool.pick("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("no GEMINI_API_KEY in the pool (set the secret, or GEMINI_API_KEY_2 …)")
     from google import genai
