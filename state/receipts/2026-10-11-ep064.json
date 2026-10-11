@@ -1,28 +1,40 @@
 {
   "schema": 1,
-  "at": "2026-10-11T09:32:23Z",
+  "at": "2026-10-11T09:53:25Z",
   "date": "2026-10-11",
   "episode": 64,
-  "mode": "dry_run",
+  "mode": "publish",
   "kind": "full",
   "genre": "god_in_the_bass",
-  "track": "cold halogen stairwell",
+  "track": "wet copper sill",
   "bpm": 70,
   "key": "***",
   "youtube": {
-    "video_id": null,
-    "short_id": null,
-    "watch": null,
-    "short": null
+    "video_id": "2t2F4N6rEYI",
+    "short_id": "qRsFOW8nQgo",
+    "watch": "https://youtu.be/2t2F4N6rEYI",
+    "short": "https://youtu.be/qRsFOW8nQgo"
   },
   "multipost_dial": "fb,tt,ig",
   "lanes": {
+    "fb": "published",
+    "fb_reel_id": "122117699451453777",
+    "fb_video": "published",
+    "fb_video_id": "1431924732410441",
+    "tt": "uploaded → DRAFT (boss publishes in-app)",
+    "tiktok_publish_id": "v_pub_file~v2-1.7695343832510285876",
+    "ig": "published (reel)",
+    "ig_media_id": "17942393307359646",
+    "ig_user": "nixspeech",
+    "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+    "ig_photo": "published",
+    "ig_photo_id": "17888819004630031",
     "dsp": "off — DSP_PACK=0 — streaming packs off"
   },
-  "seconds": 729.4,
-  "run_id": "38127946654",
-  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38127946654",
-  "sha": "7ca11db",
+  "seconds": 1120.2,
+  "run_id": "38128834063",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38128834063",
+  "sha": "1f5324e",
   "errors": [],
   "music_lane": "ace-kaggle",
   "dsp": {
@@ -41,7 +53,7 @@
   "require_vocals": "1",
   "lane_audit": {
     "schema": 1,
-    "at": "2026-10-11T09:32:21Z",
+    "at": "2026-10-11T09:53:23Z",
     "net_probes": true,
     "dials": {
       "MULTIPOST": "fb,tt,ig",
@@ -49,7 +61,7 @@
       "MULTIPOST_TT_LONG": "0",
       "MULTIPOST_IG_LONG": "0",
       "MULTIPOST_IG_PHOTO": "1 (default on)",
-      "PUBLISH_OFF": "1",
+      "PUBLISH_OFF": "0",
       "BOSS_DROP_DATE": "2026-09-04",
       "TIKTOK_PRIVACY": "SELF_ONLY (default)",
       "REQUIRE_VOCALS": "1",
@@ -85,12 +97,16 @@
       "GEMINI_API_KEY": "***",
       "HF_TOKEN": "***"
     },
-    "ig_account_cache": null,
+    "ig_account_cache": {
+      "id": "17841421462783079",
+      "username": "nixspeech",
+      "page_id": "1294240837106632",
+      "found_at": "2026-10-11T09:46:27Z"
+    },
     "authoritative": true,
     "checkpoint_evidence": "",
     "verdicts": [
       "🟡 tt posts as SELF_ONLY (pre-approval law) → they land PRIVATE on the account (🔒 on the profile, invisible to everyone else). That is expected until TikTok approves the app, then flip repo var TIKTOK_PRIVACY=PUBLIC_TO_EVERYONE.",
-      "🔴 PUBLISH_OFF=1 → the whole release is demoted to a dry run.",
       "🟡 the read-only canary saw no checkpoint flag — but it CANNOT prove you are unblocked (run #100: clean canary, real post still rejected with code 368). Trust the fb lane result in this receipt, not this line."
     ],
     "fb_token": "***",
