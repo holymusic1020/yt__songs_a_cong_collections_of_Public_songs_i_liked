@@ -338,8 +338,13 @@ switch to public." So the switch is now self-driving:
 * `if: success()` + `continue-on-error: true` + the script ends in `exit 0`: this step can
   **never** turn a red night redder or a green night red. If the Variable API rejects it, the run
   summary says "flip it by hand" and nothing else changes.
-* Needs `secrets.GH_TOKEN` (repo default workflow permissions are `read`, so `GITHUB_TOKEN`
-  alone cannot PATCH Variables — the fallback prints the manual line).
+* Needs a PAT in `secrets.GH_TOKEN` **with repo Administration scope** (repo default workflow
+  permissions are `read`, so `GITHUB_TOKEN` alone cannot PATCH Variables). Measured 2026-10-11:
+  the PAT currently stored there answers `403 Resource not accessible by personal access token`
+  on `PATCH /actions/variables/PUBLISH_OFF`, so the step printed its "flip it by hand" line and the
+  run stayed green (that is the designed behaviour). An admin-scoped PAT answers `204` — verified.
+  So: self-flipping works the moment `GH_TOKEN` is swapped for a token with Variables write; until
+  then the dry run still tells him, in the run summary, exactly what to set.
 * `tools/v38_flip_ut.py` (in the sweep) executes the **shipped YAML text** against fake nights:
   green → flips; no mp4 / 1 MB mp4 / half-written manifest → refuses; `PUBLISH_OFF=0` → inert.
 * Money: nothing here ever asks for a card. `DSP_PACK=0` stays, the 0-credit Suno/Apiframe keys
