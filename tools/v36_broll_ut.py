@@ -219,10 +219,17 @@ try:
     os.environ["BROLL_KAGGLE_API_TOKEN"] = "spare-token"
     import importlib
     importlib.reload(farm)
+    farm.SPARE_ON = True                 # what main() sets once routing picks the spare
     s0, swhy = farm.budget(0.0)
     check("19f a spare Kaggle account = full allowance, no haircut",
-          farm.SPARE and farm.WEEK_HOURS == 18.0 and s0 == 3.0,
+          farm.SPARE and farm.WEEK_SPARE == 18.0 and s0 == 3.0,
           f"{s0:.1f} h · {swhy[:64]}…")
+    check("19f2 …and the MAIN cap is still the small one while the spare is in play",
+          farm.WEEK_HOURS == 6.0 and farm.budget(0.0)[0] == 3.0)
+    farm.SPARE_ON = False
+    m0, mwhy = farm.budget(0.0)
+    check("19f3 main-only: 6 h cap, half of leftovers → 3 h",
+          m0 == 3.0 and "main account" in mwhy, mwhy[:62])
     check("19g …and it authenticates from a private dir, never ~/.kaggle",
           "kaggle-broll" not in str(Path.home() / ".kaggle")
           and (Path.home() / ".kaggle-broll").parent.exists())
@@ -256,18 +263,53 @@ try:
     farm.STAGE = TMP / "stage2"
     (TMP / "stage2").mkdir(exist_ok=True)
     lib33 = {"deep_pop": ["a window, rain", "a street, neon"], "phonk_mafia": ["a garage"]}
-    k33 = farm.stage_kernel(lib33)
+    k33 = farm.stage_kernel(lib33, farm.kernel_id("uhn896"))
     src33 = (k33 / "broll_farm.py").read_text()
     import base64 as _b64
     line = [l for l in src33.splitlines() if l.startswith("PROMPTS_B64 = ")][0]
     back = json.loads(_b64.b64decode(line.split('"')[1]).decode())
+    meta33 = json.loads((k33 / "kernel-metadata.json").read_text())
     check("33 prompts ride into the kernel as base64 and come back identical",
           back == lib33, f"{len(line)} chars pasted, {len(back)} genres recovered")
+    check("33c the staged metadata carries the id and slug-matching title",
+          meta33["id"] == "uhn896/nix-speech-broll-farm"
+          and meta33["title"].lower().replace(" ", "-") == "nix-speech-broll-farm",
+          f"{meta33['id']} · {meta33['title']!r}")
     check("33b the tracked kernel still has the empty anchor (no payload committed)",
           'PROMPTS_B64 = ""' in (ROOT / "kaggle_cook" / "broll" / "broll_farm.py").read_text())
-    check("34 the farm rests a week after 3 no-GPU sessions instead of nagging",
-          'NO_GPU_LIMIT = 3' in drv and "def blocked() -> str:" in drv,
-          "found by hand: a fresh Kaggle account gets CPU until phone verification")
+    check("34 a GPU-blocked account is remembered for a week, not nagged nightly",
+          'BLOCK_FILE = "gpu_block.json"' in drv
+          and "def blocked() -> tuple[str, str]:" in drv
+          and "BROLL_GPU_COOLDOWN_H" in drv and "NO_GPU_LIMIT" not in drv,
+          "Persona rejected him ~7 times — so the block has to be state, not a retry loop")
+    check("34b …and the farm ROUTES around it: spare first, your main on leftovers",
+          'want_spare = SPARE and ACCOUNT in ("auto", "spare")' in drv
+          and "global SPARE_ON" in drv
+          and "falling back to your MAIN account, leftovers only" in drv
+          and "BROLL_ACCOUNT=spare\n" not in drv,
+          'BROLL_ACCOUNT = auto | spare | main')
+    check("34c the per-account cap follows the routing (18 h spare / 6 h main)",
+          "cap = WEEK_SPARE if SPARE_ON else WEEK_HOURS" in drv
+          and 'BROLL_SPARE_WEEK_HOURS' in (ROOT / ".github" / "workflows" / "broll-farm.yml").read_text())
+    # 34d the block marker is real state: write one, read it back, and make sure
+    # it names the blocked account (so main is never punished for the spare)
+    (TMP / "blk").mkdir(exist_ok=True)
+    _keep = farm.STAGE
+    farm.STAGE = TMP / "blk"
+    farm.write_block = lambda *a, **k: None          # no GitHub calls in a UT
+    (farm.STAGE / farm.BLOCK_FILE).write_text(json.dumps(
+        {"account": "someone-else", "reason": "no GPU on this Kaggle account",
+         "until_h": farm.BLOCK_COOLDOWN_H,
+         "at": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")}))
+    acc_b, why_b = farm.blocked()
+    check("34d blocked() returns WHO is blocked and for how long",
+          acc_b == "someone-else" and "resting" in why_b, f"{acc_b}: {why_b[:60]}…")
+    (farm.STAGE / farm.BLOCK_FILE).write_text(json.dumps(
+        {"account": "old-news", "reason": "no GPU", "until_h": 0.001,
+         "at": "2026-01-01T00:00:00Z"}))
+    check("34e …and it expires on its own (so a fixed account is re-probed)",
+          farm.blocked() == ("", ""), "cooldown elapsed → farm tries again")
+    farm.STAGE = _keep
     check("35 the GPU pre-flight writes an honest empty manifest and leaves",
           "def gpu_or_bail()" in (ROOT / "kaggle_cook" / "broll" / "broll_farm.py").read_text()
           and '"skipped": "no GPU on this Kaggle account"' in (ROOT / "kaggle_cook" / "broll" / "broll_farm.py").read_text())

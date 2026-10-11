@@ -50,15 +50,32 @@ REL_TAG = "broll-lab"
 SPARE_USER = os.environ.get("BROLL_KAGGLE_USERNAME", "").strip()
 SPARE_TOKEN = (os.environ.get("BROLL_KAGGLE_API_TOKEN", "").strip()
                or os.environ.get("BROLL_KAGGLE_KEY", "").strip())
-SPARE = bool(SPARE_TOKEN)      # the username is optional — see KERNEL_ID
+SPARE = bool(SPARE_TOKEN)      # the username is optional — see kernel_id()
 # `me/<slug>` is accepted by the Kaggle CLI for push/status/output (verified on
 # the spare account 2026-10-10), so a second account needs only its token:
 # nothing to remember, nothing to typo. The real slug is read back out of the
 # push response for logging and polls.
-KERNEL_ID = f"{SPARE_USER or 'me'}/nix-speech-broll-farm"
-WEEK_HOURS = float(os.environ.get("BROLL_WEEK_HOURS", "6" if not SPARE else "18") or 6)
+FARM_SLUG = "nix-speech-broll-farm"
+FARM_TITLE = "Nix Speech Broll Farm"      # must slugify to FARM_SLUG or push 409s
+
+
+def kernel_id(user: str) -> str:
+    return f"{user or 'me'}/{FARM_SLUG}"
+
+
+# 🎟 WHICH account actually runs. The spare was wired on 2026-10-11 and died on
+# Kaggle's identity check ("Persona couldn't verify your identity", tried ~7x),
+# so a fresh account without a phone/ID verification will never get a T4. The
+# policy is therefore: try the spare, and while it is blocked use the MAIN
+# account on leftovers — which is what "half or a little" was always about.
+#   BROLL_ACCOUNT = auto (default) | spare (never touch main) | main (skip spare)
+ACCOUNT = (os.environ.get("BROLL_ACCOUNT", "auto").strip().lower() or "auto")
+WEEK_HOURS = float(os.environ.get("BROLL_WEEK_HOURS", "6") or 6)          # main
+WEEK_SPARE = float(os.environ.get("BROLL_SPARE_WEEK_HOURS", "18") or 18)  # spare
 SHARE = float(os.environ.get("BROLL_SHARE", "0.5") or 0.5)
 MIN_HOURS = 0.4          # below this a session makes 3-5 clips; not worth a kernel
+BLOCK_FILE = "gpu_block.json"
+BLOCK_COOLDOWN_H = float(os.environ.get("BROLL_GPU_COOLDOWN_H", "168") or 168)  # 7 days
 POLL_S = int(os.environ.get("BROLL_POLL_S", "45") or 45)
 MAX_WAIT_S = int(os.environ.get("BROLL_MAX_WAIT_S", "14400") or 14400)  # 4 h
 
@@ -112,33 +129,51 @@ def build_prompts(shots_per_genre: int = 4, night: int | None = None) -> dict:
     return lib
 
 
-NO_GPU_LIMIT = 3           # consecutive "no GPU" sessions, then rest until next week
+def write_block(account: str, reason: str) -> None:
+    """Mark an account as GPU-unusable, for BLOCK_COOLDOWN_H hours."""
+    (STAGE / BLOCK_FILE).write_text(json.dumps({
+        "account": account, "reason": reason,
+        "until_h": BLOCK_COOLDOWN_H,
+        "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}, indent=1))
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if repo and os.environ.get("GH_TOKEN"):
+        run(["gh", "release", "upload", "--cfile", REL_TAG, str(STAGE / BLOCK_FILE)],
+            timeout=300, check=False)
 
 
-def blocked() -> str:
-    """Why we should not wake a session tonight, from the shelf ledger.
+def blocked() -> tuple[str, str]:
+    """(account, why) for any account currently in GPU cooldown, else ("", "").
 
-    The spare account answered "no GPU on this Kaggle account" three nights in a
-    row (2026-10-11: the account exists, the kernel runs, but a fresh Kaggle
-    account gets CPU until the owner verifies a phone number). Re-pushing a
-    kernel nightly to be told the same thing is 40 s of noise on 7 nights; one
-    week of rest instead, and it retries by itself.
+    Kaggle's identity check is what put us here — 2026-10-11: "Persona couldn't
+    verify your identity", retried ~7 times — so the spare account runs our
+    kernel on CPU and the pre-flight bails. Re-knocking every night is noise; a
+    week of rest is not, and it re-probes by itself if support ever fixes it.
     """
+    out: list[str] = []
     try:
-        runs = json.loads((STAGE / "quota.json").read_text()).get("runs", [])
+        p = STAGE / BLOCK_FILE
+        if not p.exists():
+            # the marker lives on the shelf release, because every CI run gets a
+            # fresh runner — without this fetch the "rest a week" would be one
+            # night long and the farm would knock on the blocked door nightly.
+            repo = os.environ.get("GITHUB_REPOSITORY", "")
+            if repo:
+                run(["curl", "-sfL", "-o", str(p),
+                     f"https://github.com/{repo}/releases/download/{REL_TAG}/{BLOCK_FILE}"],
+                    timeout=60, check=False)
+        if p.exists():
+            d = json.loads(p.read_text())
+            age_h = (datetime.now(timezone.utc)
+                     - datetime.fromisoformat(str(d.get("at", "")).replace("Z", "+00:00"))
+                     ).total_seconds() / 3600.0
+            if age_h < float(d.get("until_h", BLOCK_COOLDOWN_H)):
+                out.append((str(d.get("account") or ""),
+                            f"{d.get('reason')} — resting {BLOCK_COOLDOWN_H - age_h:.0f} h "
+                            f"more (Kaggle → Settings → Phone Verification fixes it for good)"))
+            return (out[0] if out else ("", ""))
     except Exception:
-        return ""
-    streak = 0
-    for row in reversed(runs):
-        if row.get("no_gpu"):
-            streak += 1
-        else:
-            break
-    if streak >= NO_GPU_LIMIT:
-        return (f"{streak} sessions in a row had no GPU on this account — resting a "
-                f"week. Fix: Kaggle → Settings → Phone Verification, then accept the "
-                f"rules; the farm resumes by itself")
-    return ""
+        pass
+    return ("", "")
 
 
 def quota_used() -> float:
@@ -170,6 +205,9 @@ def quota_left() -> float:
     return WEEK_HOURS - quota_used()
 
 
+SPARE_ON = False     # set by main(): is tonight's session the spare account?
+
+
 def budget(used_h: float) -> tuple[float, str]:
     """Hours we may spend tonight, given what the shelf already used this week.
 
@@ -179,18 +217,19 @@ def budget(used_h: float) -> tuple[float, str]:
     Spare account -> the whole allowance, no haircut: there is nothing to
                      protect because your main quota is not in play.
     """
-    left = max(0.0, WEEK_HOURS - used_h)
+    cap = WEEK_SPARE if SPARE_ON else WEEK_HOURS
+    left = max(0.0, cap - used_h)
     want = float(os.environ.get("BROLL_HOURS", "3") or 3)
-    if SPARE:
+    if SPARE_ON:
         return min(want, left), (f"spare account {SPARE_USER}: {left:.1f} h of "
-                                 f"{WEEK_HOURS:.0f} h left, your main quota untouched")
+                                 f"{cap:.0f} h left, your main quota untouched")
     hours = min(want, left * SHARE)
     return hours, (f"main account: {left:.1f} h left of the {WEEK_HOURS:.0f} h we allow "
                    f"b-roll, taking {SHARE:.0%} of it -> {hours:.1f} h "
                    f"(every other hour this week belongs to the song)")
 
 
-def stage_kernel(lib: dict) -> Path:
+def stage_kernel(lib: dict, kid: str) -> Path:
     """A copy of the farm kernel in /tmp with tonight's prompts pasted in.
 
     Base64 because the payload must survive being dropped into a string
@@ -206,11 +245,11 @@ def stage_kernel(lib: dict) -> Path:
     src = src.replace('PROMPTS_B64 = ""', f'PROMPTS_B64 = "{blob}"', 1)
     (dst / 'broll_farm.py').write_text(src, encoding='utf-8')
     meta = json.loads((FARM_DIR / 'kernel-metadata.json').read_text())
-    meta.update({'id': KERNEL_ID, 'dataset_sources': [], 'kernel_sources': [],
+    meta.update({'id': kid, 'dataset_sources': [], 'kernel_sources': [],
                  'competition_sources': [], 'model_sources': []})
     # Kaggle derives the kernel slug from the TITLE; a title that doesn't match
-    # the id's slug earns a warning and surprising behaviour, so pin it here.
-    meta['title'] = 'Nix Speech Broll Farm'   # must slugify to the id's slug
+    # the id's slug gets the push rejected with 409 (learned the hard way).
+    meta['title'] = FARM_TITLE
     meta['code_file'] = 'broll_farm.py'
     meta['kernel_type'] = 'script'
     meta['is_private'] = True
@@ -222,7 +261,19 @@ def main() -> int:
     if os.environ.get("BROLL_FARM", "1").strip() == "0":
         return ok("BROLL_FARM=0 — farm parked, shelf untouched")
     env = dict(os.environ)
-    if SPARE:
+    global SPARE_ON
+    b_account, b_why = blocked()
+    want_spare = SPARE and ACCOUNT in ("auto", "spare")
+    if want_spare and b_account and b_account == (SPARE_USER or "me"):
+        if ACCOUNT == "spare":
+            return ok(f"spare account is GPU-blocked ({b_why}) and BROLL_ACCOUNT=spare "
+                      "forbids your main account — no b-roll tonight, release unaffected")
+        print(f"  [farm] spare account unusable ({b_why})")
+        print("  [farm] → falling back to your MAIN account, leftovers only")
+        want_spare = False
+    SPARE_ON = want_spare
+
+    if SPARE_ON:
         # Its own config dir AND its token in the environment. Both, because the
         # CLI shipped today (2.2.4) reads KAGGLE_API_TOKEN from the env and does
         # NOT accept a bare KAGGLE_CONFIG_DIR/access_token file — proved against
@@ -246,9 +297,9 @@ def main() -> int:
         env["KAGGLE_CONFIG_DIR"] = str(cfg)
         user = os.environ.get("KAGGLE_USERNAME", "").strip()
 
-    why_blocked = blocked()
-    if why_blocked:
-        return ok(why_blocked)
+    if b_account and not SPARE_ON and b_account == "main":
+        return ok(f"main account is GPU-blocked ({b_why}) — no b-roll tonight, "
+                  "release unaffected")
     hours, why = budget(quota_used())
     print(f"  [farm] {why}")
     if hours < MIN_HOURS:
@@ -260,7 +311,7 @@ def main() -> int:
     print(f"  [farm] prompts for {len(lib)} genres "
           f"({sum(len(v) for v in lib.values())} shots queued)")
 
-    kern = stage_kernel(lib)
+    kern = stage_kernel(lib, kernel_id(user))
     meta = json.loads((kern / "kernel-metadata.json").read_text())
     meta["env_vars"] = [{"description": "hours", "name": "BROLL_HOURS", "value": f"{hours:.2f}"},
                         {"description": "shots", "name": "BROLL_SHOTS", "value": "8"},
@@ -275,7 +326,7 @@ def main() -> int:
             check=False)
     if r.returncode != 0:
         return ok(f"kernel push failed ({(r.stdout + r.stderr)[:120]})")
-    kid = KERNEL_ID
+    kid = kernel_id(user)
     if user in ("", "me"):
         # ⚠ `me/<slug>` is accepted by kernels PUSH but NOT by kernels STATUS or
         # OUTPUT (proved on the spare account 2026-10-10: push returns the real
@@ -325,7 +376,6 @@ def main() -> int:
              or (out_dir / str(c.get("file", ""))).exists()]
     if not clips:
         why = str(data.get("skipped") or data.get("hint") or "out of time")
-        # remember WHY, so `blocked()` can rest instead of nagging
         led = {"runs": []}
         lp = STAGE / "quota.json"
         if lp.exists():
@@ -333,11 +383,23 @@ def main() -> int:
                 led = json.loads(lp.read_text())
             except Exception:
                 pass
+        no_gpu = "gpu" in why.lower()
         led["runs"] = (led.get("runs") or [])[-40:] + [{
             "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "hours": 0.0, "clips": 0, "no_gpu": "gpu" in why.lower()}]
+            "hours": 0.0, "clips": 0, "no_gpu": no_gpu,
+            "account": (SPARE_USER or "me") if SPARE_ON else "main"}]
         lp.write_text(json.dumps(led, indent=1))
         repo = os.environ.get("GITHUB_REPOSITORY", "")
+        if no_gpu:
+            # The important half: block THAT account for a week, and say what
+            # happens next. A blocked spare is not a failure — main takes over.
+            who = (SPARE_USER or "me") if SPARE_ON else "main"
+            write_block(who, f"{why} (torch={data.get('torch')})" if data.get("torch") else why)
+            nxt = ("your main account takes the b-roll hours instead (leftovers only)"
+                   if SPARE_ON and ACCOUNT == "auto" else
+                   "no b-roll until the account is verified — releases are unaffected")
+            print(f"  [farm] noting {who} as GPU-blocked for "
+                  f"{BLOCK_COOLDOWN_H / 24:.0f} days → {nxt}")
         if repo and os.environ.get("GH_TOKEN"):
             run(["gh", "release", "upload", "--cfile", REL_TAG, str(lp)],
                 timeout=300, env=env, check=False)

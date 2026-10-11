@@ -173,3 +173,38 @@ the daily release never noticed.
 * The one thing only he can do: **verify a phone number on `uhn896`** (Kaggle → Settings → Phone
   Verification, then accept the rules when prompted). Until then the shelf stays empty and every video
   uses the Ken Burns look — which is the look that shipped 63 episodes, not a downgrade.
+
+## 7. …and the account routing that the identity check forced (2026-10-11)
+
+The plan was "spare account only, your main quota untouched". Then the verification wall:
+
+> *"Persona couldn't verify your identity — Man I try to around 7 times but still you can see what is happening."*
+
+Kaggle grants GPU only to accounts that clear its identity/phone check, and a fresh account that fails
+Persona gets **CPU forever** — which for us means an empty shelf and a wasted nightly session. So the
+farm now *routes*, it does not sulk:
+
+```
+BROLL_ACCOUNT = auto   (default)  spare if it is usable, otherwise your main account, leftovers only
+                spare              never touch the main account → no b-roll while Persona blocks it
+                main               ignore the spare entirely (no nightly 40-second knock either)
+```
+
+* when a session answers `no GPU on this Kaggle account`, the driver writes `gpu_block.json` **on the
+  shelf** naming *that* account, and skips it for `BROLL_GPU_COOLDOWN_H` (168 h);
+* the marker is downloaded at the start of every session, because CI runners are otherwise born
+  amnesiac and the "rest" would last exactly one night;
+* `auto` means the blocked spare is simply stepped over and **your main account takes the b-roll
+  hours — under the 6 h/week, half-of-leftovers rule**, which is precisely the "half or a little" you
+  asked for; nothing near the 10:00 UTC release, and the vocal lane's hours are never charged to it;
+* it re-probes the spare once the cooldown expires, so if Kaggle support ever approves the account,
+  b-roll moves back there with no code change;
+* if you'd rather we never spend a single GPU minute on your main account: set `BROLL_ACCOUNT=main`… no
+  — set **`BROLL_ACCOUNT=spare`** and the shelf stays empty until the account is verified. Your call, one
+  Variable, no code.
+
+Optionally, for the record: Persona failures are usually the document, not the person — a **passport**
+rather than an ID card, no glasses or glare, all four corners visible, and the name on the Kaggle
+profile matching the document exactly. Otherwise `support@kaggle.com` with a screenshot of the error is
+the only route, and neither is worth much: b-roll is the decoration, and the leftovers path already
+works without it.

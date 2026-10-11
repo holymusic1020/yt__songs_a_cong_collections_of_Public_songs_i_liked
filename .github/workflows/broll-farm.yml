@@ -50,6 +50,8 @@ jobs:
       BROLL_HOURS: ${{ github.event.inputs.hours || vars.BROLL_HOURS || '3' }}
       BROLL_WEEK_HOURS: ${{ vars.BROLL_WEEK_HOURS || '6' }}   # 6 of Kaggle's 30 — and only half of what's left
       BROLL_SHARE: ${{ vars.BROLL_SHARE || '0.5' }}
+      BROLL_SPARE_WEEK_HOURS: ${{ vars.BROLL_SPARE_WEEK_HOURS || '18' }}
+      BROLL_ACCOUNT: ${{ vars.BROLL_ACCOUNT || 'auto' }}   # auto | spare | main
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
