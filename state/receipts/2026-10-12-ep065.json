@@ -1,28 +1,36 @@
 {
   "schema": 1,
-  "at": "2026-10-12T01:37:07Z",
+  "at": "2026-10-12T19:58:33Z",
   "date": "2026-10-12",
   "episode": 65,
-  "mode": "dry_run",
+  "mode": "publish",
   "kind": "short",
   "genre": "anime_titan",
-  "track": "iron balcony frost",
+  "track": "zinc skyline frost",
   "bpm": 130,
   "key": "***",
   "youtube": {
     "video_id": null,
-    "short_id": null,
+    "short_id": "vErLcsyc02I",
     "watch": null,
-    "short": null
+    "short": "https://youtu.be/vErLcsyc02I"
   },
   "multipost_dial": "fb,tt,ig",
   "lanes": {
+    "fb": "published",
+    "fb_reel_id": "122118179385453777",
+    "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The chunk size is invalid\",\"log_id\":\"20261013035729297383B2C1598744491F\"}}",
+    "ig": "published (reel)",
+    "ig_media_id": "18077912330434456",
+    "ig_user": "nixspeech",
+    "ig_photo": "published",
+    "ig_photo_id": "18128144116873512",
     "dsp": "off — DSP_PACK=0 — streaming packs off"
   },
-  "seconds": 817.2,
-  "run_id": "38191652806",
-  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38191652806",
-  "sha": "c8bdb0d",
+  "seconds": 788.2,
+  "run_id": "38299661663",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38299661663",
+  "sha": "fbab91d",
   "errors": [],
   "music_lane": "ace-kaggle",
   "dsp": {
@@ -41,7 +49,7 @@
   "require_vocals": "1",
   "lane_audit": {
     "schema": 1,
-    "at": "2026-10-12T01:37:06Z",
+    "at": "2026-10-12T19:58:32Z",
     "net_probes": true,
     "dials": {
       "MULTIPOST": "fb,tt,ig",
@@ -85,7 +93,12 @@
       "GEMINI_API_KEY": "***",
       "HF_TOKEN": "***"
     },
-    "ig_account_cache": null,
+    "ig_account_cache": {
+      "id": "17841421462783079",
+      "username": "nixspeech",
+      "page_id": "1294240837106632",
+      "found_at": "2026-10-12T19:57:30Z"
+    },
     "authoritative": true,
     "checkpoint_evidence": "",
     "verdicts": [
