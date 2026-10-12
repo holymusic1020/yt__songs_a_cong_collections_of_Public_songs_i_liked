@@ -28,6 +28,27 @@ PALETTES = {
     "orbit_trap":   {"top": (4, 6, 18),    "bottom": (10, 30, 70),  "glow": (120, 200, 255)},
 }
 
+# v24 (2026-10-11): every genre in GENRE_ROTATION now has its own palette, so
+# the cover AND the offline scene strip change with the song. Missing keys used to
+# silently land on dark_ambient for 13 of the 22 genres.
+PALETTES.update({
+    "chart_pop": {"top": (8, 12, 28), "bottom": (22, 58, 118), "glow": (120, 220, 255)},
+    "melodic_trap": {"top": (6, 10, 20), "bottom": (18, 30, 66), "glow": (140, 180, 255)},
+    "summer_rap": {"top": (12, 26, 44), "bottom": (120, 58, 26), "glow": (255, 196, 92)},
+    "phonk_mafia": {"top": (14, 6, 6), "bottom": (58, 10, 16), "glow": (255, 72, 58)},
+    "velvet_fang": {"top": (16, 6, 22), "bottom": (58, 10, 44), "glow": (255, 60, 150)},
+    "emo_rap": {"top": (18, 12, 22), "bottom": (46, 26, 52), "glow": (205, 120, 180)},
+    "templestep": {"top": (20, 14, 6), "bottom": (60, 40, 14), "glow": (255, 180, 70)},
+    "lastjuly": {"top": (10, 14, 26), "bottom": (30, 44, 70), "glow": (160, 210, 255)},
+    "ashrise": {"top": (8, 10, 14), "bottom": (32, 34, 44), "glow": (150, 190, 215)},
+    "brazilian_phonk": {"top": (10, 24, 16), "bottom": (30, 70, 30), "glow": (120, 255, 140)},
+    "saint_of_leaving": {"top": (16, 14, 10), "bottom": (44, 38, 28), "glow": (255, 208, 150)},
+    "indie_waves": {"top": (14, 18, 30), "bottom": (40, 54, 80), "glow": (180, 220, 255)},
+    "lambs_teeth": {"top": (20, 18, 22), "bottom": (52, 46, 56), "glow": (230, 220, 255)},
+    "god_in_the_bass": {"top": (4, 6, 16), "bottom": (10, 20, 58), "glow": (90, 140, 255)},
+    "anime_titan": {"top": (18, 8, 10), "bottom": (54, 20, 24), "glow": (255, 120, 80)},
+})
+
 FONT_CANDIDATES = [
     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",

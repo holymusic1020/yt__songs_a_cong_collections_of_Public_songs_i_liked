@@ -258,6 +258,26 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
                 meta["style_variant"] = variant + " (free engine)"
             except Exception as e2:
                 print(f"  ⚠ free-engine scenes failed ({e2}) — static cover it is")
+        # 🖼 v24 (boss 2026-10-11: "it's just stuck on thumbnail and looks so
+        # weird"). The log told the story: Gemini image models answer 429/404
+        # without billing, Pollinations now charges past its first free image,
+        # both returned ZERO scenes — so the "slideshow" got exactly one image,
+        # the branded cover, and BEATCUT faithfully cycled a list of one.
+        # Anything the remote engines didn't deliver is painted OFFLINE by
+        # art_scenic (numpy, ~0.5 s/panel, no key, no network), so the strip can
+        # never come down to a single frame again. Park it: repo Variable SCENES=0
+        # restores tonight's exact behaviour, byte for byte.
+        want = max(4, int(os.environ.get("SCENES_MAX", "6") or 6))
+        if os.environ.get("SCENES", "1") != "0" and len(scenes) < want:
+            try:
+                from src import art_scenic
+                remote = len(scenes)
+                extra = art_scenic.paint(meta, n=want - remote, seed0=ep * 101 + remote)
+                scenes = list(scenes) + extra
+                print(f"  🖼  scenes: {remote} from the image engine(s) + {len(extra)} "
+                      f"offline-painted = {len(scenes)} panels (never a frozen cover)")
+            except Exception as e3:
+                print(f"  🖼  offline scene painter skipped ({e3}) — static cover it is")
         if scenes:
             for i, im in enumerate(scenes):
                 im.save(OUT / f"ep{ep:03d}_scene{i}.png")
@@ -866,6 +886,18 @@ def main() -> None:
             print("  🖼  free-engine scene cover (Gemini quota down)")
         except Exception as e2:
             print(f"  (scene cover failed: {e2}) — procedural")
+    if cover is None and os.environ.get("SCENES", "1") != "0":
+        # one offline scenic panel behind the branding beats a flat gradient —
+        # and unlike the two remote engines, it cannot be rate-limited
+        try:
+            from src import art_scenic
+            _p = art_scenic.paint(dict(meta or {}, episode=ep), n=1, w=1280, h=720,
+                                  seed0=ep * 7 + 3)
+            if _p:
+                cover = art.overlay(meta, ep, rng, _p[0], OUT / f"ep{ep:03d}.png")
+                print("  🖼  offline scenic cover (both image engines were down)")
+        except Exception as e3:
+            print(f"  (scenic cover skipped: {e3})")
     if cover is None:
         cover = art.render(meta, ep, rng, OUT / f"ep{ep:03d}.png")
 
