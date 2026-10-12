@@ -1,13 +1,13 @@
-# 📋 receipt · EP.065 · 2026-10-11
+# 📋 receipt · EP.065 · 2026-10-12
 
 | | |
 |---|---|
-| track | **flooded iron balcony** (anime_titan) |
+| track | **iron balcony frost** (anime_titan) |
 | mode | dry_run · short |
 | youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 774.5 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38154575278 @ e4061a8 |
+| took | 817.2 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38191652806 @ c8bdb0d |
 
 ## lanes
 
