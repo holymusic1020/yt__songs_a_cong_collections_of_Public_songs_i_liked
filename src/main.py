@@ -208,6 +208,23 @@ def _iso(dt: datetime) -> str:
     return dt.isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
+def _cut_bpm(meta) -> float | None:
+    """The bpm grid the background cut rides on, or None (renderer decides).
+
+    A module-level helper on purpose: build_visuals and the SHORT background
+    render (main) both need it, and the short used to reach for build_visuals'
+    local `bpm_for_cut` — a NameError that only fired on a night where the
+    scene engines actually returned panels, i.e. it slept through every
+    quota-starved week and detonated the moment EP.064 finally had art (found
+    by the 2026-10-12 dry run, after the offline painter gave the strip 6
+    panels and made that branch reachable for the first time).
+    """
+    try:
+        return float((meta or {}).get("bpm") or 0) or None
+    except Exception:
+        return None
+
+
 def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
                   sung_lines=None, lrc_entries=None):
     scenes, clip, long_mp4 = [], None, None
@@ -217,7 +234,7 @@ def build_visuals(meta, ep, rng, wav, dur, mode, want_long=True,
     try:
         from src import metadata as _md
         chorus_at = _md.chorus_start(meta, lrc_entries, dur)
-        bpm_for_cut = float((meta or {}).get("bpm") or 0) or None
+        bpm_for_cut = _cut_bpm(meta)
     except Exception:
         pass
     have_ff = shutil.which("ffmpeg")
@@ -967,7 +984,7 @@ def main() -> None:
                 short_pack["base_video"] = video_render.from_images(
                     [OUT / f"ep{ep:03d}_scene{i}.png" for i in range(len(scenes))],
                     L, OUT / f"ep{ep:03d}_short_bg.mp4", size=video_render.VERT,
-                    bpm=bpm_for_cut)     # 🥁 background cuts on the song's grid
+                    bpm=_cut_bpm(meta))     # 🥁 cuts on the song's grid (was a NameError: build_visuals' local)
             short_mp4 = shorts.render_video(short_pack, OUT / f"ep{ep:03d}_short.mp4")
             try:                             # 💤 v23: slowed+reverb twin short
                 every = int((os.environ.get("SLOWED_EVERY", "0") or "0").strip())

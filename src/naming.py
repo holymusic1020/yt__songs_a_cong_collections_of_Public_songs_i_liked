@@ -17,6 +17,8 @@ import urllib.parse
 import urllib.request
 
 
+
+
 def itunes_exact_match(name: str, timeout: int = 6) -> bool:
     q = urllib.parse.urlencode({"term": name, "entity": "song", "limit": 25})
     url = f"https://itunes.apple.com/search?{q}"
@@ -88,8 +90,18 @@ def pick_name(genre_key: str, used_names: set, rng, probe: dict,
 
 
 def _fallback_unique(bank: tuple, used_names: set, rng) -> str:
-    """Last resort: strip any roman suffix, then certify 'name II' style."""
-    base = metadata._fresh_name(bank, used_names, rng)
+    """Last resort: strip any roman suffix, then certify 'name II' style.
+
+    `metadata._fresh_name` was called here for months with no import of
+    `metadata` in this file at all — a plain NameError on the last-resort path
+    (found by tools/v40_undef_name_ut.py, 2026-10-12). The import is deliberately
+    LOCAL and aliased: pick_name() already binds a local named `metadata`, so a
+    module-level `from src import metadata` would have shadowed it into
+    UnboundLocalError — the exact bug that ate the 2026-10-10 release. tools/v37
+    caught that attempt; this shape satisfies both guards.
+    """
+    from src import metadata as _meta_mod
+    base = _meta_mod._fresh_name(bank, used_names, rng)
     base = re.sub(r"\s+(II|III|IV|V|VI)$", "", base)
     for cand in [base] + [f"{base} {t}" for t in
                           ("II", "III", "IV", "V", "VI", "VII")]:

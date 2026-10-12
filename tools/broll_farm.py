@@ -340,7 +340,13 @@ def main() -> int:
             return ok("pushed, but Kaggle would not tell us whose account it "
                       "landed on — set BROLL_KAGGLE_USERNAME and retry")
         user = m.group(1)
-        kid = f"{user}/{KERNEL_ID.split('/', 1)[1]}"
+        # ⚠ was `f"{user}/{KERNEL_ID.split('/', 1)[1]}"` — KERNEL_ID has never
+        # existed in this file (the constant is FARM_SLUG, and the helper is
+        # kernel_id()). Found by tools/v40_undef_name_ut.py, not by a run: this
+        # line only executes when the push response hides the owner, i.e. the
+        # first MAIN-account night, and guarded() would have swallowed the
+        # NameError into "no clips" forever.
+        kid = kernel_id(user)
         print(f"  [farm] account: {user} → polling {kid}")
 
     t0 = time.monotonic()
