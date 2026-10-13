@@ -1,13 +1,13 @@
-# 📋 receipt · EP.065 · 2026-10-12
+# 📋 receipt · EP.066 · 2026-10-13
 
 | | |
 |---|---|
-| track | **zinc skyline frost** (anime_titan) |
+| track | **mirrorball therapy** (disco_house) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/vErLcsyc02I |
+| youtube | — · short: https://youtu.be/kehk0uMoNRw |
 | multipost dial | `fb,tt,ig` |
-| took | 788.2 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38299661663 @ fbab91d |
+| took | 1153.2 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38439268879 @ 34e7793 |
 
 ## lanes
 
@@ -15,13 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122118179385453777 |
+| fb_reel_id | 122118461295453777 |
 | ig | published (reel) |
-| ig_media_id | 18077912330434456 |
+| ig_media_id | 18121661530986924 |
 | ig_photo | published |
-| ig_photo_id | 18128144116873512 |
+| ig_photo_id | 17906822058593278 |
 | ig_user | nixspeech |
-| tt | rejected 400: {"error":{"code":"invalid_params","message":"The chunk size is invalid","log_id":"20261013035729297383B2C1598744491F"}} |
+| tt | rejected 400: {"error":{"code":"invalid_params","message":"The chunk size is invalid","log_id":"2026101401495390FBC12F1A25F524D6CC"}} |
 
 ## 🩺 lane audit
 
