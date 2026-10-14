@@ -1,5 +1,5 @@
 {
-  "episode": 66,
+  "episode": 67,
   "history": [
     {
       "episode": 1,
@@ -858,33 +858,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-13T20:15:34Z",
       "at": "2026-10-13T17:49:45+00:00"
+    },
+    {
+      "episode": 67,
+      "kind": "full",
+      "youtube_id": "yV8B-jVyoAA",
+      "video_id": "yV8B-jVyoAA",
+      "short_id": "xc675c7CAvk",
+      "title": "halogen balcony — Nix Speech (official audio)",
+      "name": "halogen balcony",
+      "genre": "skyline_anthem",
+      "publish_at": "2026-10-14T06:43:25Z",
+      "short_publish_at": "2026-10-14T06:56:16Z",
+      "at": "2026-10-14T04:39:14+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-09-30",
-      "episode": 55,
-      "mode": "publish",
-      "kind": "full",
-      "genre": "velvet_fang",
-      "track": "damp silk hem",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122114332713453777",
-        "fb_video": "published",
-        "fb_video_id": "1096037930063532",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7691366535654443016",
-        "ig": "published (reel)",
-        "ig_media_id": "18391944799166049",
-        "ig_user": "nixspeech",
-        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
-        "ig_photo": "published",
-        "ig_photo_id": "18408625483093088",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-01",
       "episode": 56,
@@ -1144,6 +1133,29 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "17906822058593278",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-14",
+      "episode": 67,
+      "mode": "publish",
+      "kind": "full",
+      "genre": "skyline_anthem",
+      "track": "halogen balcony",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122118541317453777",
+        "fb_video": "published",
+        "fb_video_id": "1682111036775427",
+        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The chunk size is invalid\",\"log_id\":\"202610141239345A010F005DF1B6099145\"}}",
+        "ig": "published (reel)",
+        "ig_media_id": "18128032133500387",
+        "ig_user": "nixspeech",
+        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+        "ig_photo": "published",
+        "ig_photo_id": "18115887572051344",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
