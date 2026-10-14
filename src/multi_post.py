@@ -171,6 +171,27 @@ def fb_video(mp4: Path, caption: str) -> dict:
 
 # ──────────────────────────────── tiktok ─────────────────────────────────────
 
+def tt_chunks(size: int, cap: int = 8_000_000) -> tuple[int, int]:
+    """(chunk_size, total_chunk_count) that TikTok actually accepts.
+
+    Their FILE_UPLOAD contract: chunk_size must be a MULTIPLE OF 8 BYTES, and
+    total_chunk_count must match the slices you really PUT (the final chunk may
+    be short). The lane had been declaring `chunk_size = min(size, 10 MB)` with
+    count=1, which passes only when the mp4 size itself lands on an 8-byte
+    boundary — it did for weeks by pure luck, and the moment the 6-panel
+    slideshow made the encode a few bytes longer, EVERY upload answered
+    `400 invalid_params · The chunk size is invalid` (EP.065/066/067 all lost
+    their TikTok draft, 2026-10-12 → 10-14). Found in the receipts, not by eye.
+    """
+    if size <= 0:
+        return 0, 0
+    cs = min(cap, size)
+    cs -= cs % 8
+    if cs <= 0:                       # a file smaller than one chunk (never real, never crash)
+        return 8, 1
+    return cs, (size + cs - 1) // cs
+
+
 def tiktok_video(mp4: Path, caption: str) -> dict:
     tok = os.environ.get("TIKTOK_ACCESS_TOKEN", "").strip()
     # 🧪 whole-process dry run (boss 2026-09-02): honest readiness report, no api
@@ -214,6 +235,7 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
             print(f"  (tt refresh skipped: {e} — using stale token, may soft-fail)")
     privacy = (os.environ.get("TIKTOK_PRIVACY") or "SELF_ONLY").strip()  # pre-approval law
     size = mp4.stat().st_size
+    _tt_cs, _tt_n = tt_chunks(size)
     hdr = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}
     # 2026 direct-post truth: TT disputes un-declared auto-publishing — the
     # consent flags are mandatory on PUBLIC posts; off while drafts (SELF_ONLY).
@@ -229,8 +251,7 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
             data=json.dumps({
                 "post_info": post_info,
                 "source_info": {"source": "FILE_UPLOAD", "video_size": size,
-                                "chunk_size": min(size, 10_000_000),
-                                "total_chunk_count": 1},
+                                "chunk_size": _tt_cs, "total_chunk_count": _tt_n},
             }).encode(), headers=hdr, method="POST"), timeout=60).read())
     except urllib.error.HTTPError as e:
         body = e.read().decode(errors="replace")[:400]     # TikTok's own diagnosis — never swallowed again
@@ -240,11 +261,24 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
     if err.get("code", "ok") not in ("ok", None):
         return {"tt": f"api error: {err.get('code')} {err.get('message', '')[:80]}"}
     d = init["data"]
-    req = urllib.request.Request(
-        d["upload_url"], data=mp4.read_bytes(), method="PUT",
-        headers={"Content-Type": "video/mp4", "Content-Length": str(size),
-                 "Content-Range": f"bytes 0-{size - 1}/{size}"})
-    urllib.request.urlopen(req, timeout=300)
+    # sequential slices, each chunk_size bytes (last one short) — TikTok resumes
+    # per-range, so this also survives a 25 MB long-form file if the lane ever
+    # decides to post the full video there.
+    sent = 0
+    with mp4.open("rb") as fh:
+        for i in range(_tt_n):
+            data = fh.read(_tt_cs)
+            if not data:
+                break
+            start, end = sent, sent + len(data) - 1
+            urllib.request.urlopen(urllib.request.Request(
+                d["upload_url"], data=data, method="PUT",
+                headers={"Content-Type": "video/mp4", "Content-Length": str(len(data)),
+                         "Content-Range": f"bytes {start}-{end}/{size}"}), timeout=300).read()
+            sent += len(data)
+    print(f"  🎬 tt upload: {sent / 1e6:.1f} MB in {_tt_n} chunk(s) of {_tt_cs / 1e6:.2f} MB")
+    if sent != size:
+        return {"tt": f"⚠️ upload incomplete ({sent}/{size} bytes)"}
     mode = "DRAFT (boss publishes in-app)" if privacy == "SELF_ONLY" else "live"
     return {"tt": f"uploaded → {mode}", "tiktok_publish_id": d.get("publish_id")}
 

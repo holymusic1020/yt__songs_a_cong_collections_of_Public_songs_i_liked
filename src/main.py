@@ -1095,7 +1095,11 @@ def main() -> None:
         # refresh manifest with real upload IDs so notify/alerts can link them
         manifest["video_id"] = vid
         manifest["short_id"] = sid
-        manifest["lanes"] = _fanout_result      # 📣 2026-09-19: the Telegram checklist
+        # (2026-10-14: this line used to sit HERE, ~20 lines before the fan-out
+        # actually ran, so latest.json carried an empty {} and the Telegram
+        # checklist said "🟢 all lanes clear" no matter what FB/IG/TikTok did.
+        # Three days of `tt: rejected 400` sailed past your phone. It now runs
+        # right after the fan-out, in both outcomes.)
         (OUT / "latest.json").write_text(json.dumps(manifest, indent=2))
         if sid and vid:
             try:
@@ -1124,6 +1128,13 @@ def main() -> None:
             # fb failures for weeks (boss: 'no vids on fb'). Truth in log, always.
         except Exception as e:
             print(f"  🌐 multi-post CRASHED: {e}")
+        # 📣 the Telegram/receipt checklist — written AFTER the fan-out, so the
+        # lanes it reports are the lanes that ran (see the 2026-10-14 truth-fix).
+        manifest["lanes"] = _fanout_result
+        try:
+            (OUT / "latest.json").write_text(json.dumps(manifest, indent=2))
+        except Exception as e:
+            print(f"  (lane report refresh skipped: {e})")
         # 🧲 reel-source vault (2026-09-03 bot-wall lesson): YT hard-walls
         # datacenter downloads → every render self-stashes into the release
         # so a reel-rescue NEVER needs YouTube again. Before the wipe.

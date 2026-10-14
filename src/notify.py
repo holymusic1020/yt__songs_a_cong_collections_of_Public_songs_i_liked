@@ -99,6 +99,11 @@ def build_message(status: str, manifest: dict | None,
         if bad:
             lines.append(f"❌ not posted: {', '.join(bad)}")
             lines.append(f"🔗 log: {run_url}")
+        elif not lanes and (vid or sid):
+            # 🔇 2026-10-14: an EMPTY lane report used to read as "all lanes
+            # clear" — that silence hid three days of TikTok 400s. Missing
+            # evidence is now reported as missing evidence.
+            lines.append("🟡 no lane report — check the run log for fb/ig/tt")
         else:
             lines.append("🟢 all lanes clear")
         return "\n".join(lines)
