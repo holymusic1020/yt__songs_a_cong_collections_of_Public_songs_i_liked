@@ -1,13 +1,13 @@
-# 📋 receipt · EP.066 · 2026-10-13
+# 📋 receipt · EP.067 · 2026-10-14
 
 | | |
 |---|---|
-| track | **mirrorball therapy** (disco_house) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/kehk0uMoNRw |
+| track | **halogen balcony** (skyline_anthem) |
+| mode | publish · full |
+| youtube | https://youtu.be/yV8B-jVyoAA · short: https://youtu.be/xc675c7CAvk |
 | multipost dial | `fb,tt,ig` |
-| took | 1153.2 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38439268879 @ 34e7793 |
+| took | 1232.1 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38511134473 @ 971ea11 |
 
 ## lanes
 
@@ -15,13 +15,16 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122118461295453777 |
+| fb_reel_id | 122118541317453777 |
+| fb_video | published |
+| fb_video_id | 1682111036775427 |
 | ig | published (reel) |
-| ig_media_id | 18121661530986924 |
+| ig_media_id | 18128032133500387 |
 | ig_photo | published |
-| ig_photo_id | 17906822058593278 |
+| ig_photo_id | 18115887572051344 |
 | ig_user | nixspeech |
-| tt | rejected 400: {"error":{"code":"invalid_params","message":"The chunk size is invalid","log_id":"2026101401495390FBC12F1A25F524D6CC"}} |
+| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
+| tt | rejected 400: {"error":{"code":"invalid_params","message":"The chunk size is invalid","log_id":"202610141239345A010F005DF1B6099145"}} |
 
 ## 🩺 lane audit
 
