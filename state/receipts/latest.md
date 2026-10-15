@@ -1,19 +1,27 @@
-# 📋 receipt · EP.068 · 2026-10-14
+# 📋 receipt · EP.068 · 2026-10-15
 
 | | |
 |---|---|
-| track | **linden waltz** (baroque_waltz) |
-| mode | dry_run · short |
-| youtube | — · short: — |
+| track | **tallow on velvet** (baroque_waltz) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/998WLndTn5g |
 | multipost dial | `fb,tt,ig` |
-| took | 819.7 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38585291578 @ 510f625 |
+| took | 868.8 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38754862899 @ 821994c |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
+| fb | published |
+| fb_reel_id | 122118978165453777 |
+| ig | published (reel) |
+| ig_media_id | 18157094944518716 |
+| ig_photo | published |
+| ig_photo_id | 18007010484031580 |
+| ig_user | nixspeech |
+| tt | rejected 400: {"error":{"code":"invalid_params","message":"The total chunk count is invalid","log_id":"202610152304017F88332C95721D9D9734"}} |
 
 ## 🩺 lane audit
 
