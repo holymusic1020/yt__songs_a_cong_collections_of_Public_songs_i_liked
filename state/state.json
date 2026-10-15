@@ -1,5 +1,5 @@
 {
-  "episode": 67,
+  "episode": 68,
   "history": [
     {
       "episode": 1,
@@ -871,30 +871,22 @@
       "publish_at": "2026-10-14T06:43:25Z",
       "short_publish_at": "2026-10-14T06:56:16Z",
       "at": "2026-10-14T04:39:14+00:00"
+    },
+    {
+      "episode": 68,
+      "kind": "short",
+      "youtube_id": "998WLndTn5g",
+      "video_id": null,
+      "short_id": "998WLndTn5g",
+      "title": "tallow on velvet — Nix Speech (official audio)",
+      "name": "tallow on velvet",
+      "genre": "baroque_waltz",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-15T16:23:24Z",
+      "at": "2026-10-15T15:03:52+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-10-02",
-      "episode": 57,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "templestep",
-      "track": "car park drizzle",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122114949735453777",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7692104190730143751",
-        "ig": "published (reel)",
-        "ig_media_id": "17988627618075231",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "18112855982111581",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-03",
       "episode": 58,
@@ -1147,6 +1139,26 @@
       "track": "linden waltz",
       "multipost_dial": "fb,tt,ig",
       "lanes": {
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-15",
+      "episode": 68,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "baroque_waltz",
+      "track": "tallow on velvet",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122118978165453777",
+        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The total chunk count is invalid\",\"log_id\":\"202610152304017F88332C95721D9D9734\"}}",
+        "ig": "published (reel)",
+        "ig_media_id": "18157094944518716",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18007010484031580",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
