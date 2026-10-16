@@ -1,13 +1,13 @@
-# 📋 receipt · EP.068 · 2026-10-15
+# 📋 receipt · EP.069 · 2026-10-16
 
 | | |
 |---|---|
-| track | **tallow on velvet** (baroque_waltz) |
+| track | **fog mnemonic** (dark_ambient) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/998WLndTn5g |
+| youtube | — · short: https://youtu.be/oLCMkokkUqs |
 | multipost dial | `fb,tt,ig` |
-| took | 868.8 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38754862899 @ 821994c |
+| took | 930.3 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/38917989932 @ b95014c |
 
 ## lanes
 
@@ -15,13 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122118978165453777 |
+| fb_reel_id | 122119205115453777 |
 | ig | published (reel) |
-| ig_media_id | 18157094944518716 |
+| ig_media_id | 18135967495566768 |
 | ig_photo | published |
-| ig_photo_id | 18007010484031580 |
+| ig_photo_id | 17902153776375505 |
 | ig_user | nixspeech |
-| tt | rejected 400: {"error":{"code":"invalid_params","message":"The total chunk count is invalid","log_id":"202610152304017F88332C95721D9D9734"}} |
+| tt | rejected 400: {"error":{"code":"invalid_params","message":"The total chunk count is invalid","log_id":"202610162258097DA82617F9385F492A3B"}} |
 
 ## 🩺 lane audit
 
