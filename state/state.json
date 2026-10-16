@@ -1,5 +1,5 @@
 {
-  "episode": 68,
+  "episode": 69,
   "history": [
     {
       "episode": 1,
@@ -884,33 +884,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-15T16:23:24Z",
       "at": "2026-10-15T15:03:52+00:00"
+    },
+    {
+      "episode": 69,
+      "kind": "short",
+      "youtube_id": "oLCMkokkUqs",
+      "video_id": null,
+      "short_id": "oLCMkokkUqs",
+      "title": "fog mnemonic — Nix Speech (official audio)",
+      "name": "fog mnemonic",
+      "genre": "dark_ambient",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-16T16:11:03Z",
+      "at": "2026-10-16T14:57:58+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-10-03",
-      "episode": 58,
-      "mode": "publish",
-      "kind": "full",
-      "genre": "lastjuly",
-      "track": "screen door hum",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122115240837453777",
-        "fb_video": "published",
-        "fb_video_id": "1844813273350922",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7692449974369585153",
-        "ig": "published (reel)",
-        "ig_media_id": "17936787993123960",
-        "ig_user": "nixspeech",
-        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
-        "ig_photo": "published",
-        "ig_photo_id": "18108672686600870",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-04",
       "episode": 59,
@@ -1159,6 +1148,26 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18007010484031580",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-16",
+      "episode": 69,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "dark_ambient",
+      "track": "fog mnemonic",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122119205115453777",
+        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The total chunk count is invalid\",\"log_id\":\"202610162258097DA82617F9385F492A3B\"}}",
+        "ig": "published (reel)",
+        "ig_media_id": "18135967495566768",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "17902153776375505",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
