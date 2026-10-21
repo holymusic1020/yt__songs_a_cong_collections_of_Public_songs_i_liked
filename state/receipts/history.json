@@ -949,5 +949,35 @@
       "ig_photo_id": "18094356746464941",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
+  },
+  {
+    "date": "2026-10-21",
+    "episode": 73,
+    "mode": "publish",
+    "kind": "full",
+    "genre": "drift_phonk",
+    "track": "frosted motel mirror",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 4773.8,
+    "youtube": {
+      "video_id": "cx6EHUppWcE",
+      "short_id": "Pfv6i3mpTDk",
+      "watch": "https://youtu.be/cx6EHUppWcE",
+      "short": "https://youtu.be/Pfv6i3mpTDk"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122120501805453777",
+      "fb_video": "published",
+      "fb_video_id": "1668107401410165",
+      "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The total chunk count is invalid\",\"log_id\":\"2026102123371114A2D176A03ABF8CD7A1\"}}",
+      "ig": "published (reel)",
+      "ig_media_id": "18098824205420900",
+      "ig_user": "nixspeech",
+      "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+      "ig_photo": "published",
+      "ig_photo_id": "18637525600014279",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
   }
 ]

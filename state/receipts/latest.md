@@ -1,13 +1,13 @@
-# 📋 receipt · EP.072 · 2026-10-20
+# 📋 receipt · EP.073 · 2026-10-21
 
 | | |
 |---|---|
-| track | **lilac ruin** (deep_pop) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/pxZEQyALNwY |
+| track | **frosted motel mirror** (drift_phonk) |
+| mode | publish · full |
+| youtube | https://youtu.be/cx6EHUppWcE · short: https://youtu.be/Pfv6i3mpTDk |
 | multipost dial | `fb,tt,ig` |
-| took | 328.8 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/39443462234 @ a872c3e |
+| took | 4773.8 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/39621979670 @ 60fe3c3 |
 
 ## lanes
 
@@ -15,13 +15,16 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122120233659453777 |
+| fb_reel_id | 122120501805453777 |
+| fb_video | published |
+| fb_video_id | 1668107401410165 |
 | ig | published (reel) |
-| ig_media_id | 18101847932335058 |
+| ig_media_id | 18098824205420900 |
 | ig_photo | published |
-| ig_photo_id | 18094356746464941 |
+| ig_photo_id | 18637525600014279 |
 | ig_user | nixspeech |
-| tt | rejected 400: {"error":{"code":"invalid_params","message":"The total chunk count is invalid","log_id":"202610202259078524B00F16916A280A69"}} |
+| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
+| tt | rejected 400: {"error":{"code":"invalid_params","message":"The total chunk count is invalid","log_id":"2026102123371114A2D176A03ABF8CD7A1"}} |
 
 ## 🩺 lane audit
 
