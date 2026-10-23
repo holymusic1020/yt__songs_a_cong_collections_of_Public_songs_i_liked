@@ -1,13 +1,13 @@
-# 📋 receipt · EP.074 · 2026-10-22
+# 📋 receipt · EP.075 · 2026-10-23
 
 | | |
 |---|---|
-| track | **mercury foyer** (villain_pop) |
+| track | **diner window fog** (chart_pop) |
 | mode | publish · short |
-| youtube | — · short: https://youtu.be/L4gOXSFNF5M |
+| youtube | — · short: https://youtu.be/_O3SHoMYqmg |
 | multipost dial | `fb,tt,ig` |
-| took | 282.6 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/39800738869 @ 1cfd8b5 |
+| took | 1722.9 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/39973391964 @ 04cdde3 |
 
 ## lanes
 
@@ -15,13 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122120718549453777 |
+| fb_reel_id | 122120978097453777 |
 | ig | published (reel) |
-| ig_media_id | 18088546076700388 |
+| ig_media_id | 17917600482263359 |
 | ig_photo | published |
-| ig_photo_id | 17908893171576805 |
+| ig_photo_id | 18238062889319076 |
 | ig_user | nixspeech |
-| tt | rejected 400: {"error":{"code":"invalid_params","message":"The total chunk count is invalid","log_id":"202610222304458A10E70D8F639EEB6112"}} |
+| tt | rejected 400: {"error":{"code":"invalid_params","message":"The total chunk count is invalid","log_id":"2026102323413133DA667BFE74906AC0C1"}} |
 
 ## 🩺 lane audit
 
