@@ -1,5 +1,5 @@
 {
-  "episode": 75,
+  "episode": 76,
   "history": [
     {
       "episode": 1,
@@ -975,30 +975,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-23T17:45:37Z",
       "at": "2026-10-23T15:41:19+00:00"
+    },
+    {
+      "episode": 76,
+      "kind": "full",
+      "youtube_id": "AMBxYfMX8fs",
+      "video_id": "AMBxYfMX8fs",
+      "short_id": "rDhKYc7MocU",
+      "title": "three am radiator — Nix Speech (official audio)",
+      "name": "three am radiator",
+      "genre": "melodic_trap",
+      "publish_at": "2026-10-24T16:47:27Z",
+      "short_publish_at": "2026-10-24T15:05:24Z",
+      "at": "2026-10-24T14:01:30+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-10-09",
-      "episode": 63,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "lambs_teeth",
-      "track": "damp wool radiator",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122117160921453777",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7694715806260676628",
-        "ig": "published (reel)",
-        "ig_media_id": "18103911317306213",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "17948568459339606",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-11",
       "episode": 64,
@@ -1250,6 +1242,29 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18238062889319076",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-24",
+      "episode": 76,
+      "mode": "publish",
+      "kind": "full",
+      "genre": "melodic_trap",
+      "track": "three am radiator",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122121184365453777",
+        "fb_video": "published",
+        "fb_video_id": "974374645723206",
+        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The total chunk count is invalid\",\"log_id\":\"202610242201498A256B94B7AD45D53675\"}}",
+        "ig": "published (reel)",
+        "ig_media_id": "18078308474430763",
+        "ig_user": "nixspeech",
+        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+        "ig_photo": "published",
+        "ig_photo_id": "18170708542465561",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
