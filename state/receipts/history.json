@@ -1,27 +1,6 @@
 [
   {
     "date": "2026-09-15",
-    "episode": 41,
-    "mode": "publish",
-    "kind": "short",
-    "genre": "anime_titan",
-    "track": "subway charcoal",
-    "multipost_dial": "fb,tt",
-    "seconds": 1083.2,
-    "youtube": {
-      "video_id": null,
-      "short_id": "y2HsLPgxBWA",
-      "watch": null,
-      "short": "https://youtu.be/y2HsLPgxBWA"
-    },
-    "lanes": {
-      "fb": "failed softly: fb api «m/v23.0/1294240837106632/video_reels» rejected: {\"error\":{\"message\":\"Confirm your identity before you can publish as this Page. Open the Facebook app on your phone and follow the instructions.\",\"type\":\"OAuthException\",\"code\":368,\"error_data\":{\"sentry_block_data\":\"AetK9UTawmtia4Z-ndPgQ92RtIeWzf9KK9ZBbz3Ci0KVCvQIRB66IU1yMkrkezz3qcLipXe2YKWpe7uF6_Q-",
-      "tt": "uploaded → DRAFT (boss publishes in-app)",
-      "tiktok_publish_id": "v_pub_file~v2-1.7685656162372536340"
-    }
-  },
-  {
-    "date": "2026-09-15",
     "episode": 42,
     "mode": "publish",
     "kind": "short",
@@ -1042,6 +1021,33 @@
       "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
       "ig_photo": "published",
       "ig_photo_id": "18170708542465561",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
+  },
+  {
+    "date": "2026-10-25",
+    "episode": 77,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "summer_rap",
+    "track": "warm asphalt static",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 1741.5,
+    "youtube": {
+      "video_id": null,
+      "short_id": "yyCIN9xiDrQ",
+      "watch": null,
+      "short": "https://youtu.be/yyCIN9xiDrQ"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122121448905453777",
+      "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The total chunk count is invalid\",\"log_id\":\"2026102522352848E592301FAAEC1CE8BF\"}}",
+      "ig": "published (reel)",
+      "ig_media_id": "17909351688560906",
+      "ig_user": "nixspeech",
+      "ig_photo": "published",
+      "ig_photo_id": "17991810954027641",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
   }
