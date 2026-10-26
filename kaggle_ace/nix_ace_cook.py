@@ -229,10 +229,20 @@ REALISM = (", one continuous performance, imperfect human take, natural pitch "
            "no silence gaps, dynamic swells, dynamic arrangement, "
            "professional studio production")
 
+# 🎼 MELODY brief (boss 2026-10-26: "there is no lofi, no melody … noise on song
+# in background"). ACE-Step steers on tags, so the ask goes INTO the tags: a
+# singable lead line, the voice in front of the beat, and an explicit no-hiss /
+# no-audience instruction to fight the noise floor the model likes to bake in.
+# Cost: zero GPU seconds. Dial: ACE_MELODY=0 drops it and the prompt is tonight's.
+MELODY = (", clear singable lead melody carried by the voice, vocal mixed forward "
+          "above the beat, warm harmonic bed, spacious arrangement with room around "
+          "the vocal, smooth consonants, no tape hiss, no vinyl crackle, no "
+          "audience noise, no background chatter, clean studio noise floor")
+
 
 def build_prompt(genre_key, voice):
     base = ACE_TAGS.get(genre_key, ACE_TAGS["deep_pop"]).format(v=voice)
-    return base + REALISM
+    return base + REALISM + (MELODY if os.environ.get("ACE_MELODY", "1").strip() != "0" else "")
 
 
 def main():
@@ -347,14 +357,33 @@ def main():
     mp3 = WORK / f"{stem}.mp3"
     # 🔙 v8 (2026-08-29, boss ears): enchant made the voice MORE robotic —
     # experiment OVER. Exact boss-approved v6 chain returns, untouched.
-    ff = sh(["ffmpeg", "-y", "-v", "error", "-i", str(raw),
-             "-af", ("highpass=f=85,acompressor=threshold=-20dB:ratio=2.5:attack=8:release=140,"
-                     "loudnorm=I=-14:TP=-1:LRA=11,alimiter=limit=0.95,"
-                     "aresample=44100"),
-             "-ac", "2", "-b:a", "192k", str(mp3)], timeout=600)
+    # 🔊 2026-10-26 (boss: "ours are so much noise, no melody"). ACE-Step v1
+    # generates at 32 kHz, so everything the pipeline writes above ~15.6 kHz is
+    # model junk — THAT is the hiss under the vocal, and 192k MP3 encodes it
+    # faithfully. The DEHISS stage trims it at the source, one breath before the
+    # boss-approved v6 master, which is copied here BYTE FOR BYTE so the loudness
+    # law (-14 LUFS / -1 dBTP), the compressor and the limiter are unchanged.
+    # Dial: ACE_CLEAN=0 → the exact old chain. And if the new chain fails at all,
+    # the old one runs automatically: a cook can never die on my EQ taste.
+    V6 = ("highpass=f=85,acompressor=threshold=-20dB:ratio=2.5:attack=8:release=140,"
+          "loudnorm=I=-14:TP=-1:LRA=11,alimiter=limit=0.95,"
+          "aresample=44100")
+    DEHISS = ("highpass=f=42,lowpass=f=15600,"
+              "afftdn=nr=10:nf=-27:tn=1,"
+              "treble=g=-2.5:f=11000:width_type=h:w=6000,")
+    ff = None
+    if os.environ.get("ACE_CLEAN", "1").strip() != "0":
+        ff = sh(["ffmpeg", "-y", "-v", "error", "-i", str(raw),
+                 "-af", DEHISS + V6, "-ac", "2", "-b:a", "192k", str(mp3)], timeout=600)
+        if ff.returncode != 0 or not (mp3.exists() and mp3.stat().st_size >= 80_000):
+            print("  ⚠ de-hiss pass failed — shipping the plain v6 chain instead", flush=True)
+            ff = None
+    if ff is None:
+        ff = sh(["ffmpeg", "-y", "-v", "error", "-i", str(raw),
+                 "-af", V6, "-ac", "2", "-b:a", "192k", str(mp3)], timeout=600)
     assert ff.returncode == 0 and mp3.exists() and mp3.stat().st_size >= 80_000, \
         "ffmpeg master/export failed"
-    mark(f"phase: mastered (plain v6 chain) {mp3.name}")
+    mark(f"phase: mastered ({'de-hiss + ' if ff is not None and os.environ.get('ACE_CLEAN', '1').strip() != '0' else ''}v6 chain) {mp3.name}")
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
     tg_mp3 = None
     tg_lrc = None

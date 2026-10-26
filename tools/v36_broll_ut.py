@@ -193,8 +193,13 @@ try:
     # quota ledger: a week already spent must refuse the GPU to the song
     (TMP / "stage").mkdir(exist_ok=True)
     farm.STAGE = TMP / "stage"
+    # the ledger window is ROLLING 7 DAYS, so the fake spend has to be dated
+    # relative to now — a hardcoded date turns checks 18/19 into a time-bomb that
+    # goes off (red sweep, no bug) the moment that date ages out of the window.
+    from datetime import datetime as _dt, timedelta as _td, timezone as _tz
+    _at = (_dt.now(_tz.utc) - _td(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     (farm.STAGE / "quota.json").write_text(json.dumps(
-        {"runs": [{"at": "2026-10-10T00:00:00Z", "hours": 9.5, "clips": 3}]}))
+        {"runs": [{"at": _at, "hours": 9.5, "clips": 3}]}))
     farm.run = lambda *a, **k: subprocess.run(["true"])   # no network in a UT
     check("18 the farm refuses to start when the week's budget is gone",
           farm.quota_left() < 0.5, f"{farm.quota_left():.1f} h of the allowance left")

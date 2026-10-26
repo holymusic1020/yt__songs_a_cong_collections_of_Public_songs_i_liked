@@ -171,25 +171,29 @@ def fb_video(mp4: Path, caption: str) -> dict:
 
 # ──────────────────────────────── tiktok ─────────────────────────────────────
 
-def tt_chunks(size: int, cap: int = 8_000_000) -> tuple[int, int]:
-    """(chunk_size, total_chunk_count) that TikTok actually accepts.
+def tt_chunks(size: int, cap: int = 64 * 1024 * 1024) -> tuple[int, int]:
+    """(chunk_size, total_chunk_count) exactly the way TikTok counts them.
 
-    Their FILE_UPLOAD contract: chunk_size must be a MULTIPLE OF 8 BYTES, and
-    total_chunk_count must match the slices you really PUT (the final chunk may
-    be short). The lane had been declaring `chunk_size = min(size, 10 MB)` with
-    count=1, which passes only when the mp4 size itself lands on an 8-byte
-    boundary — it did for weeks by pure luck, and the moment the 6-panel
-    slideshow made the encode a few bytes longer, EVERY upload answered
-    `400 invalid_params · The chunk size is invalid` (EP.065/066/067 all lost
-    their TikTok draft, 2026-10-12 → 10-14). Found in the receipts, not by eye.
+    Their contract, learned the expensive way (this lane was dead for 8 days —
+    EP.065…EP.077 all answered 400):
+      · chunk_size must be a MULTIPLE OF 8 BYTES  → the original bug was
+        `chunk_size = min(size, 10 MB)` with count 1, legal only when the mp4
+        size happened to land on an 8-byte boundary; the day a render came out
+        3 bytes longer, every upload died with "The chunk size is invalid".
+      · total_chunk_count = video_size // chunk_size, FLOOR not ceil — and the
+        LAST chunk absorbs the remainder (their own doc example: video_size
+        50,000,123 with chunk_size 10,000,000 declares 5 chunks, not 6). My
+        first fix used ceil + equal slices, which moved the error to "The total
+        chunk count is invalid" — a smaller wrong, still wrong.
+      · a chunk may not exceed 64 MB (the oversized tail stays under 128 MB).
     """
     if size <= 0:
         return 0, 0
     cs = min(cap, size)
-    cs -= cs % 8
-    if cs <= 0:                       # a file smaller than one chunk (never real, never crash)
-        return 8, 1
-    return cs, (size + cs - 1) // cs
+    cs -= cs % 8                                       # 8-byte aligned, ≤ video_size
+    if cs <= 0:                                        # a file smaller than one chunk
+        return 8, 1                                    #   (never real; never crash)
+    return cs, max(1, size // cs)   # FLOOR: 50,000,123 / 10,000,000 → 5 chunks, tail 10,000,123
 
 
 def tiktok_video(mp4: Path, caption: str) -> dict:
@@ -267,7 +271,9 @@ def tiktok_video(mp4: Path, caption: str) -> dict:
     sent = 0
     with mp4.open("rb") as fh:
         for i in range(_tt_n):
-            data = fh.read(_tt_cs)
+            # every chunk is chunk_size bytes EXCEPT the last, which carries the
+            # remainder — that oversized tail is what makes FLOOR the right count
+            data = fh.read() if i == _tt_n - 1 else fh.read(_tt_cs)
             if not data:
                 break
             start, end = sent, sent + len(data) - 1

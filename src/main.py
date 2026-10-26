@@ -603,6 +603,17 @@ def main() -> None:
     rng = np.random.default_rng(seed)
     rng_py = random.Random(seed)
 
+    # 🎛 repo Variable GENRE_PICK (boss 2026-10-26: "there is no lofi") pins
+    # tonight's genre when he sets it. An unknown value is IGNORED with one log
+    # line — a typo in a Variable must never cost a release (same law as the
+    # PALETTES.get guard that saved EP.004).
+    _pin = (os.environ.get("GENRE_PICK") or "").strip().lower()
+    if _pin in GENRE_ROTATION:
+        if args.genre == "auto":
+            print(f"  🎛 GENRE_PICK={_pin} — pinned by the boss, rotation rests tonight", flush=True)
+        args.genre = _pin
+    elif _pin:
+        print(f"  🎛 GENRE_PICK='{_pin}' is not in the rotation — ignored, rotation stands", flush=True)
     genre_key = (args.genre if args.genre != "auto"
                  else GENRE_ROTATION[ep % len(GENRE_ROTATION)])
     if args.genre == "auto":
