@@ -1,27 +1,19 @@
-# 📋 receipt · EP.077 · 2026-10-25
+# 📋 receipt · EP.078 · 2026-10-26
 
 | | |
 |---|---|
-| track | **warm asphalt static** (summer_rap) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/yyCIN9xiDrQ |
+| track | **damp fire escape** (lofi) |
+| mode | dry_run · short |
+| youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 1741.5 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/40201264914 @ 4bd29a6 |
+| took | 138.8 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/40262529510 @ 9fcaf53 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
-| fb | published |
-| fb_reel_id | 122121448905453777 |
-| ig | published (reel) |
-| ig_media_id | 17909351688560906 |
-| ig_photo | published |
-| ig_photo_id | 17991810954027641 |
-| ig_user | nixspeech |
-| tt | rejected 400: {"error":{"code":"invalid_params","message":"The total chunk count is invalid","log_id":"2026102522352848E592301FAAEC1CE8BF"}} |
 
 ## 🩺 lane audit
 
