@@ -371,19 +371,24 @@ def main():
     DEHISS = ("highpass=f=42,lowpass=f=15600,"
               "afftdn=nr=10:nf=-27:tn=1,"
               "treble=g=-2.5:f=11000:width_type=h:w=6000,")
+    _clean = os.environ.get("ACE_CLEAN", "1").strip() != "0"
     ff = None
-    if os.environ.get("ACE_CLEAN", "1").strip() != "0":
+    if _clean:
         ff = sh(["ffmpeg", "-y", "-v", "error", "-i", str(raw),
                  "-af", DEHISS + V6, "-ac", "2", "-b:a", "192k", str(mp3)], timeout=600)
         if ff.returncode != 0 or not (mp3.exists() and mp3.stat().st_size >= 80_000):
             print("  ⚠ de-hiss pass failed — shipping the plain v6 chain instead", flush=True)
             ff = None
     if ff is None:
+        _clean = False          # dial off OR the clean pass died — say WHICH chain
         ff = sh(["ffmpeg", "-y", "-v", "error", "-i", str(raw),
                  "-af", V6, "-ac", "2", "-b:a", "192k", str(mp3)], timeout=600)
     assert ff.returncode == 0 and mp3.exists() and mp3.stat().st_size >= 80_000, \
         "ffmpeg master/export failed"
-    mark(f"phase: mastered ({'de-hiss + ' if ff is not None and os.environ.get('ACE_CLEAN', '1').strip() != '0' else ''}v6 chain) {mp3.name}")
+    # the log line tells the truth about which chain produced the file — the
+    # receipt is the only place anyone can check, so "de-hiss" must not be able
+    # to appear when the fallback actually shipped the audio.
+    mark(f"phase: mastered ({'de-hiss + ' if _clean else ''}v6 chain) {mp3.name}")
     print(f"🔥 mastered {mp3.name} ({mp3.stat().st_size//1024} KB)", flush=True)
     tg_mp3 = None
     tg_lrc = None

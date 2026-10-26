@@ -83,6 +83,20 @@ missing = names - imports - mods
 chk("os" in imports, "`import os` is in the kernel — os.environ is used by both dials",
     f"unbound-looking names: {sorted(missing)[:6]}")
 
+# the dials are only real if the runner forwards them — a Variable nobody reads
+# is a placebo, and this repo has already been burned by one.
+stg = (ROOT / "src" / "music_ace_kaggle.py").read_text(encoding="utf-8")
+chk('for _d in ("ACE_CLEAN", "ACE_MELODY"):' in stg, "the stager forwards both dials into the kernel")
+chk('_v if _v in ("0", "1") else "1"' in stg, "a typo'd dial value is clamped to 1, never to 0 by accident")
+chk(src.count('os.environ.get("ACE_CLEAN", "1")') == 1 and src.count('os.environ.get("ACE_MELODY", "1")') == 1,
+    "each dial is read exactly once in the kernel, so the stamped default cannot disagree with itself")
+chk("_clean = os.environ.get" in src and "'de-hiss + ' if _clean else" in src and "_clean = False" in src,
+    "the 'phase: mastered' log line reports the chain that REALLY produced the file")
+wf = (ROOT / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+chk("ACE_CLEAN: ${{ vars.ACE_CLEAN }}" in wf and "ACE_MELODY: ${{ vars.ACE_MELODY }}" in wf,
+    "publish.yml exports both Variables")
+chk("GENRE_PICK: ${{ vars.GENRE_PICK }}" in wf, "publish.yml exports GENRE_PICK too")
+
 print("─" * 64)
 print(f"UT-43 · PASS — {sum(checks)} checks · v6 master law intact, de-hiss is additive "
       f"with a live fallback, both dials default ON")

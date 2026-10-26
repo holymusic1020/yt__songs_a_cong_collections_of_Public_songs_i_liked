@@ -186,7 +186,9 @@ jobs:
           SPIN: "${{ vars.SPIN || inputs.spin || 1 }}"                     # 🌀 dimensional moment — DEFAULT ON (boss 2026-09-19), taste-gated to needy songs only. Permanent kill: repo Variable SPIN=0. One-run kill: input spin=0.
           LOUDNORM: "${{ vars.LOUDNORM || 1 }}"                              # 🔉 -14 LUFS / -1 dBTP per song; var=0 off
           CHIME_OFF: "${{ vars.CHIME_OFF || 1 }}"   # default 1 = chime dead (boss 2026-09-19 ting-tong); var CHIME_OFF=0 brings it back                                  # 🔔 1 = kill the 0.75s station chime (boss 2026-09-19: "ting tong on every video")
-          GENRE_PICK: ${{ vars.GENRE_PICK }}                          # 🎛 pin tonight's genre (e.g. lofi). Empty = the rotation decides. Unknown value is ignored by main.py, never fatal.  # 🧪 1 = lanes render-only, zero API calls
+          GENRE_PICK: ${{ vars.GENRE_PICK }}
+          ACE_CLEAN: ${{ vars.ACE_CLEAN }}                              # 🎛 0 = the exact old master chain (de-hiss off). Blank = ON.
+          ACE_MELODY: ${{ vars.ACE_MELODY }}                            # 🎛 0 = the exact old prompt (melody brief off). Blank = ON.                          # 🎛 pin tonight's genre (e.g. lofi). Empty = the rotation decides. Unknown value is ignored by main.py, never fatal.  # 🧪 1 = lanes render-only, zero API calls
         run: |
           set -o pipefail
           mkdir -p out

@@ -134,6 +134,21 @@ def _stage(lyrics: str | None, seconds: float, genre_key: str) -> Path:
     from datetime import datetime, timezone
     txt = txt.replace("SEED = 20260826",
                       f"SEED = {datetime.now(timezone.utc).toordinal()}", 1)
+    # 5) 🎛 sound dials (2026-10-26): the kernel reads ACE_CLEAN / ACE_MELODY from
+    #    ITS OWN env, and Kaggle never sees GitHub Variables — so the Variable is
+    #    STAMPED into the copy we push, which is how this repo does every dial.
+    #    Blank/absent → "1" (tonight's behaviour, unchanged). A value other than
+    #    0/1 is clamped to "1": a typo must never change the sound on its own.
+    for _d in ("ACE_CLEAN", "ACE_MELODY"):
+        _v = (os.environ.get(_d) or "1").strip()
+        _v = _v if _v in ("0", "1") else "1"
+        _a = f'os.environ.get("{_d}", "1")'
+        if _a in txt:
+            txt = txt.replace(_a, f'os.environ.get("{_d}", "{_v}")', 1)
+            if _v == "0":
+                print(f"  🎛 {_d}=0 — the boss parked this stage, old behaviour tonight", flush=True)
+        else:
+            print(f"  ⚠ ace-kaggle: {_d} anchor missing — dial stays in-kernel", flush=True)
     # 4) v6 (2026-08-29): per-attempt run token (staleness autopsy) + TG
     #    live-beacon creds. Stamped into the PRIVATE kernel only, never printed.
     import re as _re
