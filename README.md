@@ -104,7 +104,7 @@ Playground hands you the *same kind* of refresh token, just held by a janky
 tool (and often Google's **shared** playground client — bad for quota and
 security). The 7-day Testing-mode expiry kills it there too. Our own client
 + Production status = token that only dies if you revoke it, change your
-password, or don't use it for 6 months (we use it every 3 days).
+password, or don't use it for 6 months (we use it every 2 days).
 
 ## Local testing (no upload)
 
@@ -149,7 +149,7 @@ python -m src.main --dry-run --genre drift_phonk --length 60
 | State push fails mid-run | `git pull --rebase` self-heal before push |
 | GitHub **60-day rule**: scheduled workflows auto-disable in idle repos | our state commits = activity, repo never idles. If you EVER get the "workflow disabled" email → Actions tab → one click re-enable. Done. |
 | Something breaks silently | GitHub emails YOU on any failed run + every log opens with the 🩺 doctor report + release summary posted to the run page |
-| Lost refresh token (`invalid_grant`) | re-run Phase 4 (5 min), update the secret. Tokens die only from: password change, revoke, 6-month no-use (we use it every 3 days), or app back to Testing |
+| Lost refresh token (`invalid_grant`) | re-run Phase 4 (5 min), update the secret. Tokens die only from: password change, revoke, 6-month no-use (we use it every 2 days), or app back to Testing |
 | **Uploads locked Private** (new API project rule) | free YouTube API compliance audit — see `docs/LAUNCH.md` top. Timeouts mid-upload auto-retry; quota exhaustion stops cleanly (no loop-burn) |
 | Loudness penalty / quiet audio | every render mastered to **-14 LUFS / -1 dBTP, AAC 320k** (YouTube's own normalization target) |
 | Identical tag blocks flagged as spam | rotating tag sets + unique track-name tag per EP |

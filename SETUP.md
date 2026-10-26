@@ -1,6 +1,6 @@
 # yt-auto — setup sheet
 
-Automated release pipeline. One Short every day, one full video every 3rd
+Automated release pipeline. Two Shorts a day on off-days (one + the twin), one full video every 2nd
 episode, composed/rendered/uploaded by GitHub Actions for $0.
 Publishing uses YouTube's native `publishAt` scheduling, so releases land in
 random windows without burning runner minutes.

@@ -2,7 +2,7 @@
 
 CADENCE (your spec):
   · SHORT  → every run (cron fires daily)
-  · VIDEO  → every 3rd EP (EP.001, EP.004, EP.007…) or --video to force
+  · VIDEO  → every 2nd EP (EP.078, EP.080, EP.082…) or --video to force
 
   · short  → scheduled now+1–3h (random, seconds)
   · video  → scheduled now+0–5h on video days (<15 min → immediate)
@@ -43,7 +43,30 @@ GENRE_ROTATION = ["deep_pop", "drift_phonk", "villain_pop", "chart_pop",
 VIDEO_WINDOW_S = (3600, 5 * 3600)      # boss 2026-08-30: vid drops 1–5h out, random seconds
 SHORT_WINDOW_S = (3600, int(3.5 * 3600))  # boss 2026-08-30: shorts drop 1–3.5h out, random seconds
 IMMEDIATE_UNDER_S = 900
-VIDEO_EVERY = 3          # long-form cadence: every Nth episode
+# 🕶 2026-10-26 boss changed the timeline: "one long video (or one long song)
+# every two days; on a long day post 1 long + 1 short, the other days 2 shorts".
+# The 2-shorts shape was ALREADY the law (two_shorts_a_day + the slowed twin), so
+# only the PERIOD moves: 3 → 2. VIDEO_PHASE says which parity is the long day:
+# (ep - PHASE) % EVERY == 0. Phase 0 → EVEN episodes, which makes tonight
+# (EP.078) the first long day of the new law instead of making him wait another
+# 48 h for a long. Both numbers are overridable from state/boss_switches.json
+# ("video_every" / "video_phase") — no code edit the next time he changes his mind.
+VIDEO_EVERY = 2
+VIDEO_PHASE = 0
+
+
+def _video_day(ep: int) -> bool:
+    """True when THIS episode is a long-form day. Reads the module globals at call
+    time (not as default args) so the boss JSON can retune the cadence mid-process
+    without this helper disagreeing with main()."""
+    return (ep - VIDEO_PHASE) % max(1, VIDEO_EVERY) == 0
+
+
+def _next_video_ep(ep: int) -> int:
+    """The NEXT long-form episode strictly after this one."""
+    every = max(1, VIDEO_EVERY)
+    k = (ep - VIDEO_PHASE) % every
+    return ep + (every - k if k else every)
 
 
 def _twin_today(video_today: bool, ep: int, slowed_every: int,
@@ -582,6 +605,14 @@ def main() -> None:
         _sw = _js.loads(Path("state/boss_switches.json").read_text(encoding="utf-8"))
     except Exception:
         _sw = {}
+    for _k, _g, _hi in (("video_every", "VIDEO_EVERY", 14), ("video_phase", "VIDEO_PHASE", 13)):
+        try:                                    # a bad value must never move the
+            _v = int(_sw.get(_k))               # cadence by accident — ignore it
+        except (TypeError, ValueError):
+            continue
+        if 1 <= _v <= _hi:
+            globals()[_g] = _v
+            print(f"  🕶 boss cadence: {_k}={_v} (from state/boss_switches.json)", flush=True)
     if _sw.get("shorts") is False:
         args.no_shorts = True
         print("  🕶 boss switch: shorts OFF — long videos only until unlocked", flush=True)
@@ -624,10 +655,10 @@ def main() -> None:
             print(f"  🧠 adaptive weights → {genre_key} {weights}")
 
     # ---------- cadence ----------
-    video_today = (args.video or ep % VIDEO_EVERY == 1) and not args.shorts_only
+    video_today = (args.video or _video_day(ep)) and not args.shorts_only
     if args.no_shorts and not video_today:
         video_today = True                 # video-only run (rare/manual)
-    nxt = ep + ((1 - ep % VIDEO_EVERY) % VIDEO_EVERY)
+    nxt = _next_video_ep(ep)
     # ---------- KEEP-ALIVE gate (shadowban guard) ----------
     # Only ever upload a long-form video if the last one is older than
     # KEEP_ALIVE_HOURS (default 15h). Within the window → stay short-only so
@@ -642,7 +673,7 @@ def main() -> None:
                       f"(< {_keep_alive_hours():.0f}h) — staying short-only, "
                       f"skipping today's video upload to avoid a spam signal.")
                 video_today = False
-                nxt = ep + ((1 - ep % VIDEO_EVERY) % VIDEO_EVERY)
+                nxt = _next_video_ep(ep)   # a keep-alive demotion must not lie about the next date
     print(f"EP.{ep:03d} · genre={genre_key} · "
           f"{'FULL (video+short)' if video_today else f'short-only · next video EP.{nxt:03d}'}")
 

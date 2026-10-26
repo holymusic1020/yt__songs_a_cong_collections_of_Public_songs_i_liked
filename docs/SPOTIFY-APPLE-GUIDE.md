@@ -78,7 +78,7 @@ We disclose and stay clean.
 
 Every day it makes a **full song** (not a short) whose cooking lane is legally
 sellable, it builds a delivery box and zips it. Cadence needs no dial: a long-form song lands
-every 3rd episode (`VIDEO_EVERY = 3`) ≈ **2.3 per week**, which is already the "one song every
+every 2nd episode (`VIDEO_EVERY = 2`) ≈ **3.5 per week**, which is already above the "one song every
 two-to-three days" the channel runs on. Shorts-only days produce no pack, by design:
 
 ```

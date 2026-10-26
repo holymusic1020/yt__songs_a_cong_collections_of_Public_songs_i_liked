@@ -19,7 +19,7 @@ compliance audit. The scheduled "publish" won't make them public without it.
 `https://support.google.com/youtube/contact/yt_api_form`
 (The **YouTube API Services – Audit and Quota Extension** form. Answer
 honestly: "Automated original-music uploads to my own channel via
-videos.insert, ~2 uploads per release every 3 days, within the 10k daily
+videos.insert, ~2 uploads per release every 2 days, within the 10k daily
 quota; AI-synthetic content is self-declared on every upload.")
 
 While it processes: run EP.001 anyway — uploads just stay Private (zero
