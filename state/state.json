@@ -1005,18 +1005,6 @@
   ],
   "receipts": [
     {
-      "date": "2026-10-11",
-      "episode": 65,
-      "mode": "dry_run",
-      "kind": "short",
-      "genre": "anime_titan",
-      "track": "flooded iron balcony",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
-    {
       "date": "2026-10-12",
       "episode": 65,
       "mode": "publish",
@@ -1274,6 +1262,18 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "17991810954027641",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-26",
+      "episode": 78,
+      "mode": "dry_run",
+      "kind": "short",
+      "genre": "lofi",
+      "track": "damp fire escape",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
