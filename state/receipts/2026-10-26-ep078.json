@@ -1,28 +1,40 @@
 {
   "schema": 1,
-  "at": "2026-10-26T03:11:10Z",
+  "at": "2026-10-26T16:48:33Z",
   "date": "2026-10-26",
   "episode": 78,
-  "mode": "dry_run",
-  "kind": "short",
+  "mode": "publish",
+  "kind": "full",
   "genre": "lofi",
-  "track": "damp fire escape",
+  "track": "burnt pilot light",
   "bpm": 78,
   "key": "***",
   "youtube": {
-    "video_id": null,
-    "short_id": null,
-    "watch": null,
-    "short": null
+    "video_id": "2Ja2rGtKdu4",
+    "short_id": "29Fw2OzPoQk",
+    "watch": "https://youtu.be/2Ja2rGtKdu4",
+    "short": "https://youtu.be/29Fw2OzPoQk"
   },
   "multipost_dial": "fb,tt,ig",
   "lanes": {
+    "fb": "published",
+    "fb_reel_id": "122121734727453777",
+    "fb_video": "published",
+    "fb_video_id": "1436961715314397",
+    "tt": "uploaded → DRAFT (boss publishes in-app)",
+    "tiktok_publish_id": "v_pub_file~v2-1.7701018478366918664",
+    "ig": "published (reel)",
+    "ig_media_id": "18080076938713430",
+    "ig_user": "nixspeech",
+    "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+    "ig_photo": "published",
+    "ig_photo_id": "18169800148463415",
     "dsp": "off — DSP_PACK=0 — streaming packs off"
   },
-  "seconds": 138.8,
-  "run_id": "40262529510",
-  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/40262529510",
-  "sha": "9fcaf53",
+  "seconds": 351.1,
+  "run_id": "40361595066",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/40361595066",
+  "sha": "a007200",
   "errors": [],
   "music_lane": "ace-kaggle",
   "dsp": {
@@ -41,7 +53,7 @@
   "require_vocals": "1",
   "lane_audit": {
     "schema": 1,
-    "at": "2026-10-26T03:11:08Z",
+    "at": "2026-10-26T16:48:32Z",
     "net_probes": true,
     "dials": {
       "MULTIPOST": "fb,tt,ig",
@@ -85,7 +97,12 @@
       "GEMINI_API_KEY": "***",
       "HF_TOKEN": "***"
     },
-    "ig_account_cache": null,
+    "ig_account_cache": {
+      "id": "17841421462783079",
+      "username": "nixspeech",
+      "page_id": "1294240837106632",
+      "found_at": "2026-10-26T16:47:06Z"
+    },
     "authoritative": true,
     "checkpoint_evidence": "",
     "verdicts": [

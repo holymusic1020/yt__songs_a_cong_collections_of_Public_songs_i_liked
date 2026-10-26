@@ -2,18 +2,30 @@
 
 | | |
 |---|---|
-| track | **damp fire escape** (lofi) |
-| mode | dry_run · short |
-| youtube | — · short: — |
+| track | **burnt pilot light** (lofi) |
+| mode | publish · full |
+| youtube | https://youtu.be/2Ja2rGtKdu4 · short: https://youtu.be/29Fw2OzPoQk |
 | multipost dial | `fb,tt,ig` |
-| took | 138.8 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/40262529510 @ 9fcaf53 |
+| took | 351.1 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/40361595066 @ a007200 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
+| fb | published |
+| fb_reel_id | 122121734727453777 |
+| fb_video | published |
+| fb_video_id | 1436961715314397 |
+| ig | published (reel) |
+| ig_media_id | 18080076938713430 |
+| ig_photo | published |
+| ig_photo_id | 18169800148463415 |
+| ig_user | nixspeech |
+| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
+| tiktok_publish_id | v_pub_file~v2-1.7701018478366918664 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
