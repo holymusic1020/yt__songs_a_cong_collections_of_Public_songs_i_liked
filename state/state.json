@@ -1,5 +1,5 @@
 {
-  "episode": 78,
+  "episode": 79,
   "history": [
     {
       "episode": 1,
@@ -1014,29 +1014,22 @@
       "publish_at": "2026-10-26T21:02:19Z",
       "short_publish_at": "2026-10-26T18:00:22Z",
       "at": "2026-10-26T16:46:47+00:00"
+    },
+    {
+      "episode": 79,
+      "kind": "short",
+      "youtube_id": "UbgJB5UKzCs",
+      "video_id": null,
+      "short_id": "UbgJB5UKzCs",
+      "title": "fogged balcony glass — Nix Speech (official audio)",
+      "name": "fogged balcony glass",
+      "genre": "lofi",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-27T18:20:19Z",
+      "at": "2026-10-27T16:03:07+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-10-12",
-      "episode": 65,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "anime_titan",
-      "track": "zinc skyline frost",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122118179385453777",
-        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The chunk size is invalid\",\"log_id\":\"20261013035729297383B2C1598744491F\"}}",
-        "ig": "published (reel)",
-        "ig_media_id": "18077912330434456",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "18128144116873512",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-13",
       "episode": 66,
@@ -1299,6 +1292,26 @@
         "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
         "ig_photo": "published",
         "ig_photo_id": "18169800148463415",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-27",
+      "episode": 79,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "lofi",
+      "track": "fogged balcony glass",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122121930375453777",
+        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The chunk size is invalid\",\"log_id\":\"20261028000324C9603A2876F58023E04D\"}}",
+        "ig": "published (reel)",
+        "ig_media_id": "18139976812625734",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18030428213691013",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
