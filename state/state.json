@@ -1,5 +1,5 @@
 {
-  "episode": 79,
+  "episode": 80,
   "history": [
     {
       "episode": 1,
@@ -1027,29 +1027,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-27T18:20:19Z",
       "at": "2026-10-27T16:03:07+00:00"
+    },
+    {
+      "episode": 80,
+      "kind": "full",
+      "youtube_id": "KUhh385ME80",
+      "video_id": "KUhh385ME80",
+      "short_id": "p6Loh5dXIiA",
+      "title": "damp fire escape — Nix Speech (official audio)",
+      "name": "damp fire escape",
+      "genre": "lofi",
+      "publish_at": "2026-10-28T20:30:05Z",
+      "short_publish_at": "2026-10-28T19:20:56Z",
+      "at": "2026-10-28T16:45:57+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-10-13",
-      "episode": 66,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "disco_house",
-      "track": "mirrorball therapy",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122118461295453777",
-        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The chunk size is invalid\",\"log_id\":\"2026101401495390FBC12F1A25F524D6CC\"}}",
-        "ig": "published (reel)",
-        "ig_media_id": "18121661530986924",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "17906822058593278",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-14",
       "episode": 67,
@@ -1312,6 +1305,29 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18030428213691013",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-28",
+      "episode": 80,
+      "mode": "publish",
+      "kind": "full",
+      "genre": "lofi",
+      "track": "damp fire escape",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122122164819453777",
+        "fb_video": "published",
+        "fb_video_id": "4080084658795256",
+        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The chunk size is invalid\",\"log_id\":\"2026102900461223BABF5B46824E2B20CA\"}}",
+        "ig": "published (reel)",
+        "ig_media_id": "17950619682341834",
+        "ig_user": "nixspeech",
+        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+        "ig_photo": "published",
+        "ig_photo_id": "18082778945385529",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
