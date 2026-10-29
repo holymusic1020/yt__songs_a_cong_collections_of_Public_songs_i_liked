@@ -1,13 +1,13 @@
-# 📋 receipt · EP.080 · 2026-10-28
+# 📋 receipt · EP.081 · 2026-10-29
 
 | | |
 |---|---|
-| track | **damp fire escape** (lofi) |
-| mode | publish · full |
-| youtube | https://youtu.be/KUhh385ME80 · short: https://youtu.be/p6Loh5dXIiA |
+| track | **plum homework** (lofi) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/p39uFJam0Hk |
 | multipost dial | `fb,tt,ig` |
-| took | 1429.0 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/40727069688 @ b3d4a5c |
+| took | 1696.5 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/40915497559 @ 335c709 |
 
 ## lanes
 
@@ -15,16 +15,14 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122122164819453777 |
-| fb_video | published |
-| fb_video_id | 4080084658795256 |
+| fb_reel_id | 122122420983453777 |
 | ig | published (reel) |
-| ig_media_id | 17950619682341834 |
+| ig_media_id | 18183110911440114 |
 | ig_photo | published |
-| ig_photo_id | 18082778945385529 |
+| ig_photo_id | 18137967847711666 |
 | ig_user | nixspeech |
-| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
-| tt | rejected 400: {"error":{"code":"invalid_params","message":"The chunk size is invalid","log_id":"2026102900461223BABF5B46824E2B20CA"}} |
+| tiktok_publish_id | v_pub_file~v2-1.7702137024492734482 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
