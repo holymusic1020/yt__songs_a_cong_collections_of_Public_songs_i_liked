@@ -1,5 +1,5 @@
 {
-  "episode": 80,
+  "episode": 81,
   "history": [
     {
       "episode": 1,
@@ -1040,32 +1040,22 @@
       "publish_at": "2026-10-28T20:30:05Z",
       "short_publish_at": "2026-10-28T19:20:56Z",
       "at": "2026-10-28T16:45:57+00:00"
+    },
+    {
+      "episode": 81,
+      "kind": "short",
+      "youtube_id": "p39uFJam0Hk",
+      "video_id": null,
+      "short_id": "p39uFJam0Hk",
+      "title": "plum homework — Nix Speech (official audio)",
+      "name": "plum homework",
+      "genre": "lofi",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-10-29T20:20:43Z",
+      "at": "2026-10-29T17:06:03+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-10-14",
-      "episode": 67,
-      "mode": "publish",
-      "kind": "full",
-      "genre": "skyline_anthem",
-      "track": "halogen balcony",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122118541317453777",
-        "fb_video": "published",
-        "fb_video_id": "1682111036775427",
-        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The chunk size is invalid\",\"log_id\":\"202610141239345A010F005DF1B6099145\"}}",
-        "ig": "published (reel)",
-        "ig_media_id": "18128032133500387",
-        "ig_user": "nixspeech",
-        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
-        "ig_photo": "published",
-        "ig_photo_id": "18115887572051344",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-14",
       "episode": 68,
@@ -1328,6 +1318,27 @@
         "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
         "ig_photo": "published",
         "ig_photo_id": "18082778945385529",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-10-29",
+      "episode": 81,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "lofi",
+      "track": "plum homework",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122122420983453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7702137024492734482",
+        "ig": "published (reel)",
+        "ig_media_id": "18183110911440114",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18137967847711666",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
