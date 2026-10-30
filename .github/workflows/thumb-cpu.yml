@@ -118,6 +118,7 @@ jobs:
           python3 tools/thumb_farm.py --cpu-only --n "$n" --budget-s 15000 --sleep 2 \
             --target "${{ vars.THUMB_BANK_TARGET }}" \
             --genres "${{ vars.THUMB_GENRES }}" \
+            --sleep "${{ vars.THUMB_SLEEP_S }}" \
             || echo "⚠ cpu backup errored — the shelf keeps what it had; releases are unaffected"
 
       - name: 📏 What is on the shelf now

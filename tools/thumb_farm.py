@@ -107,15 +107,44 @@ def cursor_of(shelf: dict) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--n", type=int, default=_i("THUMB_FARM_N", 24))
-    ap.add_argument("--target", type=int, default=_i("THUMB_BANK_TARGET", 900))
-    ap.add_argument("--genres", default=os.environ.get("THUMB_GENRES", ""))
-    ap.add_argument("--sleep", type=float, default=float(_i("THUMB_SLEEP_S", 2)))
-    ap.add_argument("--budget-s", type=int, default=_i("THUMB_BUDGET_S", 1500))
+    # Parsed as STRINGS on purpose, then coerced below. In Actions an unset
+    # `${{ vars.X }}` arrives as an EMPTY STRING, and `type=int` on `--target ""`
+    # aborts the whole night before a single image is attempted — measured on
+    # thumb-cpu.yml run #1 (2026-10-30 15:27 UTC): "error: argument --target:
+    # invalid int value: ''", 0 frames, job green because the step ends in
+    # `|| echo ⚠`. A cosmetic lane must not be killable by an empty substitution,
+    # so "empty" now means "not said": use the Variable, then the default.
+    ap.add_argument("--n", default=None, help="how many prompts to attempt")
+    ap.add_argument("--target", default=None, help="stop once the shelf holds this many")
+    ap.add_argument("--genres", default=None, help="comma list; empty = the whole rotation")
+    ap.add_argument("--sleep", default=None, help="seconds between engine calls")
+    ap.add_argument("--budget-s", default=None, help="wall-clock budget for the whole night")
     ap.add_argument("--dry", action="store_true", help="build prompts, call no API, upload nothing")
     ap.add_argument("--cpu-only", action="store_true",
                     help="no network at all: SD 1.5 on this machine's cores (thumb-cpu.yml)")
     args = ap.parse_args()
+
+    def _num(flag, raw, env, dflt):
+        """empty / unset / nonsense all mean the same thing: keep the default."""
+        if isinstance(raw, (int, float)):
+            return float(raw) if isinstance(dflt, float) else int(raw)
+        txt = (raw or "").strip()
+        if not txt:
+            txt = (os.environ.get(env) or "").strip()
+        if not txt:
+            return float(dflt) if isinstance(dflt, float) else int(dflt)
+        try:
+            return float(txt) if isinstance(dflt, float) else int(float(txt))
+        except ValueError:
+            print(f"  ⚠ --{flag} {raw!r} is not a number — using {dflt}")
+            return float(dflt)
+
+    args.n = _num("n", args.n, "THUMB_FARM_N", 24)
+    args.target = _num("target", args.target, "THUMB_BANK_TARGET", 900)
+    args.sleep = _num("sleep", args.sleep, "THUMB_SLEEP_S", 2.0)
+    args.budget_s = _num("budget-s", args.budget_s, "THUMB_BUDGET_S", 1500)
+    args.genres = (args.genres or os.environ.get("THUMB_GENRES") or "").strip()
+
 
     if os.environ.get("THUMB_FARM", "1").strip() == "0":
         return ok("parked by THUMB_FARM=0 — the shelf is untouched tonight")

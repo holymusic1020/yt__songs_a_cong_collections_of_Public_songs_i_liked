@@ -460,6 +460,15 @@ nothing else. Both sides are **off until he says so**:
 | `THUMB_CPU_N` | `12` | frames per wake-up. |
 | `THUMB_CPU_MODEL` / `_STEPS` / `_GUIDANCE` / `_W` / `_H` / `_RETRY` | SD 1.5 / 20 / 7.5 / 768 / 448 / 2 | the knobs. `_STEPS 25`, `_GUIDANCE 90` (9.0) and `_RETRY 4` are the answers to "it looks soft"; `THUMB_CPU_MODEL=stabilityai/stable-diffusion-xl-base-1.0` is the answer to "make it stronger" — it will just take ~4× longer, which he has already said is fine. |
 
+**The empty-Variable trap, fixed for the whole lane** (measured on the first dispatch, 15:27 UTC
+2026-10-30): `thumb-cpu.yml` called the farm with `--target "${{ vars.THUMB_BANK_TARGET }}"` on a repo
+where that Variable does not exist, so the farm received `""`, `argparse(type=int)` aborted the night, and
+**the job still printed green** because the step ends in `|| echo ⚠`. Two changes: every numeric farm flag
+is parsed as a string and coerced with "empty = not said → Variable → default", so no unset Variable can
+kill a night; and the log line before the summary is now checked by `v46` (it replays the exact command).
+Lesson written down for me: a step that cannot fail is also a step that cannot report — read the log, not
+the ✓.
+
 **Also in this change** (measured, then fixed, because research said so):
 
 1. **Cloudflare Workers AI is now engine #2** (`THUMB_CF`): `@black-forest-labs/flux.1-schnell`, 4 steps,

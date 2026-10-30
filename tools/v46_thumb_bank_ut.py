@@ -630,6 +630,26 @@ chk("cpu" in (ROOT / "tools" / "thumb_farm.py").read_text(encoding="utf-8").spli
 chk('"pollinations": 16.0' in (ROOT / "tools" / "thumb_farm.py").read_text(encoding="utf-8"),
     "Pollinations paced at its documented 1 request / 15 s")
 
+print("── 5h · the farm cannot be killed by an empty ${{ }} substitution ──")
+# Measured failure: `--target "${{ vars.THUMB_BANK_TARGET }}"` with that Variable unset
+# handed argparse the string "" against type=int → "invalid int value" → a whole night
+# of zero frames behind a green job. The CLI must treat empty as "not said".
+env2 = dict(os.environ, THUMB_STAGE=str(TMP / "empty_flags"), THUMB_FARM="1")
+env2.pop("GITHUB_ACTIONS", None)     # a real CI box has a GH_TOKEN; this replay is about argparse
+env2.pop("THUMB_BANK_TARGET", None)
+rr = subprocess.run([sys.executable, str(ROOT / "tools" / "thumb_farm.py"), "--dry", "--cpu-only",
+                     "--n", "2", "--budget-s", "15000", "--sleep", "2", "--target", "", "--genres", ""],
+                    capture_output=True, text=True, timeout=120, env=env2, cwd=str(ROOT))
+chk(rr.returncode == 0 and "2 prompts built" in rr.stdout,
+    "the exact command the runner sent now builds its prompts instead of dying",
+    (rr.stderr or rr.stdout)[-160:])
+chk("invalid int value" not in rr.stderr + rr.stdout, "no argparse abort anywhere in that night")
+rr2 = subprocess.run([sys.executable, str(ROOT / "tools" / "thumb_farm.py"), "--dry", "--n", "3",
+                      "--target", "5", "--sleep", ""],
+                     capture_output=True, text=True, timeout=120, env=env2, cwd=str(ROOT))
+chk("shelf 0/5" in rr2.stdout and "900.0" not in rr2.stdout,
+    "a real --target still wins, and a default prints as a count, not a float", rr2.stdout.splitlines()[0][:90])
+
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
 chk("thumb.pick(meta, ep, rng, cover, OUT)" in m, "main calls pick() once per release")
