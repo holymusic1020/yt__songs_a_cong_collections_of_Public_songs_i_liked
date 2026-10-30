@@ -117,14 +117,26 @@ def _clip_prompt(pipe, text: str) -> str:
         if tok is None:
             return text
         limit = max(8, int(_num("THUMB_CPU_CLIP_TOKENS", 75)))
-        ids = tok(text, truncation=False, padding=False, max_length=limit + 2)["input_ids"][0]
+        # No kwargs in the call: transformers 5.x rejects `max_length` without
+        # `truncation`, and a TypeError here used to be swallowed — the CI log kept
+        # saying "133 > 77" while the trim line never printed, which is a fix that
+        # silently became nothing. One argument, slice by hand, and any real failure
+        # is LOUD, because a cosmetic lane is allowed to be weak but not to lie.
+        enc = tok(text)
+        ids = enc["input_ids"] if isinstance(enc, dict) else enc
+        if not isinstance(ids, list):
+            ids = list(ids)
+        while ids and isinstance(ids[0], list):        # batch-of-one: [[101, 7, …]]
+            ids = ids[0]
         if len(ids) <= limit:
             return text
         out = tok.decode(ids[:limit], skip_special_tokens=True).strip().rstrip(",")
         print(f"  🐢 prompt trimmed {len(ids)} → {limit} CLIP tokens (SD 1.5 reads 77)", flush=True)
         return out or text
-    except Exception:
-        return text                                   # a tokenizer hiccup must not cost a frame
+    except Exception as e:
+        print(f"  🐢 prompt trim unavailable ({type(e).__name__}: {str(e)[:60]}) — feeding the "
+              f"model the full text and letting CLIP cut it", flush=True)
+        return text
 
 
 def generate(meta_prompt: str, seed: int):

@@ -674,6 +674,27 @@ chk(TC._clip_prompt(object(), _long) == _long and TC._clip_prompt(None, _long) =
 cpu_src = (ROOT / "src" / "thumb_cpu.py").read_text(encoding="utf-8")
 chk("dtype=torch.float32" in cpu_src and "except TypeError" in cpu_src and "torch_dtype" in cpu_src,
     "loads with the new `dtype=` and falls back to `torch_dtype=` (diffusers 0.42 warned it is renamed in 1.0)")
+class _Strict:      # transformers 5.x: unknown kwargs are a TypeError, not a shrug
+    def __call__(self, text, **kw):
+        if kw:
+            raise TypeError("__call__() got an unexpected keyword argument 'max_length'")
+        return {"input_ids": [[101] + [7] * len(text.split()) + [102]]}
+    def decode(self, ids, skip_special_tokens=True):
+        return " ".join(["w"] * max(0, len(ids) - 2 * int(skip_special_tokens)))
+class _Batch:
+    tokenizer = _Strict()
+class _Listy:
+    def __call__(self, text, **kw):
+        return [[101] + [7] * len(text.split()) + [102]]      # a bare batch-of-one list
+    def decode(self, ids, skip_special_tokens=True):
+        return " ".join(["w"] * max(0, len(ids) - 2 * int(skip_special_tokens)))
+class _ListyPipe:
+    tokenizer = _Listy()
+chk(len(TC._clip_prompt(_Batch(), "w " * 120).split()) == 73,
+    "a tokenizer that rejects extra kwargs still gets trimmed (CI's transformers 5.22 does exactly this)")
+chk(len(TC._clip_prompt(_ListyPipe(), "w " * 120).split()) == 73,
+    "and a tokenizer returning a bare batch-of-one list is handled, not swallowed")
+chk(TC._clip_prompt(_ListyPipe(), "four small words") == "four small words", "short text still short")
 chk("THUMB_CPU_CLIP_TOKENS" in cpu_src and "THUMB_CPU_CLIP_TOKENS" in (ROOT / "docs" / "CONTROL-PANEL.md").read_text(encoding="utf-8"),
     "the CLIP-window dial in the manual is a dial that exists (docs never ship ahead of the code)")
 chk("_clip_prompt(pipe, full)" in cpu_src and "prompt=full" in cpu_src,

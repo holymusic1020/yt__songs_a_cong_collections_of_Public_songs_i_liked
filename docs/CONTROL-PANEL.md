@@ -478,6 +478,12 @@ tower stops at 77; the farm writes ~131, so the tail is trimmed rather than sile
 | frames a 300-minute job can bank | ~35 | (300 − 3) min ÷ 7.4 min |
 | runner cores | `threads=2 cpus=4` | the import inventory step |
 
+How to read the shelf after a night: `index.json` is a **release asset**, so after a
+re-upload it can serve the previous copy for a few minutes (measured: night 3 said "shelf now 6 images"
+at 16:00:03 and the URL still answered 5 rows at 16:00:40, 6 rows a minute later). Judge a night by its
+log line, not by a single `curl`; a release is unaffected because `acquire()` re-reads and a missing row
+just falls through to live generation.
+
 Quality note that only the log gave up: SD 1.5's CLIP tower reads **77 tokens** and the farm writes
 **131**, so the model was quietly keeping the first 77 and dropping the tail — the lighting and
 "music-release cover art" instructions, i.e. the part that makes a picture read as a *thumbnail*.
