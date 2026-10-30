@@ -614,7 +614,9 @@ chk("timeout-minutes: 300" in cpu_wf, "the job ends itself at 5 h (the platform 
 chk("download.pytorch.org/whl/cpu" in cpu_wf, "torch CPU wheels, not the 2 GB CUDA build")
 chk("actions/cache@v4" in cpu_wf and "huggingface" in cpu_wf, "the 4 GB of weights are cached between nights")
 chk("--cpu-only" in cpu_wf and "THUMB_BANK_TARGET" in cpu_wf, "it writes to the SAME shelf through the SAME farm")
-chk("vars.THUMB_CPU != '0'" in cpu_wf, "one repo Variable (THUMB_CPU=0) parks the whole lane")
+chk("github.event_name == 'workflow_dispatch' || vars.THUMB_CPU != '0'" in cpu_wf,
+    "a hand dispatch always runs; THUMB_CPU=0 only silences the SCHEDULE",
+    "(a bare `vars.X != '0'` on an unset X skipped the job with zero steps — measured 15:25 UTC)")
 _inst = "\n".join(l for l in cpu_wf.split("Install torch")[1][:1200].splitlines()
                  if l.strip() and not l.strip().startswith("#"))
 chk("|| true" not in _inst and "| tail" not in _inst,
