@@ -1,0 +1,135 @@
+name: 🐢 thumb CPU backup (no keys, no quota, nothing to expire)
+
+# The boss's third backup, 2026-10-30: *"it will be their 3rd backup if both of
+# those first two get failed then the third backup will start its work… I don't
+# care about how long 'cause it's just one image, one frame… we can run this
+# thing on our CPU, even if it's a really heavy model… we can at least spend 10
+# hours for 1 thumbnail on workflow."*
+#
+# So this job generates thumbnails with no API at all: SD 1.5 (the ungated
+# mirror, CreativeML OpenRAIL-M, commercial use allowed) in float32 on the
+# runner's own cores. Measured ceiling of the platform, not of the idea: a job is
+# killed at 6 h, and a public repo's standard Linux runner is free with no minute
+# cap (4 vCPU / 16 GB), so hours of CPU inference cost ₹0. The budget guard keeps
+# the job finishing on its own terms, ~20-40 frames a night, and every one of
+# them passes the same `usable()` gate as the API engines before it is trusted.
+#
+# Kill switches, in this order of preference:
+#   repo Variable THUMB_CPU     = 0   → the whole job no-ops
+#   repo Variable THUMB_CPU_AUTO = 0  → the nightly farm stops waking it (default:
+#                                       OFF — the CPU night is a choice, not a habit;
+#                                       thumb-farm.yml dispatches it only when this
+#                                       is exactly 1 AND the shelf is below
+#                                       THUMB_CPU_MIN images)
+# It writes ONLY to the `thumb-lab` release and never touches a render, an upload
+# or the song. If torch fails to install, the shelf keeps what it has.
+
+on:
+  workflow_dispatch:
+    inputs:
+      n:
+        description: "how many frames to attempt this job"
+        required: false
+        default: "12"
+      steps:
+        description: "denoising steps (14 = fast, 20 = default, 30 = careful)"
+        required: false
+        default: "20"
+      reason:
+        description: "why (goes in the log only)"
+        required: false
+        default: "manual"
+  schedule:
+    - cron: '10 6 * * 0'          # Sunday 06:10 UTC = 12:10 BDT — one deep, cheap night a week
+
+permissions:
+  contents: write                 # the shelf release only — no code is pushed from here
+  actions: write                  # so the summary can point at the run
+
+concurrency:
+  group: thumb-cpu
+  cancel-in-progress: false       # a half-finished night is still banked frames
+
+jobs:
+  cpu:
+    name: one long, quiet CPU night
+    if: ${{ vars.THUMB_CPU != '0' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 300          # 5 h of work inside GitHub's 6 h kill — the job ends itself
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      THUMB_FARM: "1"
+      THUMB_CPU: "1"
+      THUMB_BANK_TARGET: ${{ vars.THUMB_BANK_TARGET }}
+      THUMB_CPU_STEPS: ${{ inputs.steps }}
+      THUMB_CPU_MODEL: ${{ vars.THUMB_CPU_MODEL }}
+      THUMB_MODEL: ${{ vars.THUMB_MODEL }}
+      THUMB_STAGE: /tmp/thumb-cpu
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 🧊 cache the weights (~4 GB fp32)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/pip
+          key: thumb-cpu-${{ vars.THUMB_CPU_MODEL || 'stable-diffusion-v1-5/stable-diffusion-v1-5' }}-sd15
+
+      - name: Install torch (CPU wheels) + the pipeline
+        # No `--quiet`: the first night of this lane needs to show what it pulled,
+        # and `| tail` in a step that has `|| true` on it is how a missing package
+        # becomes "No module named 'google'" all over again.
+        run: |
+          python3 -m pip install --disable-pip-version-check --index-url https://download.pytorch.org/whl/cpu torch
+          python3 -m pip install --disable-pip-version-check "diffusers>=0.30" transformers accelerate safetensors "numpy>=1.26" "pillow>=10"
+          python3 - <<'PY'
+          import importlib
+          for m in ("torch", "diffusers", "transformers", "PIL", "numpy"):
+              try:
+                  mod = importlib.import_module(m)
+                  print(f"  ✓ {m} {getattr(mod, '__version__', '?')}")
+              except Exception as e:
+                  print(f"  ⚠ {m} missing ({str(e)[:60]})")
+          try:
+              import os, torch
+              print(f"  threads={torch.get_num_threads()} cpus={os.cpu_count()}")
+          except Exception:
+              pass
+          PY
+
+      - name: 🐢 Generate into the bank
+        run: |
+          n="${{ inputs.n }}"
+          case "$n" in ''|*[!0-9]*) n=12;; esac
+          echo "reason: ${{ inputs.reason }} · frames: $n"
+          python3 tools/thumb_farm.py --cpu-only --n "$n" --budget-s 15000 --sleep 2 \
+            --target "${{ vars.THUMB_BANK_TARGET }}" \
+            --genres "${{ vars.THUMB_GENRES }}" \
+            || echo "⚠ cpu backup errored — the shelf keeps what it had; releases are unaffected"
+
+      - name: 📏 What is on the shelf now
+        run: |
+          curl -sfL -o /tmp/idx.json "https://github.com/$GITHUB_REPOSITORY/releases/download/thumb-lab/index.json" || true
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('/tmp/idx.json')
+          if not p.exists():
+              print("  (still no shelf — the CPU night produced nothing it would trust)")
+              raise SystemExit(0)
+          d = json.loads(p.read_text())
+          imgs = d.get('images', [])
+          eng = {}
+          for r in imgs:
+              eng[r.get('engine', '?')] = eng.get(r.get('engine', '?'), 0) + 1
+          print(f"  🖼 {len(imgs)} images · cursor {d.get('cursor')} · engines {eng}")
+          if imgs:
+              lum = sorted(r.get('luma', 0) for r in imgs)
+              print(f"  mean luma min/med/max = {lum[0]:.0f}/{lum[len(lum)//2]:.0f}/{lum[-1]:.0f}")
+          PY

@@ -224,6 +224,18 @@ docs = ROOT / "docs" / "thumbgen.html"
 chk(docs.exists() and docs.read_bytes() == PAGE.read_bytes(),
     "the Pages copy is byte-identical to tools/thumbgen.html (one file, no drift)")
 chk((ROOT / "docs" / ".nojekyll").exists(), "docs/.nojekyll is there, so Pages serves the html as-is")
+chk("engCloudflare" in js and "api.cloudflare.com/client/v4/accounts" in js,
+    "the page offers Cloudflare Workers AI — the one free lane with a real daily allowance")
+chk("engSpace" in js and ".hf.space" in js, "and the keyless FLUX demo Space, same gradio protocol")
+chk("hf-space/" in js, "the Space answer is labelled like the farm labels it")
+lad = js[js.index("const LADDER"):]
+order = re.findall(r'\["([a-z-]+)",', lad[:400])
+chk(order == ["gem", "cf", "hf", "space", "pol"], "the page's ladder order matches the module's", str(order))
+chk("no</b> inference credits" in HTML or "no</b> inference" in HTML or "inference credits" in HTML,
+    "the page states the 2026-10-07 Hugging Face policy change where he will read it")
+chk("10,000 neurons/day" in HTML, "and Cloudflare's actual free allowance, not a vague 'free tier'")
+chk("thumb-inbox" in js and "exp-inbox" in ids, "the page can export a thumb-inbox commit pack (no terminal)")
+chk("thumb CPU backup" in HTML, "and it points at the CPU workflow when every key is refused")
 chk(len(HTML) > 20_000, f"the page is a real tool, not a stub ({len(HTML):,} bytes)")
 
 shutil.rmtree(TMP, ignore_errors=True)

@@ -215,8 +215,14 @@ def pollinations_url(prompt: str, seed: int, w: int = W, h: int = H, model: str 
     """His HTML's URL, upgraded: nologo + explicit seed + referrer (the modern
     anonymous tier wants it) and a prompt-safe percent-encode."""
     q = urllib.parse.quote(prompt, safe="")
+    # 2026 docs: anonymous = one request every 15 s on basic models; a free
+    # registered "Seed" token raises that and unlocks the standard models, so
+    # POLLINATIONS_TOKEN is honoured when the repo has one. Nothing here bills:
+    # the token is free to mint at auth.pollinations.ai.
+    tok = (os.environ.get("POLLINATIONS_TOKEN") or "").strip()
+    tail = f"&token={urllib.parse.quote(tok)}" if tok else ""
     return (f"https://image.pollinations.ai/prompt/{q}?width={w}&height={h}"
-            f"&seed={int(seed)}&nologo=true&model={model}&referrer=nixspeech")
+            f"&seed={int(seed)}&nologo=true&model={model}&referrer=nixspeech{tail}")
 
 
 def hf_url(model: str) -> list:
@@ -239,6 +245,35 @@ def _post_json(url: str, payload: dict, headers: dict | None = None, timeout: in
                                           **(headers or {})})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
+
+
+def _fit_frame(data: bytes) -> bytes:
+    """Crop to 16:9, then — if the engine gave us something small (Cloudflare's
+    FLUX is 512², SD 1.5 is 768×448) — Lanczos it up to 1280×720 and unsharp it.
+
+    A soft-but-bright frame beats a perfect little one that the gate rejects:
+    `usable()` demands ≥900×500 because YouTube scales the thumbnail DOWN into
+    search results, and an upscale keeps that promise while a 512² original
+    cannot. The relight and the branding overlay go on top of this anyway.
+    """
+    try:
+        from PIL import Image
+        data = _to169(data)                       # crop first; _to169 re-encodes itself
+        im = _img(data)
+        if im.width >= 900 and im.height >= 500:
+            return _as_jpeg(data)
+        im = im.resize((W, H), Image.LANCZOS)
+        try:
+            from PIL import ImageFilter
+            im = im.filter(ImageFilter.UnsharpMask(radius=1.6, percent=88, threshold=2))
+        except Exception:
+            pass
+        out = io.BytesIO()
+        im.convert("RGB").save(out, "JPEG", quality=94)
+        b = out.getvalue()
+        return b if len(b) >= MIN_BYTES else data
+    except Exception:
+        return data
 
 
 def _as_jpeg(data: bytes) -> bytes:
@@ -498,6 +533,71 @@ def _sse_value(url: str, timeout: int = 240):
     return None, "stream ended before a complete frame"
 
 
+def _cloudflare(meta_prompt: str, seed: int):
+    """Second engine, and the best free one on the table as of 2026-10-30: Cloudflare
+    Workers AI — `@black-forest-labs/flux.1-schnell`, **10,000 neurons a day ≈ 173
+    images at 1024²/4 steps**, resets 00:00 UTC, no card, no billing on the Free
+    plan (research: a free Hugging Face account now gets NO inference credits, and
+    Gemini's free tier lists image output as unavailable — so a "key works" test on
+    text is not a promise that images are free there).
+
+    Needs two repo *Variables* (they are not secrets): CLOUDFLARE_ACCOUNT_ID, plus
+    the secret CLOUDFLARE_API_TOKEN with the Workers AI permission. Without them
+    this engine says exactly that and steps aside.
+    """
+    if os.environ.get("THUMB_CF", "1").strip() == "0":
+        return None, "cloudflare parked (THUMB_CF=0)"
+    acct = (os.environ.get("CLOUDFLARE_ACCOUNT_ID") or "").strip()
+    tok = (os.environ.get("CLOUDFLARE_API_TOKEN") or "").strip()
+    if not acct or not tok:
+        return None, "no CLOUDFLARE_ACCOUNT_ID/CLOUDFLARE_API_TOKEN (free 10k neurons/day)"
+    model = (os.environ.get("CF_AI_MODEL") or "@black-forest-labs/flux.1-schnell").strip()
+    url = f"https://api.cloudflare.com/client/v4/accounts/{acct}/ai/run/{model}"
+    heads = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}
+    prompt = PROMPT_PREFIX + meta_prompt
+    last = ""
+    for payload in ({"prompt": prompt, "steps": 4, "seed": int(seed) % (2 ** 31)},
+                    {"prompt": prompt, "steps": 4}):      # older schema has no seed
+        try:
+            raw = _post_json(url, payload, headers=heads, timeout=180)
+        except urllib.error.HTTPError as e:
+            try:
+                detail = e.read().decode("utf-8", "replace")[:220]
+            except Exception:
+                detail = ""
+            last = f"cf: HTTP {e.code} {detail}"
+            continue
+        except Exception as e:
+            last = f"cf: {type(e).__name__} {str(e)[:80]}"
+            continue
+        try:
+            d = json.loads(raw.decode("utf-8", "replace"))
+        except Exception:
+            last = f"cf: not json ({raw[:60]!r})"
+            continue
+        res = d.get("result") or {}
+        b64 = res.get("image") or res.get("url") or ""
+        if d.get("success") and b64:
+            import base64
+            if str(b64).startswith("http"):
+                try:
+                    return _get(b64, timeout=90), f"cloudflare/{model.split('/')[-1]}"
+                except Exception as e:
+                    last = f"cf: asset fetch {str(e)[:60]}"
+                    continue
+            try:
+                return base64.b64decode(b64), f"cloudflare/{model.split('/')[-1]}"
+            except Exception as e:
+                last = f"cf: bad base64 ({str(e)[:50]})"
+                continue
+        errs = d.get("errors") or d.get("messages") or d
+        last = f"cf: {str(errs)[:220]}"
+        # a quota error is not a bug — say so in one line and get out of the way
+        if "exceeded" in str(errs).lower() or "limit" in str(errs).lower():
+            return None, f"cloudflare: daily neurons spent ({str(errs)[:120]})"
+    return None, last or "cloudflare: no verdict"
+
+
 def _space(meta_prompt: str, seed: int):
     """Third, and the one that saves the night when no key works: the official
     FLUX.1-schnell demo Space on Hugging Face — no token, no key, ₹0.
@@ -594,12 +694,25 @@ def generate(prompt: str, seed: int, near: list[int] | None = None) -> tuple[byt
     ladder = []
     if os.environ.get("THUMB_GEMINI", "1").strip() != "0":
         ladder.append(_gemini)
+    if os.environ.get("THUMB_CF", "1").strip() != "0":
+        ladder.append(_cloudflare)
     if os.environ.get("THUMB_HF", "1").strip() != "0":
         ladder.append(_hf)
     if os.environ.get("THUMB_SPACE", "1").strip() != "0":
         ladder.append(_space)
     if os.environ.get("THUMB_POLLINATIONS", "1").strip() != "0":
         ladder.append(_pollinations)
+    # The 2026-10-30 ask: "it will be their 3rd backup if both of those first two
+    # get failed … I don't care about how long … we can run this thing on our CPU".
+    # Deliberately LAST and deliberately opt-in: a release must never wait minutes
+    # on torch, so only .github/workflows/thumb-cpu.yml turns this on.
+    if os.environ.get("THUMB_CPU", "0").strip() == "1":
+        try:
+            from src import thumb_cpu
+            ladder.append(thumb_cpu.generate)
+        except Exception as e:
+            whys_ = None
+            return None, "", f"cpu engine unavailable ({str(e)[:80]})"
     whys = []
     for eng in ladder:
         try:
@@ -610,7 +723,7 @@ def generate(prompt: str, seed: int, near: list[int] | None = None) -> tuple[byt
         if not data:
             whys.append(label)
             continue
-        data = _as_jpeg(_to169(data))            # a square answer is still a frame
+        data = _fit_frame(data)                    # crop, then upscale small answers
         im, why = usable(data, near=near)
         if im is None:
             whys.append(f"{label} rejected → {why}")
@@ -620,9 +733,17 @@ def generate(prompt: str, seed: int, near: list[int] | None = None) -> tuple[byt
 
 
 # ───────────────────────────── the shelf (bank) ─────────────────────────────
-def shelf_url(name: str) -> str:
+def shelf_url(name: str, src: str = "") -> str:
     repo = os.environ.get("GITHUB_REPOSITORY", "").strip()
+    if src == "inbox":
+        # `thumb-inbox/` in the repo itself: a batch made in the browser
+        # (tools/thumbgen.html → "commit pack") lands in the bank as soon as it
+        # is dragged into the folder on github.com — no gh, no git, no terminal.
+        return f"https://raw.githubusercontent.com/{repo}/main/{INBOX_DIR}/{name}"
     return f"https://github.com/{repo}/releases/download/{SHELF_TAG}/{name}"
+
+
+INBOX_DIR = os.environ.get("THUMB_INBOX_DIR", "thumb-inbox")
 
 
 def load_index(cache_dir=None):
@@ -635,12 +756,35 @@ def load_index(cache_dir=None):
                 return json.loads(p.read_text(encoding="utf-8"))
             except Exception:
                 pass
-    try:
-        data = _get(shelf_url(INDEX_FILE), timeout=45)
-        return json.loads(data.decode("utf-8"))
-    except Exception as e:
-        print(f"  🗃 thumb bank unavailable ({str(e)[:70]})")
-        return None
+    out = None
+    for src in ("", "inbox"):                        # shelf first, then the inbox
+        try:
+            d = json.loads(_get(shelf_url(INDEX_FILE, src), timeout=45).decode("utf-8"))
+            for r in d.get("images") or []:
+                r["_src"] = src or "release"
+            if out is None:
+                out = d
+            else:
+                known = {r.get("sha") for r in out.get("images") or []}
+                out.setdefault("images", []).extend(
+                    [r for r in (d.get("images") or []) if r.get("sha") not in known])
+                out["cursor"] = max(int(out.get("cursor") or 0), int(d.get("cursor") or 0))
+        except Exception as e:
+            if src == "":
+                # no shelf yet is the NORMAL first-weeks path, not an alarm
+                print(f"  🗃 thumb bank unavailable ({str(e)[:70]})")
+    if out is not None:
+        rows = out.get("images") or []
+        if cache_dir:
+            from pathlib import Path as _P
+            try:                                   # cache it: a release should not
+                _P(cache_dir).mkdir(parents=True, exist_ok=True)   # depend on GitHub
+                (_P(cache_dir) / INDEX_FILE).write_text(           # twice a day
+                    json.dumps(out, ensure_ascii=False), encoding="utf-8")
+            except Exception:
+                pass
+        out["images"] = rows
+    return out
 
 
 def pick_index(idx: int, idx_obj, genre_key: str | None = None) -> dict | None:
@@ -690,7 +834,7 @@ def acquire(meta: dict, ep: int, cache_dir, rng=None):
             out = cache / f"bank_{remote}"
             try:
                 if not out.exists() or out.stat().st_size < MIN_BYTES:
-                    out.write_bytes(_get(shelf_url(remote), timeout=60))
+                    out.write_bytes(_get(shelf_url(remote, row.get("_src", "")), timeout=60))
                 im, why = usable(out.read_bytes())
                 if im is not None:
                     return out, "bank", f"{remote[:12]} · {row.get('engine', '?')} · {why}"

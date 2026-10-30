@@ -147,17 +147,30 @@
 
     <div class="engine">
       <span class="tag">2</span>
-      <label class="chk"><input type="checkbox" id="eng-hf" checked> <b>Hugging Face</b> — free inference, ₹0</label>
+      <label class="chk"><input type="checkbox" id="eng-cf" checked> <b>Cloudflare Workers AI</b> — the best free lane today</label>
+      <input type="text" id="cf-acct" placeholder="account id (0a1b…)" style="width:220px">
+      <input type="password" id="key-cf" placeholder="API token with Workers AI permission" style="flex:1;min-width:200px">
+      <span><label>model</label><input type="text" id="model-cf" value="@black-forest-labs/flux.1-schnell" style="width:250px"></span>
+      <span class="hint">10,000 neurons/day ≈ 173 FLUX.1-schnell images, resets 00:00 UTC, no card.
+      A free Hugging Face account now gets <b>no</b> inference credits and Gemini's free tier lists image
+      output as unavailable — so if a key "works", test it on an image, not on text.</span>
+    </div>
+
+    <div class="engine">
+      <span class="tag">3</span>
+      <label class="chk"><input type="checkbox" id="eng-hf"> <b>Hugging Face</b> — only if you bought credits / PRO</label>
       <input type="password" id="key-hf" placeholder="hf_… token with 'make calls to Inference Providers'" style="flex:1;min-width:220px">
       <span>
         <label>model</label>
         <input type="text" id="model-hf" value="black-forest-labs/FLUX.1-schnell" style="width:250px">
       </span>
-      <span class="hint">router.huggingface.co — api-inference is a dead host now</span>
+      <span><label>space</label><input type="text" id="space-id" value="black-forest-labs/FLUX.1-schnell" style="width:250px"></span>
+      <span><label>api</label><input type="text" id="space-api" value="infer" style="width:80px"></span>
+      <span class="hint">router.huggingface.co needs bought credits now; the demo Space (tag 4) is the keyless one</span>
     </div>
 
     <div class="engine">
-      <span class="tag">3</span>
+      <span class="tag">4</span>
       <label class="chk"><input type="checkbox" id="eng-pol" checked> <b>Pollinations</b> — the original engine, no key</label>
       <span>
         <label>model</label>
@@ -259,12 +272,16 @@
       <span id="s-eng"></span>
     </div>
     <div class="row" style="margin-top:10px">
+      <button id="exp-inbox">📥 commit pack for thumb-inbox/ (no terminal)</button>
       <button id="exp-json">⬇ index.json (shelf format)</button>
       <button id="exp-files">⬇ download the kept files</button>
       <button id="exp-prompts">⬇ prompts.txt</button>
       <button id="clr">clear the table</button>
-      <span class="note" style="margin:0">then, from the repo:
-        <span class="mono">gh release upload thumb-lab out/*.jpg out/index.json --clobber</span></span>
+      <span class="note" style="margin:0">If every engine in this page is refused, the third backup needs no key
+      at all: Actions → <b>🐢 thumb CPU backup</b> → Run workflow. SD 1.5 on the runner's own cores, ₹0, and it
+      is allowed to take hours because it is one frame at a time.</span>
+      <span class="note" style="margin:0">or, from the repo:
+        <span class="mono">gh release upload thumb-lab *.jpg index.json --clobber</span></span>
     </div>
   </section>
 
@@ -468,7 +485,72 @@ async function engPollinations(prompt, seed) {
   throw new Error(last);
 }
 
-const LADDER = [["gem", engGemini], ["hf", engHF], ["pol", engPollinations]];
+async function engCloudflare(prompt, seed) {
+  const acct = (val("cf-acct", "") || "").trim(), tok = (val("key-cf", "") || "").trim();
+  if (!acct || !tok) throw new Error("no Cloudflare account id / token in this page");
+  const model = (val("model-cf", "@black-forest-labs/flux.1-schnell") || "").trim();
+  const url = `https://api.cloudflare.com/client/v4/accounts/${acct}/ai/run/${model}`;
+  let last = "no attempt";
+  for (const body of [{ prompt: "Generate one 1280x720 cinematic photograph. " + prompt, steps: 4, seed: seed >>> 0 },
+                      { prompt: "Generate one 1280x720 cinematic photograph. " + prompt, steps: 4 }]) {
+    const r = await fetch(url, { method: "POST", headers: { Authorization: "Bearer " + tok, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => null);
+    if (d && d.success && d.result && d.result.image) {
+      const bin = atob(d.result.image), u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      return { blob: new Blob([u8], { type: "image/png" }), engine: "cloudflare/" + model.split("/").pop(), via: `${r.status}` };
+    }
+    last = `${r.status} ${JSON.stringify((d && (d.errors || d)) || "not json").slice(0, 200)}`;
+    if (/exceeded|limit|neuron/i.test(last)) break;      // a spent day is not a retry-with
+  }
+  throw new Error(last);
+}
+
+/** The free FLUX.1-schnell demo Space — the engine that carried the bank on
+    2026-10-30 when every key was quota-empty. Gradio's queue protocol over
+    fetch: submit, read the event stream, take the file the answer names. */
+async function engSpace(prompt, seed) {
+  const space = (val("space-id", "black-forest-labs/FLUX.1-schnell") || "").trim();
+  const api = (val("space-api", "infer") || "infer").replace(/^\/|\/$/g, "");
+  const [owner, ...rest] = space.split("/");
+  const base = "https://" + (owner + "-" + rest.join("/")).toLowerCase().replace(/_/g, "-").replace(/\./g, "-") + ".hf.space";
+  let pfx = "/gradio_api";
+  try { pfx = ((await (await fetch(base + "/config")).json()).api_prefix || "/gradio_api").replace(/\/$/, ""); } catch (e) {}
+  const r = await fetch(`${base}${pfx}/call/${api}`, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: ["Generate one 1280x720 cinematic photograph. " + prompt, seed >>> 0, false, 1280, 720, 4] }) });
+  const { event_id: ev } = await r.json();
+  if (!ev) throw new Error("space gave no event_id (" + r.status + ")");
+  const s = await fetch(`${base}${pfx}/call/${api}/${ev}`, { headers: { Accept: "text/event-stream" } });
+  const rd = s.body.getReader(), dec = new TextDecoder();
+  let buf = "", val = null, evt = "", data = [];
+  while (true) {
+    const { value, done } = await rd.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let at;
+    while ((at = buf.indexOf("\n\n")) >= 0) {
+      const frame = buf.slice(0, at); buf = buf.slice(at + 2);
+      evt = ""; data = [];
+      for (const ln of frame.split("\n")) {
+        if (ln.startsWith("event:")) evt = ln.slice(6).trim();
+        else if (ln.startsWith("data:")) data.push(ln.slice(5).trim());
+      }
+      if (evt === "complete") { try { val = JSON.parse(data.join("\n")); } catch (e) {} }
+      if (evt === "error") throw new Error("space refused: " + data.join(" ").slice(0, 160));
+    }
+  }
+  if (!val) throw new Error("space stream ended with no answer (it is busy, frozen, or rate-limiting this IP)");
+  let rec = (val && val.value !== undefined) ? val.value : val;
+  if (Array.isArray(rec)) rec = rec[0];
+  const u = rec && (rec.url || rec.path);
+  if (!u) throw new Error("no file url in the space answer");
+  const ir = await fetch(u.startsWith("http") ? u : base + u);
+  if (!ir.ok) throw new Error("space asset " + ir.status);
+  return { blob: await ir.blob(), engine: "hf-space/" + api, via: "gradio" };
+}
+
+const LADDER = [["gem", engGemini], ["cf", engCloudflare], ["hf", engHF],
+                ["space", engSpace], ["pol", engPollinations]];
 
 async function generate(prompt, seed) {
   const why = [];
@@ -728,6 +810,21 @@ function download(name, blob) {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
+on("exp-inbox", "click", () => {
+  // `thumb-inbox/` in the repo is a second shelf source that src/thumb_bank.py
+  // reads with no token at all: drop the files in on github.com (Add file →
+  // Upload files) and tomorrow's release can pick from them. No gh, no git.
+  const idx = { cursor: Math.floor(num("cursor", 0)), made_by: "thumbgen.html via thumb-inbox",
+                at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
+                images: kept.map(({ _blob, ...r }) => r) };
+  download("index.json", new Blob([JSON.stringify(idx, null, 1)], { type: "application/json" }));
+  setTimeout(async () => {
+    for (const r of kept) { if (r._blob) { download(r.file, r._blob); await new Promise((s) => setTimeout(s, 350)); } }
+  }, 600);
+  line("📥 index.json + the jpgs are in your downloads: put them all in `thumb-inbox/` on github.com " +
+       "(Add file → Upload files). The bank reads that folder beside the release, no key needed.", "ok");
+});
+
 on("exp-json", "click", () => {
   const idx = { tag: "thumb-lab", cursor: Math.floor(num("cursor", 0)), made_by: "thumbgen.html (Thumbnail Lab)",
                 at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
@@ -762,14 +859,17 @@ on("combopill", "click", async () => {
 function save() {
   try {
     const cfg = {};
-    for (const id of ["eng-gem", "eng-hf", "eng-pol", "model-gem", "model-hf", "model-pol", "pol-enhance",
+    for (const id of ["eng-gem", "eng-hf", "eng-pol", "eng-cf", "model-gem", "model-hf", "model-pol",
+                      "model-cf", "space-id", "space-api", "cf-acct", "pol-enhance",
                       "size", "seed", "n", "stride", "delay", "retries", "cursor", "ax-genre",
+                      "eng-cf", "model-cf", "space-id", "space-api", "cf-acct",
                       "g-luma", "g-lumax", "g-spread", "g-bytes", "g-dh", "g-crop", "g-dh-on", "strict", "walk", "seedstep"]) {
       const el = $(id); if (!el) continue;
       cfg[id] = el.type === "checkbox" ? el.checked : el.value;
     }
     // the keys deliberately do NOT go in localStorage unless he ticks nothing…
-    if (checked("keep-keys")) { cfg["key-gem"] = val("key-gem", ""); cfg["key-hf"] = val("key-hf", ""); }
+    if (checked("keep-keys")) { cfg["key-gem"] = val("key-gem", ""); cfg["key-hf"] = val("key-hf", "");
+                                  cfg["key-cf"] = val("key-cf", ""); }
     localStorage.setItem("nixlab.cfg", JSON.stringify(cfg));
   } catch (e) {}
 }
@@ -790,7 +890,8 @@ on("keep-keys", "change", (e) => {
     line(e.target.checked ? "⚠ keys kept in this browser's localStorage — only on your own machine" : "▪ keys will be forgotten when this tab closes", e.target.checked ? "wn" : "ok");
   } catch (err) {}
 });
-for (const id of ["eng-gem", "eng-hf", "eng-pol", "model-gem", "model-hf", "model-pol", "pol-enhance",
+for (const id of ["eng-gem", "eng-hf", "eng-pol", "eng-cf", "model-gem", "model-hf", "model-pol",
+                  "model-cf", "space-id", "space-api", "cf-acct", "pol-enhance",
                   "size", "seed", "n", "stride", "delay", "retries", "g-luma", "g-lumax", "g-spread",
                   "g-bytes", "g-dh", "g-crop", "g-dh-on", "strict", "walk", "seedstep"]) on(id, "change", save);
 document.addEventListener("keydown", (e) => {

@@ -48,7 +48,10 @@ INDEX = TB.INDEX_FILE
 NIGHTS = "nights.json"
 
 
-PACE = {"hf-space": 25.0, "pollinations": 8.0, "gemini": 3.0, "huggingface": 4.0}
+PACE = {"hf-space": 25.0,                    # the shared demo rate-limits per visitor
+        "pollinations": 16.0,                 # its own docs: anonymous = 1 request / 15 s
+        "gemini": 3.0, "huggingface": 4.0, "cloudflare": 1.5,
+        "cpu": 1.5}
 
 
 def _i(name: str, default: int) -> int:
@@ -110,6 +113,8 @@ def main() -> int:
     ap.add_argument("--sleep", type=float, default=float(_i("THUMB_SLEEP_S", 2)))
     ap.add_argument("--budget-s", type=int, default=_i("THUMB_BUDGET_S", 1500))
     ap.add_argument("--dry", action="store_true", help="build prompts, call no API, upload nothing")
+    ap.add_argument("--cpu-only", action="store_true",
+                    help="no network at all: SD 1.5 on this machine's cores (thumb-cpu.yml)")
     args = ap.parse_args()
 
     if os.environ.get("THUMB_FARM", "1").strip() == "0":
@@ -121,6 +126,16 @@ def main() -> int:
     have = len(shelf["images"])
     if have >= args.target:
         return ok(f"shelf already holds {have} images (target {args.target}) — nothing to do")
+
+    if args.cpu_only:
+        # The boss's third backup: "if both of those first two get failed then the
+        # third backup will start its work… I don't care about how long". So the API
+        # engines are switched OFF for this run rather than merely deprioritised — a
+        # CPU night must not quietly burn a day's quota on its way past.
+        for k in ("THUMB_GEMINI", "THUMB_CF", "THUMB_HF", "THUMB_SPACE", "THUMB_POLLINATIONS"):
+            os.environ[k] = "0"
+        os.environ["THUMB_CPU"] = "1"
+        print("  \U0001f422 cpu-only night: no keys, no quota, nothing to expire")
 
     gpool = [g.strip() for g in (args.genres or "").split(",") if g.strip()] or list(TB.GENRE_MOOD)
     cur = cursor_of(shelf)

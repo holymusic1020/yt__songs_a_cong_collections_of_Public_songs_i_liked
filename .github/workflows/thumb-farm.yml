@@ -96,6 +96,35 @@ jobs:
         run: |
           python3 tools/thumb_farm.py --n "${THUMB_FARM_N:-24}" || echo "⚠ farm errored — shelf untouched, releases unaffected"
 
+      - name: 🐢 Wake the CPU backup if the shelf is still thin
+        # The "third backup" rule, wired: the key lanes and the free engines are
+        # tried first; if tonight left the bank nearly empty, this dispatches
+        # thumb-cpu.yml — SD 1.5 on the runner's own cores, no key, no quota, hours
+        # are fine. Asleep unless THUMB_CPU_AUTO=1: a 5-hour CI job should be a
+        # choice the boss makes once, not a habit I give myself.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTO: ${{ vars.THUMB_CPU_AUTO }}
+          MIN: ${{ vars.THUMB_CPU_MIN }}
+          N: ${{ vars.THUMB_CPU_N }}
+        run: |
+          if [ "$AUTO" != "1" ]; then
+            echo "  (THUMB_CPU_AUTO is not 1 — the CPU lane stays asleep; dispatch it by hand any time)"
+            exit 0
+          fi
+          n=$(curl -sfL "https://github.com/$GITHUB_REPOSITORY/releases/download/thumb-lab/index.json" \
+                | python3 -c "import json,sys;print(len((json.load(sys.stdin) or {}).get('images',[])))" 2>/dev/null || echo 0)
+          want=${MIN:-3}
+          echo "  shelf holds $n image(s); the CPU night wakes below $want"
+          if [ "$n" -ge "$want" ]; then
+            echo "  ✓ the bank has enough — no CPU night tonight"
+            exit 0
+          fi
+          gh workflow run thumb-cpu.yml -R "$GITHUB_REPOSITORY" --ref main \
+            -f reason="shelf-thin($n)" -f n="${N:-12}" \
+            && echo "  🐢 dispatched thumb-cpu.yml — it reports on its own run" \
+            || echo "  ⚠ could not dispatch (token?); run Actions → thumb CPU backup by hand"
+
       - name: 📏 What is on the shelf
         run: |
           curl -sfL -o /tmp/index.json "https://github.com/$GITHUB_REPOSITORY/releases/download/thumb-lab/index.json" || true

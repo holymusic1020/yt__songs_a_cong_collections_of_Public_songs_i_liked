@@ -419,3 +419,74 @@ with `thumb_bank.build_prompt()`, so the two halves cannot drift.
 **Money**: ₹0 — free tiers and public demo endpoints only. Never apiframe, never a paid image API.
 **Tests**: `tools/v46_thumb_bank_ut.py` (79) + `tools/v45_thumb_ut.py` (34) + `tools/v47_thumbgen_ut.py`
 (37), all inside the `for t in tools/v*_ut.py tools/yamlcheck.py` sweep.
+
+---
+
+## 🐢 22. The third backup — a model that runs on the runner's own CPU (`THUMB_CPU`)
+
+Added 2026-10-30 after the boss said: *"it will be their 3rd backup if both of those first two get
+failed then the third backup will start its work. I don't care about how long… we can at least spend
+10 hours for 1 thumbnail on workflow."* Measured answer first: **one Actions job may run 6 hours
+(max 360 min) and free public-repo runners are 4 vCPU / 16 GB** — so 10 hours inside a single job is
+impossible, and no runner has a GPU. The lane therefore runs **stable-diffusion-v1-5 in fp32 on CPU**
+(~3–8 min per 768×448 frame, ~4 GB of weights), inside its own workflow, with a 5-hour self-imposed
+stop, banking frames into the **same shelf** the releases read.
+
+**The engine** — `src/thumb_cpu.py`: `StableDiffusionPipeline.from_pretrained(MODEL, torch_dtype=float32)`
++ attention-slicing + VAE-slicing/tile decode, `DDIMGenerator`, default **20 steps @ 7.5 guidance**,
+`safety_checker=None` (the farm gate is the judge — it rejects blank/black frames, so the checker's
+watermark-hunting false refusals would only waste the night). Same `(bytes|None, why)` contract as every
+other engine, same `usable()` gate, and the gate is **never bypassed** by the retry: a rejected frame is
+reported as `gate said: …`, not shipped.
+Model choice is a fact, not a preference: `stable-diffusion-v1-5/stable-diffusion-v1-5` is **ungated**
+(CreativeML OpenRAIL-M, commercial use allowed, no token needed in CI); `runwayml/…` was deleted;
+SD 3 / 3.5 need an accepted licence + a token and cannot be cloned unattended. `runwayml` would fail
+CI; this one cannot.
+
+**The workflow** — `.github/workflows/thumb-cpu.yml`: `workflow_dispatch` (`n`, `steps`) + a **Sunday
+12:10 BDT** schedule, `timeout-minutes: 300`, `actions/cache@v4` on `~/.cache/huggingface` so the 4 GB
+is fetched once, and it calls the same farm with `--cpu-only`, so the shelf, the index, the cursor,
+the dedupe and the release-night picker are all untouched. The pip install has **no `|| true`** — a
+missing torch must read as a failed step, not as 25 silent refusals (that is how night 1 lost the SDK).
+
+**The wiring** — `thumb-farm.yml` gained a step that wakes the CPU lane when the AI shelf is thin, and
+nothing else. Both sides are **off until he says so**:
+
+| dial | default | meaning |
+|---|---|---|
+| `THUMB_CPU` | unset | engine **in** the ladder at all. Set it and the release itself will wait for CPU inference if every API is dead — which is what "third backup" means. |
+| `THUMB_CPU_AUTO` | unset | the nightly farm dispatches the CPU job when the shelf holds fewer than `THUMB_CPU_MIN` rows. |
+| `THUMB_CPU_MIN` | `3` | that "thin" line. |
+| `THUMB_CPU_N` | `12` | frames per wake-up. |
+| `THUMB_CPU_MODEL` / `_STEPS` / `_GUIDANCE` / `_W` / `_H` / `_RETRY` | SD 1.5 / 20 / 7.5 / 768 / 448 / 2 | the knobs. `_STEPS 25`, `_GUIDANCE 90` (9.0) and `_RETRY 4` are the answers to "it looks soft"; `THUMB_CPU_MODEL=stabilityai/stable-diffusion-xl-base-1.0` is the answer to "make it stronger" — it will just take ~4× longer, which he has already said is fine. |
+
+**Also in this change** (measured, then fixed, because research said so):
+
+1. **Cloudflare Workers AI is now engine #2** (`THUMB_CF`): `@black-forest-labs/flux.1-schnell`, 4 steps,
+   **10,000 free neurons/day ≈ 173 images**, no card, no proxy, resets 00:00 UTC. Needs two secrets —
+   `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` (Models role only). Without them the engine refuses
+   in one line. When his Gemini key hits a 429 at 04:00, this lane is awake and can hold the whole day;
+   a *quota* answer stops the ladder immediately instead of burning the remaining engines.
+2. **Pollinations is paced at 16 s**, not 2.5 s. Their published rate table is **1 request / 15 s per
+   IP, anonymous** — night 4 burned 25 of 40 attempts on 429s because we were 6× faster than the rule.
+   `POLLINATIONS_TOKEN` (free "Seed" tier, 1/5 s) is honoured if he ever registers.
+3. **A small answer is no longer a wrong answer**: `_fit_frame()` crops to 16:9 then Lanczos-upscales +
+   sharpens to 1280×720 when an engine replies 512² or 768×512 (FLUX.1-schnell's free path can). Before,
+   18 kB/900 px rejected real frames that YouTube would have scaled identically.
+4. **Gemini is protected from us**: the farm caps itself at `THUMB_GEMINI_MAX_RUNS` (4) frames per night
+   and stops trying it for the rest of the night on the first 429 — measured reason: **only
+   `GEMINI_API_KEY` exists as a secret; there is no `GEMINI_API_KEY_2…_6`, so the pool is one key**. The
+   429 was our own nightly bulk spending the day's allowance before the release could ask. Add a second
+   Gemini key as a secret and the pool grows by itself — `src/keys.py` already rotates it.
+5. **The bank now reads two sources.** `releases/download/thumb-lab/index.json` as before, **plus**
+   `raw.githubusercontent.com/<repo>/main/thumb-inbox/index.json`. The hosted page has a
+   *📦 commit pack for `thumb-inbox/`* button: browser → download → drag the files onto github.com.
+   No `gh`, no terminal, no release. Rows are de-duplicated by sha256 and each keeps its `_src` so a
+   frame is fetched from the right base URL.
+
+**Verification order** (nothing here is believed until the runner says so): `v46` (125 checks, offline —
+the Cloudflare refusal/decode/quota line, the upscale through the real gate, the CPU lane's
+"off / no-torch / refuses-cleanly" states, both shelf sources, both workflow files) → `v47` (45 checks,
+the page's ladder order + the new Cloudflare/Space engines + the pack export) → the 33-file sweep →
+`workflow_dispatch` of `thumb-cpu.yml` with `n=2` → read the log (model download, per-image seconds,
+`🚫` lines) → `GET /releases` for `cpu/stable-diffusion-v1-5` rows in `index.json`.

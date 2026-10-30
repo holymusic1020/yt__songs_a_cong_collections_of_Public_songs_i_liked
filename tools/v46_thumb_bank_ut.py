@@ -29,6 +29,7 @@ import io
 import json
 import base64
 import os
+import shutil
 import subprocess
 import sys
 import urllib.error
@@ -64,6 +65,16 @@ TB._get = TB._post_json = _offline
 TB._sse_value = lambda *a, **k: (None, "network off (UT)")
 
 checks = []
+
+
+def fresh_cache(name):
+    """A cached shelf copy left by an earlier run makes "did it download?" a lie,
+    and these checks are about the fetch — so the directory is wiped first."""
+    d = TMP / name
+    if d.exists():
+        shutil.rmtree(d)
+    d.mkdir(parents=True, exist_ok=True)
+    return d
 
 
 def chk(cond, msg, detail=""):
@@ -305,7 +316,7 @@ def _fake_get(url, headers=None, timeout=90):
     return _good_bytes                      # the shared 16:9 fixture this file already built
 TB._get = _fake_get
 try:
-    got, src, note = TB.acquire({"name": "X", "genre_key": "lofi"}, 82, TMP / "cache_read")
+    got, src, note = TB.acquire({"name": "X", "genre_key": "lofi"}, 82, fresh_cache("cache_read"))
     chk(src == "bank" and got is not None, "a shelf row is USED, not skipped", str(note)[:90])
     chk(_seen_urls and _seen_urls[0].endswith("deadbeefcafe1234abcd5678.jpg"),
         "it is fetched by its shelf file name — never by the local cache name", str(_seen_urls)[:120])
@@ -314,11 +325,11 @@ try:
     _seen_urls.clear()
     TB.load_index = lambda cache_dir=None: {"images": [{"genre": "techno", "file": "t.jpg",
                                                          "sha": "t" * 32, "luma": 90, "spread": 40, "dhash": 1}]}
-    got2, src2, note2 = TB.acquire({"name": "Y", "genre_key": "lofi"}, 83, TMP / "cache_read2")
+    got2, src2, note2 = TB.acquire({"name": "Y", "genre_key": "lofi"}, 83, fresh_cache("cache_read2"))
     chk(src2 == "bank" and got2 is not None,
         "a genre with no rows falls back to the whole bank rather than to nothing", str(note2)[:80])
     TB._get = lambda url, headers=None, timeout=90: (_ for _ in ()).throw(RuntimeError("shelf gone"))
-    got3, src3, note3 = TB.acquire({"name": "Z", "genre_key": "lofi"}, 84, TMP / "cache_read3")
+    got3, src3, note3 = TB.acquire({"name": "Z", "genre_key": "lofi"}, 84, fresh_cache("cache_read3"))
     chk(got3 is None and "bank fetch failed" in note3,
         "a shelf that 404s is reported in the note, not swallowed", str(note3)[:110])
 except Exception as e:
@@ -502,8 +513,120 @@ for wf in ("thumb-farm.yml", "broll-farm.yml"):
     chk("contents: write" in s, f"{wf} may write a release")
     chk("secrets.GITHUB_TOKEN || secrets.GH_TOKEN" in s,
         f"{wf} uses the workflow token first — his PAT 403s on Releases")
-chk("out/index.json --clobber" in (ROOT / "tools/thumbgen.html").read_text(encoding="utf-8"),
-    "the command printed on his page is a command that works")
+_page = (ROOT / "tools/thumbgen.html").read_text(encoding="utf-8")
+chk("--clobber" in _page and "--cfile" not in _page,
+    "the upload command printed on his page is one gh actually accepts")
+
+print("── 5g · Cloudflare, the CPU lane, and the inbox the boss's page fills ──")
+cf1, cf2 = TB._cloudflare("a room at dusk", 1)
+chk(cf1 is None and "CLOUDFLARE" in cf2, "no Cloudflare creds → a one-line refusal, no exception", cf2[:60])
+import base64 as _b64
+_pj = TB._post_json
+TB._post_json = lambda url, payload, headers=None, timeout=180: (
+    b'{"success":true,"result":{"image":"' + _b64.b64encode(_good_bytes) + b'"}}')
+os.environ["CLOUDFLARE_ACCOUNT_ID"] = "acct"; os.environ["CLOUDFLARE_API_TOKEN"] = "tok"
+c3, c4 = TB._cloudflare("a room at dusk", 7)
+chk(c3 is not None and c4.startswith("cloudflare/flux"), "a Workers AI answer is decoded from result.image", c4)
+TB._post_json = lambda url, payload, headers=None, timeout=180: (
+    b'{"success":false,"errors":[{"message":"Neurons limit exceeded"}]}')
+c5, c6 = TB._cloudflare("a room at dusk", 7)
+chk(c5 is None and "neurons spent" in c6, "a spent day is named and the engine steps aside (no retry storm)", c6[:80])
+os.environ.pop("CLOUDFLARE_ACCOUNT_ID"); os.environ.pop("CLOUDFLARE_API_TOKEN")
+TB._post_json = _pj
+
+sq512 = io.BytesIO()
+from PIL import Image as _I512
+_I512.fromarray(_np.random.default_rng(5).integers(0, 255, (512, 512, 3), dtype=_np.uint8)).save(sq512, "JPEG", quality=90)
+fit = TB._fit_frame(sq512.getvalue())
+fim = TB._img(fit)
+chk(fim.size == (1280, 720), "a 512² engine answer is cropped AND upscaled to a real thumbnail", str(fim.size))
+chk(TB.usable(fit)[0] is not None, "and it passes the same gate the shelf demands", TB.usable(fit)[1])
+src_mod = (ROOT / "src" / "thumb_bank.py").read_text(encoding="utf-8")
+tail = src_mod[src_mod.index("def generate(prompt: str"):]
+chk("ladder.append(_cloudflare)" in tail and tail.index("_cloudflare") < tail.index("_space"),
+    "the ladder is gemini → cloudflare → huggingface → space → pollinations → cpu")
+chk('THUMB_CPU", "0"' in tail and "thumb_cpu" in tail,
+    "the CPU engine is opt-in only — a release must never wait on torch")
+os.environ["THUMB_CPU"] = "1"
+from src import thumb_cpu as TC
+d1, w1 = (None, "")
+try:
+    d1, w1 = TC.generate("a room at dusk", 3)
+except Exception as e:
+    chk(False, "the CPU lane never raises out of generate()", f"{type(e).__name__}: {e}")
+chk(d1 is None and ("not installed" in w1 or "gate" in w1 or "failed" in w1),
+    "without torch it refuses with the reason (this box has none — that is the case that must be graceful)", w1[:80])
+os.environ.pop("THUMB_CPU")
+chk(TC.generate("x", 1)[0] is None, "and off by default (THUMB_CPU unset)")
+os.environ["POLLINATIONS_TOKEN"] = "seed-token"
+chk("&token=seed-token" in TB.pollinations_url("hi", 1), "a free registered Pollinations token is sent")
+os.environ.pop("POLLINATIONS_TOKEN")
+
+_release = {"images": [{"file": "r1.jpg", "sha": "r" * 32, "genre": "lofi", "engine": "e",
+                        "luma": 90, "spread": 40, "dhash": 1}], "cursor": 61}
+_inbox = {"images": [
+    {"file": "i1.jpg", "sha": "i" * 31 + "1", "genre": "deep_pop", "engine": "thumbgen.html",
+     "luma": 100, "spread": 45, "dhash": 255},
+    {"file": "i3.jpg", "sha": "i" * 31 + "3", "genre": "deep_pop", "engine": "thumbgen.html",
+     "luma": 112, "spread": 52, "dhash": 51},
+    {"file": "i2.jpg", "sha": "i" * 31 + "2", "genre": "dark_ambient", "engine": "thumbgen.html",
+     "luma": 88, "spread": 41, "dhash": 15}]}
+_TBX = os.environ.get("GITHUB_REPOSITORY")
+os.environ["GITHUB_REPOSITORY"] = "h/r"
+_urls = []
+def _by_url(url, headers=None, timeout=90):
+    _urls.append(url)
+    if "releases/download" in url:
+        return json.dumps(_release if url.endswith("index.json") else _good_bytes if url.endswith("r1.jpg") else b"").encode() \
+            if not url.endswith("index.json") else json.dumps(_release).encode()
+    if "raw.githubusercontent.com" in url:
+        return json.dumps(_inbox).encode() if url.endswith("index.json") else _good_bytes
+    raise RuntimeError("?")
+_g = TB._get
+TB._get = _by_url
+TB.load_index.__globals__["__builtins__"] = TB.load_index.__globals__["__builtins__"]   # no-op keeps linters quiet
+ix = TB.load_index(cache_dir=None)
+chk(ix and len(ix["images"]) == 4, "load_index merges the release shelf AND thumb-inbox/", str(ix and len(ix['images'])))
+chk({r["_src"] for r in ix["images"]} == {"release", "inbox"}, "each row remembers where it came from")
+row = TB.pick_index(0, ix, "deep_pop")
+chk(row and row["file"] == "i1.jpg" and row["_src"] == "inbox",
+    "a genre the inbox is deep enough for is served from the inbox")
+thin = TB.pick_index(0, ix, "dark_ambient")
+chk(thin and thin["file"] != "i2.jpg",
+    "a genre with ONE frame is not repeated — the picker walks the whole bank instead",
+    str(thin and thin["file"]))
+_urls.clear()
+got, src, note = TB.acquire({"name": "N", "genre_key": "deep_pop"}, 90, fresh_cache("inbox_cache"))
+chk(got is not None and src == "bank", "acquire() reads it like any other bank row", str(note)[:80])
+chk(any("raw.githubusercontent.com/h/r/main/thumb-inbox/i1.jpg" == u.split("https://")[-1] for u in _urls),
+    "and fetches it from the raw inbox URL, token-free", str(_urls)[:150])
+TB._get = _g
+if _TBX is None:
+    os.environ.pop("GITHUB_REPOSITORY", None)
+else:
+    os.environ["GITHUB_REPOSITORY"] = _TBX
+
+cpu_wf = (ROOT / ".github" / "workflows" / "thumb-cpu.yml").read_text(encoding="utf-8")
+import yaml as _y
+_d = _y.safe_load(cpu_wf)
+chk(True, "thumb-cpu.yml is real YAML the platform can run")
+chk("timeout-minutes: 300" in cpu_wf, "the job ends itself at 5 h (the platform kills at 6 — measured ceiling)")
+chk("download.pytorch.org/whl/cpu" in cpu_wf, "torch CPU wheels, not the 2 GB CUDA build")
+chk("actions/cache@v4" in cpu_wf and "huggingface" in cpu_wf, "the 4 GB of weights are cached between nights")
+chk("--cpu-only" in cpu_wf and "THUMB_BANK_TARGET" in cpu_wf, "it writes to the SAME shelf through the SAME farm")
+chk("vars.THUMB_CPU != '0'" in cpu_wf, "one repo Variable (THUMB_CPU=0) parks the whole lane")
+_inst = "\n".join(l for l in cpu_wf.split("Install torch")[1][:1200].splitlines()
+                 if l.strip() and not l.strip().startswith("#"))
+chk("|| true" not in _inst and "| tail" not in _inst,
+    "the install step cannot fail quietly (that is how night 1 lost the SDK): no `|| true`, no `| tail`",
+    repr(_inst[:90]))
+farm_wf = (ROOT / ".github" / "workflows" / "thumb-farm.yml").read_text(encoding="utf-8")
+chk("gh workflow run thumb-cpu.yml" in farm_wf and 'AUTO" != "1"' in farm_wf,
+    "and the nightly farm wakes it ONLY when told to and only when the shelf is thin")
+chk("cpu" in (ROOT / "tools" / "thumb_farm.py").read_text(encoding="utf-8").split("PACE = {")[1][:400],
+    "the farm knows the CPU lane needs no politeness interval")
+chk('"pollinations": 16.0' in (ROOT / "tools" / "thumb_farm.py").read_text(encoding="utf-8"),
+    "Pollinations paced at its documented 1 request / 15 s")
 
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
