@@ -172,28 +172,57 @@ def fb_video(mp4: Path, caption: str) -> dict:
 # ──────────────────────────────── tiktok ─────────────────────────────────────
 
 def tt_chunks(size: int, cap: int = 64 * 1024 * 1024) -> tuple[int, int]:
-    """(chunk_size, total_chunk_count) exactly the way TikTok counts them.
+    """(chunk_size, total_chunk_count) — the three rules EP.065…EP.081 prove.
 
-    Their contract, learned the expensive way (this lane was dead for 8 days —
-    EP.065…EP.077 all answered 400):
-      · chunk_size must be a MULTIPLE OF 8 BYTES  → the original bug was
-        `chunk_size = min(size, 10 MB)` with count 1, legal only when the mp4
-        size happened to land on an 8-byte boundary; the day a render came out
-        3 bytes longer, every upload died with "The chunk size is invalid".
-      · total_chunk_count = video_size // chunk_size, FLOOR not ceil — and the
-        LAST chunk absorbs the remainder (their own doc example: video_size
-        50,000,123 with chunk_size 10,000,000 declares 5 chunks, not 6). My
-        first fix used ceil + equal slices, which moved the error to "The total
-        chunk count is invalid" — a smaller wrong, still wrong.
-      · a chunk may not exceed 64 MB (the oversized tail stays under 128 MB).
+    History, because this lane has cost four separate diagnoses:
+      · EP.065–072 — `chunk_size = min(size, 10 MB)`, count 1: died the day a
+        render came out 3 bytes off an 8-byte boundary → "The chunk size is
+        invalid". Rule 1: **chunk_size is a multiple of 8.**
+      · EP.073–077 — I declared ceil(size/chunk) equal slices → "The total chunk
+        count is invalid". Rule 2: **total_chunk_count = video_size //
+        chunk_size (FLOOR)**, and the LAST chunk carries the remainder (their own
+        doc example: 50,000,123 B with chunk_size 10,000,000 → 5 chunks, tail
+        10,000,123).
+      · EP.078/081 passed, EP.079/080 got "The chunk size is invalid" again. The
+        two failures were 5-ish MB Shorts whose size was NOT a multiple of 8: the
+        only way to describe them under rule 1+2 was chunk_size = floor8(size)
+        with count 1, i.e. chunk_size ≠ video_size with no oversized tail to
+        hide behind. Rule 3: **a single chunk is legal only when chunk_size ==
+        video_size** — so an unaligned file must be SPLIT, letting the leftover
+        ride inside the last chunk.
+
+    Implementation: try the fewest pieces first (p = 1 …), round that piece size
+    DOWN to a multiple of 8, and accept only a plan where TikTok's own floor
+    agrees (size // cs == p). floor == p forces the tail into [cs, 2·cs), which
+    is exactly TikTok's "last chunk may be larger, up to 128 MB" allowance. At
+    our sizes this settles on p = 1–4; the cap is respected on every branch.
     """
     if size <= 0:
         return 0, 0
-    cs = min(cap, size)
-    cs -= cs % 8                                       # 8-byte aligned, ≤ video_size
-    if cs <= 0:                                        # a file smaller than one chunk
-        return 8, 1                                    #   (never real; never crash)
-    return cs, max(1, size // cs)   # FLOOR: 50,000,123 / 10,000,000 → 5 chunks, tail 10,000,123
+    if size < 16:
+        # Below 16 bytes there is no chunk_size that is both a multiple of 8 and
+        # small enough for two pieces, so no legal plan exists. No mp4 is this
+        # small; answer best-effort instead of inventing an illegal one.
+        return (size if size % 8 == 0 else 8), 1
+    if size >= cap:
+        # Prefer the biggest legal chunk first: TikTok's own worked example
+        # (50,000,123 B, chunk_size 10,000,000 → 5 chunks with a 10,000,123-byte
+        # tail) is a cap-sized plan, and fewer PUTs are fewer ways to fail.
+        cs = cap - (cap % 8)
+        pieces = size // cs                       # floor: their rule, again
+        if pieces >= 2 and size - (pieces - 1) * cs <= 2 * cs:
+            return cs, pieces
+    for pieces in range(1, 4096):
+        cs = -(-size // pieces)
+        cs -= cs % 8
+        if cs <= 0 or cs > cap:
+            continue
+        if pieces == 1 and cs != size:
+            continue                                  # rule 3
+        if size // cs == pieces:                      # rule 2, as TikTok computes it
+            return cs, pieces
+    cs = cap - (cap % 8)                              # absurdly large file: cap-sized
+    return cs, max(1, size // cs)
 
 
 def tiktok_video(mp4: Path, caption: str) -> dict:

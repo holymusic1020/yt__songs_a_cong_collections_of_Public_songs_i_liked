@@ -22,21 +22,43 @@ from src.multi_post import tt_chunks
 # total_chunk_count 5 (floor), last chunk oversized at 10,000,123 bytes.
 chk(tt_chunks(4_000_000) == (4_000_000, 1), "aligned file → 1 chunk (the case that always worked)")
 cs, n = tt_chunks(5_000_003)
-chk(cs % 8 == 0 and n == 1 and cs < 5_000_003,
-    f"odd size → legal chunk {cs}, count {n} (floor: the tail rides inside it)", f"{cs},{n}")
+chk(cs % 8 == 0 and n == 2 and cs * 2 <= 5_000_003 < cs * (n + 1),
+    f"odd size → {cs} × {n}: split, so the remainder rides in an oversized tail "
+    f"(a lone chunk would have to claim chunk_size ≠ video_size → EP.079/080's 400)",
+    f"{cs},{n}")
 chk(tt_chunks(50_000_123, cap=10_000_000) == (10_000_000, 5),
     "TikTok's documented example reproduced exactly: 50,000,123 / 10,000,000 → 5 chunks")
-for size in (1, 8, 9, 655_357, 1_000_003, 5_000_003, 64 * 1024 * 1024, 64 * 1024 * 1024 + 1,
-             130_000_000, 137_423_105, 500_000_001, 1_073_741_824):
+for size in (16, 17, 24, 25, 655_357, 4_000_000, 1_000_003, 5_000_003,
+             64 * 1024 * 1024 - 1, 64 * 1024 * 1024, 64 * 1024 * 1024 + 1,
+             67_108_865, 130_000_000, 137_423_105,
+             500_000_001, 1_073_741_824, 4_999_999, 5_000_001):
     c, k = tt_chunks(size)
     assert c % 8 == 0, ("chunk not /8", size, c)
     assert c <= max(size, 8), ("chunk bigger than file", size, c)
+    assert c <= 64 * 1024 * 1024, ("chunk over the 64 MB ceiling", size, c)
+    assert c * k <= size + c, ("plan needs more bytes than the file has", size, c, k)
     assert k == max(1, size // c), ("count != floor(size/chunk)", size, c, k)
     last = size - (k - 1) * c
     assert 0 < last <= 2 * c, ("tail chunk out of contract", size, c, k, last)
     assert last <= 128 * 1024 * 1024, ("tail over 128 MiB", size, last)
     assert (k - 1) * c + last == size, ("coverage gap", size, c, k)
-chk(True, "property sweep over 12 sizes: floor count, /8 chunks, oversized tail, full coverage")
+    if k == 1:
+        assert c == size and size % 8 == 0, ("a lone chunk must equal the file", size, c, k)
+    if size > 64 * 1024 * 1024:
+        assert k >= 2, ("a file over the 64 MB cap can never be one chunk", size, c, k)
+    if size % 8 != 0:
+        assert k >= 2, ("unaligned size declared as 1 chunk — the EP.079/080 bug", size, c, k)
+chk(all(tt_chunks(s) == ((s, 1) if s % 8 == 0 else (8, 1)) for s in (1, 8, 9, 15)),
+    "the sub-16-byte band is answered best-effort (no legal plan exists) and never raises")
+chk(True, "property sweep over 16 sizes: /8 chunks, floor count, oversized tail, full coverage, "
+          "and the new law — a single chunk only when chunk_size == video_size")
+cs, n = tt_chunks(4_000_000)
+chk((cs, n) == (4_000_000, 1), "an aligned file still uploads as one exact chunk (never split for fun)")
+cs, n = tt_chunks(5_000_001)
+chk(cs % 8 == 0 and n == 2 and cs < 5_000_001, f"unaligned file splits instead of lying: {cs} × {n}")
+chk(tt_chunks(5_000_003)[1] >= 2, "the size class that failed on EP.079/EP.080 now declares ≥2 chunks")
+chk(all(tt_chunks(s)[1] >= 2 for s in (4_999_999, 5_000_001, 5_000_003, 8_000_001, 12_345_679)),
+    "every unaligned size in our Shorts range splits, every aligned one stays whole")
 chk(tt_chunks(0) == (0, 0) and tt_chunks(-5) == (0, 0), "empty/garbage size → (0,0), never a crash")
 
 # the real upload path, against a fake transport
@@ -59,10 +81,11 @@ res = MP.tiktok_video(f, "test caption")
 put = [c for c in calls if c[0] == "put"]
 init = [c for c in calls if c[0] == "init"][0][1]["source_info"]
 chk(sum(p[2] for p in put) == 5_000_003, "every byte is sent, no truncation")
-chk(len(put) == 1 and put[0][1] == "bytes 0-5000002/5000003",
-    "one PUT for a 5 MB short, range covering the WHOLE file", str([p[1] for p in put]))
-chk(init["chunk_size"] % 8 == 0 and init["total_chunk_count"] == 1,
-    "declared chunk_size is 8-byte aligned and count matches floor(size/chunk)")
+chk(len(put) >= 2 and put[-1][1].endswith("-5000002/5000003"),
+    f"a 5,000,003-byte short now uploads as {len(put)} PUTs with the tail carrying the remainder",
+    str([p[1] for p in put]))
+chk(init["chunk_size"] % 8 == 0 and init["total_chunk_count"] == len(put),
+    "declared chunk_size is 8-byte aligned and the count matches the PUTs we make")
 chk("DRAFT" in res.get("tt", ""), "lane still reports the DRAFT law", str(res)[:80])
 f.unlink(missing_ok=True)
 
