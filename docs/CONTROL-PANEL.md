@@ -460,8 +460,8 @@ nothing else. Both sides are **off until he says so**:
 | dial | default | meaning |
 |---|---|---|
 | `THUMB_CPU` | unset | engine **in** the ladder at all. Set it and the release itself will wait for CPU inference if every API is dead — which is what "third backup" means. |
-| `THUMB_CPU_AUTO` | unset | the nightly farm dispatches the CPU job when the shelf holds fewer than `THUMB_CPU_MIN` rows. |
-| `THUMB_CPU_MIN` | `3` | that "thin" line. |
+| `THUMB_CPU_AUTO` | **`1`, set 2026-10-30 16:20 UTC** | the nightly farm dispatches the CPU job when the shelf holds fewer than `THUMB_CPU_MIN` rows. Flipped after five measured frames, not before: the lane had to prove it banks a frame before it was allowed to schedule itself. |
+| `THUMB_CPU_MIN` | **`12`, set 2026-10-30** | that "thin" line — 12 frames ≈ twelve days of cover with nothing but a runner and a model. Raise it and the bank fills further; `0` stops the wake-up. |
 | `THUMB_CPU_N` | `12` | frames per wake-up. |
 | `THUMB_CPU_CLIP_TOKENS` | `75` | how much of the prompt SD 1.5 is allowed to read (its CLIP
 tower stops at 77; the farm writes ~131, so the tail is trimmed rather than silently dropped). |
@@ -523,6 +523,12 @@ the ✓.
    *📦 commit pack for `thumb-inbox/`* button: browser → download → drag the files onto github.com.
    No `gh`, no terminal, no release. Rows are de-duplicated by sha256 and each keeps its `_src` so a
    frame is fetched from the right base URL.
+
+**Live state right now**: `thumb-lab` holds **8 rows / cursor 610**, five of them `cpu/stable-diffusion-v1-5`
+(chart_pop 79.3/64.1, phonk_mafia 110.6/56.7, melodic_trap 105.2/50.5, summer_rap 115.6/30.0,
+orbit_trap 96.8/50.7) and three from the API lanes; `THUMB_CPU` itself is **unset**, on purpose — a
+release must not download 5.5 GB of torch, it reads the shelf the CPU night filled. That is how the
+"third backup" reaches a video: **the bank is the interface, not the job.**
 
 **Verification order** (nothing here is believed until the runner says so): `v46` (125 checks, offline —
 the Cloudflare refusal/decode/quota line, the upscale through the real gate, the CPU lane's
