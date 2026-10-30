@@ -1070,8 +1070,9 @@ def main() -> None:
                 "files": [str(f) for f in (wav, cover, long_mp4, short_mp4) if f]}
     (OUT / "latest.json").write_text(json.dumps(manifest, indent=2))
 
-    vid = sid = None
-    errors: list[str] = []
+    vid = sid = sid2 = None      # sid2 starts as None: the twin block below only
+    errors: list[str] = []       # binds it on off-days, and the thumbnail pass
+                                 # reads all three unconditionally
     if args.publish and not args.dry_run:
         from src import uploader, analytics
         print("  🧠 refreshing adaptive weights…")
@@ -1121,6 +1122,30 @@ def main() -> None:
                 print(f"  ✅ twin (slowed+reverb): https://youtu.be/{sid2} · {twin_at}")
             except Exception as e:
                 print(f"  (twin upload skipped: {e})")
+        # 🖼 custom thumbnails (boss 2026-10-26: "all the video thumbnail is
+        # same"). We let YouTube pick a frame: for a SHORT that frame is the
+        # portrait image pillarboxed into 16:9 (~70 % black bar), and our covers
+        # are moody on purpose (grain + scrim, mean luma measured at 10–26 / 255
+        # on the live channel), so the grid read as N near-black rectangles.
+        # thumb.build() re-lights the SAME artwork — brand law intact, no
+        # redesign, the render/subtitle/master chain untouched — and it is set on
+        # every upload. Cosmetic → wrapped, never fatal; THUMB=0 turns it off.
+        if os.environ.get("THUMB", "1").strip() != "0" and (vid or sid or sid2):
+            try:
+                from src import thumb
+                for _lbl, _id, _slow in (("long", vid, False), ("short", sid, False),
+                                         ("twin", sid2, True)):
+                    if not _id:
+                        continue
+                    _jp = thumb.build(cover, meta, ep,
+                                      OUT / f"ep{ep:03d}_thumb{'_twin' if _slow else ''}.jpg",
+                                      slowed=_slow)
+                    if _jp and uploader.set_thumbnail(_id, _jp):
+                        print(f"  ✅ thumbnail set on the {_lbl} · "
+                              f"{'slowed variant' if _slow else 'release art'}")
+            except Exception as e:
+                print(f"  (thumbnail pass skipped: {str(e)[:110]} — uploads are already live)")
+
         # ---------- persist state ONLY when something actually went up ----------
         # partial day (1 of 2 uploaded) → advance so we NEVER re-upload a duplicate;
         # total failure (nothing up) → keep EP so tomorrow retries the same episode.

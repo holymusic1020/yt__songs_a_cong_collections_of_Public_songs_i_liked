@@ -108,3 +108,25 @@ def upload(video_path: Path, meta: dict, publish_at: str | None = None) -> str:
         print("    private-locked until the free compliance audit passes:")
         print(f"    {AUDIT_URL}")
     return resp["id"]
+
+
+def set_thumbnail(video_id: str, jpg_path: Path) -> bool:
+    """thumbnails.set — 50 quota units, and the youtube.upload scope we already
+    hold is the one Google requires for it (there is no separate thumbnail scope).
+
+    Deliberately swallows everything: a thumbnail is cosmetics, and this repo's
+    law is that cosmetics never cost a release. Returns True only when YouTube
+    accepted the file."""
+    try:
+        from googleapiclient.discovery import build
+        from googleapiclient.http import MediaFileUpload
+
+        yt = build("youtube", "v3", credentials=_creds(), cache_discovery=False)
+        yt.thumbnails().set(videoId=video_id,
+                            media_body=MediaFileUpload(str(jpg_path),
+                                                       mimetype="image/jpeg")).execute()
+        return True
+    except Exception as e:
+        print(f"  ⚠ thumbnail not set on {video_id}: {str(e)[:140]}")
+        print("    (the video itself is live — this is a look, not a release)")
+        return False
