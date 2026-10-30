@@ -324,10 +324,13 @@ _im = TB._img(h1)
 chk(_im.width == 1024 and _im.height == 576, "and it lands 16:9 after the crop", f"{_im.width}x{_im.height}")
 def _boom(url, payload, headers=None, timeout=180):
     raise urllib.error.HTTPError(url, 401, "Unauthorized", None, None)
+_orig_post2 = TB._post_json
 TB._post_json = _boom
 h3, h4 = TB._hf("a room at dusk", 3)
 chk(h3 is None and "401" in h4, "a token without inference permission is named in the log", h4[:80])
-del TB._post_json
+TB._post_json = _orig_post2      # restore, never del: `del` on a monkeypatched
+chk(hasattr(TB, "_post_json"),   # name deletes the module's real function, and
+    "the patch is undone, not the function")   # every later section inherits a hole
 os.environ.pop("HF_TOKEN", None)
 
 # generate() must accept an engine's square frame (crop feeds the gate)
@@ -336,6 +339,47 @@ TB._gemini = lambda mp, sd: (None, "sdk missing")
 TB._hf = lambda mp, sd: (None, "no HF_TOKEN")
 g1, g2, g3 = TB.generate("x", 1)
 chk(g1 is not None and g2 == "pollinations/flux", "generate() crops before the gate, so a square engine still ships", g3[:80])
+print("── 5d · the no-key engine, and the shelf's single codec ──")
+chk(TB._space_host("black-forest-labs/FLUX.1-schnell") == "https://black-forest-labs-flux-1-schnell.hf.space",
+    "a Space id folds its dots and capitals into the real hostname (TLS taught me twice)")
+chk(TB._space_host("Someone/My_Model") == "https://someone-my-model.hf.space",
+    "underscores fold too", TB._space_host("Someone/My_Model"))
+_g0, _p0 = TB._get, TB._post_json
+TB._get = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("offline"))
+chk(TB._api_prefix("https://x.hf.space") == "/gradio_api", "an unreadable /config falls back to the modern prefix")
+TB._get = _g0
+
+png = TMP / "in.png"
+_Im.fromarray(_np.random.default_rng(7).integers(0, 255, (1280, 720, 3), dtype=_np.uint8)).save(png)
+jb = TB._as_jpeg(png.read_bytes())
+chk(TB._img(jb).format == "JPEG", "a PNG answer becomes a JPEG before it is called .jpg")
+chk(TB._as_jpeg(jb) == jb, "a JPEG already in shape is not touched again")
+
+os.environ["THUMB_INSTANT"] = "1"
+os.environ["THUMB_SPACE_ID"] = "black-forest-labs/FLUX.1-schnell"
+TB._post_json = lambda url, payload, headers=None, timeout=60: b'{"event_id":"abc"}'
+TB._sse_value = lambda url, timeout=240: ([{"url": "https://x.hf.space/f.jpg"}, 5], "ok")
+TB._get = lambda url, headers=None, timeout=90: jb
+sp1, sp2 = TB._space("a room at dusk", 5)
+chk(sp1 == jb and sp2 == "hf-space/infer", "the Space answer is followed, fetched and labelled", sp2)
+TB._get = _g0
+TB._post_json = lambda url, payload, headers=None, timeout=60: b'{}'
+sp3, sp4 = TB._space("a room at dusk", 5)
+chk(sp3 is None and "no event_id" in sp4, "a Space that never accepts the job says so", sp4[:90])
+TB._post_json = _p0
+os.environ["THUMB_SPACE"] = "0"
+sp5, sp6 = TB._space("a room at dusk", 5)
+chk(sp5 is None and "parked" in sp6, "THUMB_SPACE=0 parks the demo engine (and says it did)", sp6)
+del os.environ["THUMB_SPACE"]
+os.environ.pop("THUMB_INSTANT", None)
+lad = ["_gemini", "_hf", "_space", "_pollinations"]
+src_gen = (ROOT / "src" / "thumb_bank.py").read_text(encoding="utf-8")
+i_first = src_gen.index("def generate(prompt: str")
+tail = src_gen[i_first:i_first + 1200]
+chk(all(f"ladder.append({fn})" in tail for fn in lad),
+    "the ladder is gemini → huggingface → hf-space → pollinations, keys before public demos", tail[:120])
+chk('THUMB_SPACE", "1"' in tail, "and the new engine has its own dial")
+
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
 chk("thumb.pick(meta, ep, rng, cover, OUT)" in m, "main calls pick() once per release")

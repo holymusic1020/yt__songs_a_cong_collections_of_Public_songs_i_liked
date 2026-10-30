@@ -48,6 +48,9 @@ INDEX = TB.INDEX_FILE
 NIGHTS = "nights.json"
 
 
+PACE = {"hf-space": 25.0, "pollinations": 8.0, "gemini": 3.0, "huggingface": 4.0}
+
+
 def _i(name: str, default: int) -> int:
     """An env/Variable that is EMPTY must not crash the farm.
 
@@ -177,7 +180,10 @@ def main() -> int:
                                 "made_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
         made += 1
         print(f"  [{i:02d}] ✓ {engine:26s} luma {luma:5.1f} spread {spread:4.1f} · {name}")
-        time.sleep(max(0.5, args.sleep))                      # be polite to free tiers
+        # be polite to free tiers — and the shared FLUX demo Space is the most
+        # polite of all: it rate-limits per visitor within a couple of seconds,
+        # so a fast night there costs the whole night (measured 2026-10-30)
+        time.sleep(max(0.5, args.sleep, PACE.get((engine or "").split("/")[0], 0.0)))
 
     if not made:
         return ok(f"nothing new (rejected {rejected}) — the release keeps using the "

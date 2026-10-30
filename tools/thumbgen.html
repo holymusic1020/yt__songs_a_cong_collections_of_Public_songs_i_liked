@@ -1,0 +1,807 @@
+<!doctype html>
+<!--
+  Nix Speech · Thumbnail Lab — the upgrade of "FluxGEN V2 image generator" (2022).
+
+  Why this file exists, in the boss's own words (2026-10-30):
+    "don't make the thumbnails by you. I have already added my Gemini API key
+     there to keep the thumbnails as backup. Generate hundreds and thousands of
+     combination thumbnails… If a Gemini API key fails or any other API key
+     fails, then that workflow will run and generate a new thumbnail based on
+     the prompt. I have made an image generator here… around four years old.
+     Maybe you can upgrade this thing and then use that architecture to set up
+     a backup thumbnail generator if Gemini don't work."
+
+  So this is his page, kept recognisable, with four things added:
+
+   1. AN ENGINE LADDER instead of one hard-wired host. His 2022 code spoke only
+      to image.pollinations.ai, which today answers 503 (flux) / 402 (turbo) to
+      a datacenter IP — a browser on his own connection still usually gets
+      through, which is exactly why this page is useful when the GitHub Actions
+      runner cannot. Order here: Gemini (his key) → Hugging Face free inference
+      (HF_TOKEN) → Pollinations (no key at all). Each step reports WHY it failed
+      instead of pretending it worked.
+   2. THE COMBINATION MATRIX from src/thumb_bank.py — the same 907,200
+      genre × time × weather × framing × texture × palette × lens grid the nightly
+      farm walks. The two files must agree; tools/v46_thumb_bank_ut.py fails if
+      the AXES below ever drift from the module.
+   3. HIS GATE, in the browser: bytes → decode → 16:9 crop → mean luma ≥ 38,
+      contrast spread ≥ 9, dHash distance ≥ 8 vs everything already kept. That is
+      the whole complaint ("all the video thumbnail is same" + too dark) turned
+      into a number. A rejected image is still shown, in red, with the reason.
+   4. A SHELF EXPORT: "download index.json" + "download the files" produce
+      exactly what thumb-farm.py uploads to the `thumb-lab` release, so a batch
+      made by hand here slots into the same bank the release pulls from.
+
+  No build step, no CDN, no fonts, no tracking, no billing anywhere — one file,
+  ₹0. Open it from disk or from the repo. Everything except the pasted keys
+  lives in localStorage under nixlab.*.
+
+  Note on the preview: the image hosts need real network access, so open this in
+  a normal browser tab (file:// works) rather than inside a sandboxed viewer.
+-->
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nix Speech · Thumbnail Lab (FluxGEN v3)</title>
+<style>
+  :root {
+    --bg: #0e1016; --panel: #171a24; --panel2: #1f2330; --line: #2b3040;
+    --fg: #e8eaf0; --dim: #99a0b4; --acc: #7ad1c4; --good: #63d68d;
+    --bad: #ff6b6b; --warn: #ffcf6b;
+  }
+  html[data-theme="light"] {
+    --bg: #f4f5f8; --panel: #ffffff; --panel2: #eef0f5; --line: #d7dbe4;
+    --fg: #1a1d26; --dim: #5d6478; --acc: #0e8f7c; --good: #17864a;
+    --bad: #b4232a; --warn: #91640a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid var(--line); position: sticky; top: 0;
+    background: var(--bg); z-index: 5;
+  }
+  header h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
+  header .sub { color: var(--dim); font-size: 12px; }
+  header .sp { flex: 1; }
+  main { padding: 18px 20px 60px; max-width: 1280px; margin: 0 auto; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 14px;
+  }
+  .card > h2 {
+    margin: 0 0 10px; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--dim); font-weight: 600;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; }
+  label { display: block; font-size: 11px; color: var(--dim); margin-bottom: 3px; }
+  select, input[type=text], input[type=password], input[type=number], textarea {
+    background: var(--panel2); color: var(--fg); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 9px; font: inherit; min-width: 0;
+  }
+  input[type=number] { width: 92px; }
+  textarea { width: 100%; resize: vertical; }
+  button {
+    background: var(--panel2); color: var(--fg); border: 1px solid var(--line);
+    border-radius: 9px; padding: 8px 13px; font: inherit; cursor: pointer;
+  }
+  button:hover { border-color: var(--acc); color: var(--acc); }
+  button.go { background: var(--acc); color: #06110f; border-color: transparent; font-weight: 650; }
+  html[data-theme="light"] button.go { color: #fff; }
+  button.stop { border-color: var(--bad); color: var(--bad); }
+  button:disabled { opacity: .45; cursor: default; }
+  .chk { display: flex; gap: 7px; align-items: center; font-size: 12px; color: var(--fg); }
+  .chk input { accent-color: var(--acc); }
+  .engine { display: flex; gap: 10px; align-items: center; padding: 8px 10px;
+            border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .engine .tag { font-size: 11px; color: var(--dim); width: 14px; text-align: center; }
+  .engine b { font-weight: 650; }
+  .engine .hint { color: var(--dim); font-size: 11px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  figure { margin: 0; background: var(--panel); border: 1px solid var(--line);
+           border-radius: 11px; overflow: hidden; }
+  figure.bad { border-color: var(--bad); }
+  figure img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #000; }
+  figcaption { padding: 8px 10px; font-size: 11px; color: var(--dim); }
+  figcaption .k { color: var(--fg); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+  #log { max-height: 210px; overflow: auto; }
+  #log div { border-bottom: 1px dashed var(--line); padding: 3px 0; font-size: 12px; }
+  #log .ok { color: var(--good); } #log .no { color: var(--bad); } #log .wn { color: var(--warn); }
+  .bar { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--dim); }
+  .bar b { color: var(--fg); font-variant-numeric: tabular-nums; }
+  .note { color: var(--dim); font-size: 11.5px; margin-top: 8px; }
+  .pill { border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; font-size: 11px; }
+  .pill.ok { color: var(--good); border-color: var(--good); }
+  .pill.no { color: var(--bad); border-color: var(--bad); }
+</style>
+</head>
+<body>
+<header>
+  <h1>🖼 Thumbnail Lab</h1>
+  <span class="sub">FluxGEN v3 · the 2022 page, rebuilt as the backup half of the AI thumbnail bank</span>
+  <span class="sp"></span>
+  <span class="pill mono" id="combopill">—</span>
+  <button id="theme" title="light / dark">◐</button>
+</header>
+
+<main>
+  <!-- ─────────────────────────── engines ─────────────────────────── -->
+  <section class="card">
+    <h2>1 · engines, tried top to bottom until one answers</h2>
+
+    <div class="engine">
+      <span class="tag">1</span>
+      <label class="chk"><input type="checkbox" id="eng-gem" checked> <b>Gemini</b> — your key, the primary</label>
+      <input type="password" id="key-gem" placeholder="AIza… (paste, keep in this browser only)" style="flex:1;min-width:220px">
+      <span>
+        <label>model</label>
+        <input type="text" id="model-gem" value="gemini-3.1-flash-image" style="width:210px">
+      </span>
+      <span class="hint">free tier · needs no SDK · a 429 is reported, not retried forever</span>
+    </div>
+
+    <div class="engine">
+      <span class="tag">2</span>
+      <label class="chk"><input type="checkbox" id="eng-hf" checked> <b>Hugging Face</b> — free inference, ₹0</label>
+      <input type="password" id="key-hf" placeholder="hf_… token with 'make calls to Inference Providers'" style="flex:1;min-width:220px">
+      <span>
+        <label>model</label>
+        <input type="text" id="model-hf" value="black-forest-labs/FLUX.1-schnell" style="width:250px">
+      </span>
+      <span class="hint">router.huggingface.co — api-inference is a dead host now</span>
+    </div>
+
+    <div class="engine">
+      <span class="tag">3</span>
+      <label class="chk"><input type="checkbox" id="eng-pol" checked> <b>Pollinations</b> — the original engine, no key</label>
+      <span>
+        <label>model</label>
+        <select id="model-pol">
+          <option value="flux">flux</option>
+          <option value="turbo">turbo</option>
+        </select>
+      </span>
+      <label class="chk"><input type="checkbox" id="pol-enhance"> enhance</label>
+      <span class="hint">works from a home browser far more often than from a datacenter runner</span>
+    </div>
+
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="strict"> stop the ladder on the first engine that answers (default: yes, cheapest first)</label>
+      <label class="chk"><input type="checkbox" id="keep-keys"> remember the pasted keys in this browser</label>
+      <span class="note" style="margin:0">Nothing here spends money: no billing path exists in this file.</span>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── the matrix ─────────────────────────── -->
+  <section class="card">
+    <h2>2 · the combination matrix (the same grid the nightly farm walks)</h2>
+    <div class="row">
+      <span><label>genre / mood</label><select id="ax-genre"></select></span>
+      <span><label>time of day</label><select id="ax-time"></select></span>
+      <span><label>weather</label><select id="ax-weather"></select></span>
+      <span><label>framing</label><select id="ax-framing"></select></span>
+      <span><label>texture</label><select id="ax-texture"></select></span>
+      <span><label>palette</label><select id="ax-palette"></select></span>
+      <span><label>lens</label><select id="ax-lens"></select></span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span><label>combo index</label><input type="number" id="cursor" value="0" min="0" step="1"></span>
+      <button id="step-back">← combo</button>
+      <button id="step-night">night step (+61) →</button>
+      <button id="random">🎲 surprise me</button>
+      <button id="flip1">shuffle one axis</button>
+      <span><label>size</label>
+        <select id="size">
+          <option value="1280x720" selected>1280×720 (YouTube)</option>
+          <option value="1080x1920">1080×1920 (Shorts, vertical)</option>
+          <option value="1024x1024">1024×1024 (square)</option>
+          <option value="1600x900">1600×900 (big)</option>
+        </select>
+      </span>
+      <span><label>seed</label><input type="number" id="seed" value="778" min="0" step="1"></span>
+    </div>
+    <label style="margin-top:12px">prompt (what the model is actually asked for — "no text" is not optional)</label>
+    <textarea id="prompt" rows="3" spellcheck="false"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button id="sync">↺ rebuild prompt from the matrix</button>
+      <button id="copy-prompt">copy prompt</button>
+      <span class="note" style="margin:0">Models cannot draw readable letters — the channel name and title go on
+      afterwards from <span class="mono">art.overlay()</span>, which is the only place text enters a thumbnail.</span>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── batch ─────────────────────────── -->
+  <section class="card">
+    <h2>3 · batch — "hundreds and thousands of combinations", a night at a time</h2>
+    <div class="row">
+      <span><label>how many</label><input type="number" id="n" value="8" min="1" max="120"></span>
+      <span><label>stride (coprime with every axis length, like the farm)</label><input type="number" id="stride" value="61" min="1"></span>
+      <span><label>delay ms between asks (be polite to free tiers)</label><input type="number" id="delay" value="1200" min="0" step="250"></span>
+      <span><label>retry a refused host this many times</label><input type="number" id="retries" value="2" min="0" max="5"></span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="go" id="run">▶ generate the batch</button>
+      <button class="stop" id="halt" disabled>■ stop</button>
+      <button id="one">generate this one</button>
+      <label class="chk"><input type="checkbox" id="walk"> walk the matrix (advance cursor by the stride)</label>
+      <label class="chk"><input type="checkbox" id="seedstep" checked> seed += 1 per image</label>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── the gate ─────────────────────────── -->
+  <section class="card">
+    <h2>4 · the gate — nothing joins the bank that would make the channel look dark again</h2>
+    <div class="row">
+      <span><label>min mean luma (0-255)</label><input type="number" id="g-luma" value="38" min="0" max="255"></span>
+      <span><label>max mean luma</label><input type="number" id="g-lumax" value="225" min="1" max="255"></span>
+      <span><label>min contrast spread</label><input type="number" id="g-spread" value="9" min="0" max="128" step="0.5"></span>
+      <span><label>min bytes</label><input type="number" id="g-bytes" value="18000" min="0" step="1000"></span>
+      <span><label>min dHash distance vs kept</label><input type="number" id="g-dh" value="8" min="0" max="64"></span>
+      <label class="chk"><input type="checkbox" id="g-crop" checked> centre-crop to 16:9</label>
+      <label class="chk"><input type="checkbox" id="g-dh-on" checked> dedupe by dHash</label>
+    </div>
+    <div class="note">The published thumbnails measured 8–25 mean luma — that, not taste, is why they read as
+      identical black boxes. 38 is the floor the module uses; relighting is not done here, only judging.</div>
+  </section>
+
+  <!-- ─────────────────────────── run ─────────────────────────── -->
+  <section class="card">
+    <div class="bar">
+      <span>kept <b id="s-kept">0</b></span>
+      <span>rejected <b id="s-rej">0</b></span>
+      <span>engine dead-ends <b id="s-fail">0</b></span>
+      <span>elapsed <b id="s-time">0s</b></span>
+      <span id="s-eng"></span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="exp-json">⬇ index.json (shelf format)</button>
+      <button id="exp-files">⬇ download the kept files</button>
+      <button id="exp-prompts">⬇ prompts.txt</button>
+      <button id="clr">clear the table</button>
+      <span class="note" style="margin:0">then, from the repo:
+        <span class="mono">gh release upload thumb-lab out/*.jpg out/index.json --cfile</span></span>
+    </div>
+  </section>
+
+  <section class="card" id="log"><h2>log</h2></section>
+
+  <section id="gallery" class="grid"></section>
+</main>
+
+<script>
+"use strict";
+
+/* ───────────────────────── the matrix (must equal src/thumb_bank.py) ─────────
+   tools/v46_thumb_bank_ut.py reads the two objects below out of this file and
+   asserts they match the Python module, so the page can never drift into a
+   private, prettier version of the same idea. */
+const AXES = {"genre": ["lofi", "deep_pop", "drift_phonk", "dark_ambient", "skyline_anthem", "orbit_trap", "summer_rap", "melodic_trap", "phonk_mafia", "chart_pop", "villain_pop", "baroque_waltz", "disco_house", "brazilian_phonk", "velvet_fang", "saint_of_leaving", "emo_rap", "ashrise", "templestep", "default"], "time": ["just before sunrise", "harsh midday", "golden hour", "blue hour", "deep night", "thunderstorm dark"], "weather": ["clear and dry", "thin rain", "wet reflective ground", "heavy fog", "low cloud", "dust in the air"], "framing": ["wide establishing shot, subject small in frame", "low angle, dramatic perspective", "close-up on one detail, shallow depth of field", "symmetrical centred composition with strong negative space", "overhead drone view", "through a doorway or window, framing inside frame"], "texture": ["35mm film grain, faded print", "clean digital photo, crisp lens", "long exposure with light trails", "slightly overexposed highlights", "matte print, lifted blacks", "wet glass reflections and bokeh"], "palette": ["teal and orange", "warm amber on deep blue", "monochrome with one red accent", "pastel haze", "high-contrast noir", "saturated neon on black", "muted earth tones with a bright highlight"], "lens": ["35mm", "50mm", "85mm portrait lens", "24mm wide", "anamorphic"]};
+const MOODS = {"lofi": "dusty afternoon light through a rain-streaked window", "deep_pop": "neon wet pavement at golden hour", "drift_phonk": "headlights smearing on a night highway", "dark_ambient": "fog over empty industrial docks at 3am", "skyline_anthem": "a city skyline under a bruised sunset", "orbit_trap": "streetlamps seen from a rising elevator", "summer_rap": "sun-bleached beach parking lot at dusk", "melodic_trap": "rain on a bus shelter window, warm sodium light", "phonk_mafia": "an empty parking garage, one flickering tube light", "chart_pop": "confetti light on a dark stage", "villain_pop": "red emergency lighting in a marble corridor", "baroque_waltz": "candlelight on old gold picture frames", "disco_house": "a mirrorball cutting white beams across dark glass", "brazilian_phonk": "favela rooftop strings of bulbs at night", "velvet_fang": "velvet theatre seats under a single spotlight", "saint_of_leaving": "a train platform at dawn, steam and lamplight", "emo_rap": "a bedroom lit only by a CRT television", "ashrise": "ash drifting over a cold fire at blue hour", "templestep": "stone temple steps lit by floating lanterns", "default": "a lonely road under a wide dusk sky"};
+const TARGET = [16, 9];
+const LEN = { genre: AXES.genre.length, time: AXES.time.length, weather: AXES.weather.length,
+              framing: AXES.framing.length, texture: AXES.texture.length, palette: AXES.palette.length,
+              lens: AXES.lens.length };
+/* 20 · 6 · 6 · 6 · 6 · 7 · 5 — the whole grid, exactly as thumb_bank counts it */
+const MATRIX = LEN.genre * LEN.time * LEN.weather * LEN.framing * LEN.texture * LEN.palette * LEN.lens;
+const COMBOS = MATRIX;                       // 907,200 — the farm's cursor lives in this range
+
+/** wrap an index into the grid the way `(cur + i * 61) % combo_count()` does */
+function wrap(idx) {
+  const m = BigInt(MATRIX);
+  const b = typeof idx === "bigint" ? idx : BigInt(Math.round(Number(idx) || 0));
+  return Number(((b % m) + m) % m);
+}
+
+/** index → choices, exactly like thumb_bank.build_prompt(idx, genre).
+    "auto" in the genre box means: let the index choose it (AXES.genre[n % 20]),
+    which is what the nightly farm does when it rotates the genre pool.
+
+    Deliberately NO wrap here. build_prompt() does raw division (idx % 6,
+    idx // 6, idx // 7776 …), and 907,200 is not a multiple of 7776 — so folding
+    the index first would disagree with the module for any number above the grid.
+    UT-47 compared 907,201-style indices and caught exactly that, which is the
+    whole reason it exists. */
+function comboOf(idx, genre) {
+  const n = Math.max(0, Math.round(Number(idx) || 0));
+  const g = (genre === "auto" || !MOODS[genre]) ? AXES.genre[n % LEN.genre] : genre;
+  return {
+    genre: g,
+    time:    AXES.time   [n % LEN.time],
+    weather: AXES.weather[Math.floor(n / LEN.time) % LEN.weather],
+    framing: AXES.framing[Math.floor(n / (LEN.time * LEN.weather)) % LEN.framing],
+    texture: AXES.texture[Math.floor(n / 216) % LEN.texture],
+    palette: AXES.palette[Math.floor(n / 1296) % LEN.palette],
+    lens:    AXES.lens   [Math.floor(n / 7776) % LEN.lens]
+  };
+}
+
+/** The prompt text — keep the wording identical to the module's build_prompt(). */
+function promptFor(c) {
+  return `cinematic still photograph, ${MOODS[c.genre] || MOODS.default}, ${c.time}, ${c.weather}, ` +
+         `${c.framing}, ${c.texture}, colour palette ${c.palette}, shot on ${c.lens} lens, ` +
+         `16:9 widescreen, strong single light source, deep but readable shadows, high dynamic range, ` +
+         `professional music-release cover art, no text, no letters, no watermark, no logo, no people, no faces`;
+}
+
+/* ───────────────────────────────────── tiny DOM helpers ───────────────────── */
+const $ = (id) => document.getElementById(id);
+const val = (id, d) => { const e = $(id); return e ? e.value : d; };
+const num = (id, d) => { const v = parseFloat(val(id, d)); return Number.isFinite(v) ? v : d; };
+const on = (id, ev, fn) => { const e = $(id); if (e) e.addEventListener(ev, fn); };
+const checked = (id) => !!($(id) && $(id).checked);
+
+const cnt = (id, by) => {                 // the counters are <span>s: textContent, never .value
+  const el = $(id); const now = (el ? parseFloat(el.textContent) : 0) || 0;
+  if (el) el.textContent = String(now + by); return now + by;
+};
+
+function line(msg, cls) {
+  const box = $("log");
+  const d = document.createElement("div");
+  if (cls) d.className = cls;
+  d.textContent = new Date().toLocaleTimeString() + "  " + msg;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  while (box.childElementCount > 400) box.removeChild(box.firstElementChild);
+}
+
+/* theme — kept from his page */
+on("theme", "click", () => {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("nixlab.theme", next); } catch (e) {}
+});
+try {
+  const t = localStorage.getItem("nixlab.theme");
+  if (t) document.documentElement.dataset.theme = t;
+} catch (e) {}
+
+/* ───────────────────────────────── the engines ───────────────────────────── */
+/* Each returns {blob, engine, via} or throws Error with the reason in its
+   message. `generate()` walks them in order, so one engine dying is a log
+   line, not a failed night — the "if a Gemini key fails" rule. */
+
+async function engGemini(prompt, seed) {
+  const key = (val("key-gem", "") || "").trim();
+  if (!key) throw new Error("no Gemini key in this page");
+  const model = (val("model-gem", "gemini-3.1-flash-image") || "").trim() || "gemini-3.1-flash-image";
+  const body = (wide) => ({
+    contents: [{ parts: [{ text: "Generate one 1280x720 cinematic photograph. " + prompt }] }],
+    generationConfig: wide
+      ? { responseModalities: ["TEXT", "IMAGE"], seed: seed >>> 0, temperature: 0.9,
+          imageConfig: { aspectRatio: "16:9" } }
+      : { responseModalities: ["IMAGE"], seed: seed >>> 0, temperature: 0.9 }
+  });
+  let last = "no attempt";
+  for (const wide of [true, false]) {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body(wide)) });
+    const txt = await r.text();
+    if (!r.ok) { last = `HTTP ${r.status} ${txt.slice(0, 240)}`; if (r.status === 404) break; continue; }
+    let d = null;
+    try { d = JSON.parse(txt); } catch (e) { last = "not json: " + txt.slice(0, 120); continue; }
+    for (const c of (d.candidates || [])) {
+      for (const p of ((c.content || {}).parts || [])) {
+        const b = p.inlineData || p.inline_data;
+        if (b && b.data) {
+          const bin = atob(b.data);
+          const u8 = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+          return { blob: new Blob([u8], { type: b.mimeType || b.mime_type || "image/png" }),
+                   engine: "gemini/" + model, via: wide ? "16:9" : "square" };
+        }
+      }
+    }
+    last = ((d.error || {}).message) || JSON.stringify(d.promptFeedback || "no inline image part").slice(0, 200);
+  }
+  throw new Error(last);
+}
+
+async function engHF(prompt, seed) {
+  const tok = (val("key-hf", "") || "").trim();
+  if (!tok) throw new Error("no HF token in this page");
+  const model = (val("model-hf", "black-forest-labs/FLUX.1-schnell") || "").trim();
+  const tries = [
+    ["https://router.huggingface.co/v1/images/generations",
+      { model, prompt: "Generate one 1280x720 cinematic photograph. " + prompt, n: 1, size: "1024x576" }],
+    [`https://api-inference.huggingface.co/models/${model}`,
+      { inputs: "Generate one 1280x720 cinematic photograph. " + prompt,
+        parameters: { guidance_scale: 3.5, num_inference_steps: 4, seed: seed >>> 0, width: 1024, height: 576 },
+        options: { wait_for_model: true } }]
+  ];
+  let last = "no attempt";
+  for (const [url, payload] of tries) {
+    let r;
+    try {
+      r = await fetch(url, { method: "POST", headers: { Authorization: "Bearer " + tok, "Content-Type": "application/json" },
+                             body: JSON.stringify(payload) });
+    } catch (e) { last = `${url.split("/")[2]}: ${e.message}`; continue; }   // the classic host no longer resolves
+    const ct = r.headers.get("content-type") || "";
+    if (r.ok && ct.startsWith("image/")) return { blob: await r.blob(), engine: "huggingface/" + model.split("/").pop(), via: "bytes" };
+    const txt = await r.text();
+    let d = null; try { d = JSON.parse(txt); } catch (e) {}
+    if (d) {
+      const e0 = ((d.data || d.images || [{}])[0]) || {};
+      if (e0.b64_json) {
+        const bin = atob(e0.b64_json), u8 = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        return { blob: new Blob([u8], { type: "image/png" }), engine: "huggingface/" + model.split("/").pop(), via: "b64" };
+      }
+      if (e0.url) {
+        const ir = await fetch(e0.url);
+        if (ir.ok) return { blob: await ir.blob(), engine: "huggingface/" + model.split("/").pop(), via: "url" };
+        last = "feature asset 404: " + e0.url;
+        continue;
+      }
+      last = `${r.status} ${JSON.stringify(d.error || d).slice(0, 220)}`;
+    } else last = `${r.status} ${txt.slice(0, 160)}`;
+  }
+  throw new Error(last);
+}
+
+/** His 2022 loop, kept on purpose: HEAD, and if the host refuses, bump the seed
+    and try again — that is still the trick that gets a Pollinations burst going. */
+async function engPollinations(prompt, seed) {
+  const [w, h] = (val("size", "1280x720") || "1280x720").split("x").map(Number);
+  const model = val("model-pol", "flux");
+  const enh = checked("pol-enhance");
+  const retries = Math.max(0, Math.min(5, num("retries", 2)));
+  let s = seed >>> 0, last = "no attempt";
+  for (let a = 0; a <= retries; a++) {
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${w}&height=${h}` +
+                `&seed=${s}&nologo=true&model=${model}&referrer=nixspeech-lab` + (enh ? "&enhance=true" : "");
+    try {
+      const head = await fetch(url, { method: "HEAD" });
+      if (!head.ok) { last = `HEAD ${head.status}`; s = (s * 1103515245 + 12345) >>> 0; continue; }
+      const r = await fetch(url);
+      if (!r.ok) { last = `GET ${r.status}`; s = (s * 1103515245 + 12345) >>> 0; continue; }
+      const blob = await r.blob();
+      if (!blob || blob.size < num("g-bytes", 18000)) { last = `only ${blob ? blob.size : 0} bytes`; s = (s * 1103515245 + 12345) >>> 0; continue; }
+      return { blob, engine: "pollinations/" + model, via: "HEAD→GET" };
+    } catch (e) { last = e.message; s = (s * 1103515245 + 12345) >>> 0; }
+  }
+  throw new Error(last);
+}
+
+const LADDER = [["gem", engGemini], ["hf", engHF], ["pol", engPollinations]];
+
+async function generate(prompt, seed) {
+  const why = [];
+  for (const [id, fn] of LADDER) {
+    if (!checked("eng-" + id)) continue;
+    try {
+      const out = await fn(prompt, seed);
+      return { ...out, refused: why };
+    } catch (e) {
+      why.push(`${id}: ${(e && e.message ? e.message : String(e)).slice(0, 240)}`);
+      cnt("s-fail", 1);
+      if (!checked("strict")) continue;
+    }
+  }
+  throw new Error("every enabled engine refused — " + why.join(" · "));
+}
+
+/* ───────────────────────────── the gate (canvas) ─────────────────────────── */
+async function loadBitmap(blob) {
+  if (typeof createImageBitmap === "function") {
+    try { return await createImageBitmap(blob); } catch (e) {}
+  }
+  return await new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => res(im); im.onerror = () => rej(new Error("image would not decode"));
+    im.src = URL.createObjectURL(blob);
+  });
+}
+
+function centreCrop169(bmp) {
+  const w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+  if (Math.abs(w / h - TARGET[0] / TARGET[1]) <= 0.06 || !checked("g-crop")) return { w, h, sx: 0, sy: 0, sw: w, sh: h };
+  if (w * TARGET[1] / TARGET[0] <= h) { const nh = Math.round(w * TARGET[1] / TARGET[0]); return { w, h, sx: 0, sy: Math.floor((h - nh) / 2), sw: w, sh: nh }; }
+  const nw = Math.round(h * TARGET[0] / TARGET[1]);
+  return { w, h, sx: Math.floor((w - nw) / 2), sy: 0, sw: nw, sh: h };
+}
+
+/** draws → measures → re-encodes; returns {blob, luma, spread, dhash, width, height} */
+async function judge(blob) {
+  const bmp = await loadBitmap(blob);
+  const c = centreCrop169(bmp);
+  const cw = Math.max(2, c.sw), chh = Math.max(2, c.sh);
+  const cv = document.createElement("canvas");
+  cv.width = cw; cv.height = chh;
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(bmp, c.sx, c.sy, c.sw, c.sh, 0, 0, cw, chh);
+  if (typeof bmp.close === "function") bmp.close();
+
+  // small canvas for the numbers, big canvas for the file (same maths as thumb_bank)
+  const sm = document.createElement("canvas"); sm.width = 320; sm.height = 180;
+  const sctx = sm.getContext("2d", { willReadFrequently: true });
+  sctx.drawImage(cv, 0, 0, 320, 180);
+  const px = sctx.getImageData(0, 0, 320, 180).data;
+  let sum = 0; const lum = new Float64Array(320 * 180);
+  for (let i = 0, p = 0; i < px.length; i += 4, p++) {
+    const l = 0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2];
+    lum[p] = l; sum += l;
+  }
+  const mean = sum / lum.length;
+  let vs = 0; for (let i = 0; i < lum.length; i++) { const d = lum[i] - mean; vs += d * d; }
+  const spread = Math.sqrt(vs / lum.length);
+
+  // dHash 8×9 → 64 bits in a BigInt (same rule as thumb_bank.dhash)
+  const dh = document.createElement("canvas"); dh.width = 9; dh.height = 8;
+  const dctx = dh.getContext("2d", { willReadFrequently: true });
+  dctx.drawImage(cv, 0, 0, 9, 8);
+  const dp = dctx.getImageData(0, 0, 9, 8).data;
+  let bits = 0n;
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+    const g = (a) => { const i = (y * 9 + a) * 4; return 0.299 * dp[i] + 0.587 * dp[i + 1] + 0.114 * dp[i + 2]; };
+    bits = (bits << 1n) | (BigInt(g(x) > g(x + 1)) & 1n);
+  }
+
+  const quality = 0.95;
+  const outBlob = (Math.abs(cw / chh - TARGET[0] / TARGET[1]) <= 0.06 && c.sx === 0 && c.sy === 0 && cw === c.w && chh === c.h)
+    ? blob : await new Promise((res) => cv.toBlob((b) => res(b || blob), "image/jpeg", quality));
+  return { blob: outBlob, luma: mean, spread, dhash: bits, width: cw, height: chh, bytes: outBlob.size };
+}
+
+function hamming(a, b) { let x = a ^ b, n = 0; while (x) { n += Number(x & 1n); x >>= 1n; } return n; }
+
+/** (ok, why) — the module's usable() with the same constants. */
+function gate(v, kept) {
+  if (v.bytes < num("g-bytes", 18000)) return [false, `only ${v.bytes} bytes — an error page, not an image`];
+  if (v.width < 900 || v.height < 500) return [false, `${v.width}×${v.height} is too small to scale up for a thumbnail`];
+  if (Math.abs(v.width / v.height - TARGET[0] / TARGET[1]) > 0.30) return [false, `aspect ${(v.width / v.height).toFixed(2)} is not near 16:9`];
+  const lo = num("g-luma", 38), hi = num("g-lumax", 225), sp = num("g-spread", 9);
+  if (v.luma < lo) return [false, `mean luma ${v.luma.toFixed(0)}/255 — that is the black-box complaint again`];
+  if (v.luma > hi) return [false, `mean luma ${v.luma.toFixed(0)} — blown out`];
+  if (v.spread < sp) return [false, `contrast spread ${v.spread.toFixed(1)} — a flat fill, not a picture`];
+  if (checked("g-dh-on") && kept.length) {
+    const min = Math.min(...kept.map((k) => hamming(v.dhash, k.dhash)));
+    if (min < num("g-dh", 8)) return [false, `duplicate of an image already kept (dHash ${min} bits apart)`];
+  }
+  return [true, "ok"];
+}
+
+async function sha24(blob) {
+  try {
+    if (!(crypto && crypto.subtle)) return "";
+    const buf = await blob.arrayBuffer();
+    const d = await crypto.subtle.digest("SHA-256", buf);
+    return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  } catch (e) { return ""; }
+}
+
+/* ─────────────────────────────────── the table ───────────────────────────── */
+const kept = [];            // {…gate record} — also what index.json is built from
+const seen = [];            // dHash list the dedupe compares against
+let busy = false, stopReq = false, t0 = 0;
+
+function slot(idx, seed, c) {
+  const el = document.createElement("figure");
+  el.innerHTML = `<img alt="" aria-hidden="true">
+    <figcaption><span class="k">…</span><br><span class="mono"></span></figcaption>`;
+  $("gallery").prepend(el);
+  el._img = el.querySelector("img");
+  el._k = el.querySelector(".k");
+  el._m = el.querySelector(".mono");
+  el._m.textContent = `#${idx} · seed ${seed} · ${c.genre} · ${c.time} · ${c.palette}`;
+  return el;
+}
+
+async function makeOne(idx, seed, promptRaw) {
+  const c = comboOf(idx, val("ax-genre", "lofi"));
+  const prompt = promptRaw !== null ? promptRaw : promptFor(c);
+  const el = slot(idx, seed, c);
+  $("s-time").textContent = ((performance.now() - t0) / 1000).toFixed(0) + "s";
+  let out;
+  try {
+    out = await generate(prompt, seed);
+  } catch (e) {
+    el.classList.add("bad");
+    el._k.textContent = "✖ no image: " + (e.message || e).slice(0, 150);
+    el._img.remove();
+    line(`✖ #${idx} every engine refused`, "no");
+    cnt("s-rej", 1);
+    return;
+  }
+  el._img.src = URL.createObjectURL(out.blob);
+  let v;
+  try { v = await judge(out.blob); } catch (e) {
+    el.classList.add("bad");
+    el._k.textContent = "✖ would not measure: " + (e.message || e);
+    return;
+  }
+  const [ok, why] = gate(v, seen);
+  const sha = await sha24(v.blob);
+  const rec = { file: (sha ? sha.slice(0, 24) : `lab-${idx}-${seed}`) + ".jpg", sha: sha.slice(0, 32) || null,
+                seed, idx: wrap(idx), genre: c.genre, engine: out.engine,
+                luma: +v.luma.toFixed(1), spread: +v.spread.toFixed(1), dhash: v.dhash.toString(),
+                combo: c, prompt, made_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
+                width: v.width, height: v.height, bytes: v.bytes };
+  el.classList.toggle("bad", !ok);
+  el._k.innerHTML = `${ok ? '<span class="pill ok">✓ kept</span>' : '<span class="pill no">✗ ' + why + "</span>"}
+    <span class="mono"> ${out.engine}${out.via ? " · " + out.via : ""} · L${v.luma.toFixed(0)} S${v.spread.toFixed(0)} · ${(v.bytes / 1024).toFixed(0)} kB</span>`;
+  if (out.refused && out.refused.length)
+    line(`⚠ #${idx} fell through to ${out.engine}: ${out.refused.join(" · ").slice(0, 200)}`, "wn");
+  if (ok) {
+    rec._blob = v.blob;
+    kept.push(rec); seen.push({ dhash: v.dhash });
+    cnt("s-kept", 1);
+    line(`✓ #${idx} ${out.engine} · ${v.width}×${v.height} · luma ${v.luma.toFixed(0)} · kept (${kept.length})`, "ok");
+  } else {
+    $("s-rej").textContent = String(num("s-rej", 0) + 1);
+    line(`✗ #${idx} rejected → ${why}`, "no");
+  }
+    cnt("s-rej", 1);
+  for (const r of kept) map[r.engine] = (map[r.engine] || 0) + 1;
+  $("s-eng").textContent = Object.entries(map).map(([k, n]) => `${k} ${n}`).join(" · ");
+  save();
+}
+
+async function runBatch(n) {
+  if (busy) return;
+  busy = true; stopReq = false; t0 = performance.now();
+  $("run").disabled = true; $("halt").disabled = false;
+  const stride = Math.max(1, num("stride", 61));
+  const walk = checked("walk");
+  let cursor = Math.max(0, Math.floor(num("cursor", 0)));
+  const delay = Math.max(0, num("delay", 1200));
+  line(`▶ batch of ${n} from combo ${cursor} · stride ${stride} · engines ${
+    LADDER.filter(([id]) => checked("eng-" + id)).map(([id]) => id).join(",") || "NONE"}`, "wn");
+  for (let i = 0; i < n && !stopReq; i++) {
+    const idx = walk ? (cursor + i * stride) % COMBOS : cursor;
+    const seed = (Math.floor(num("seed", 778)) + (checked("seedstep") ? i : 0)) >>> 0;
+    await makeOne(idx, seed, null);
+    if (i + 1 < n && delay) await new Promise((r) => setTimeout(r, delay));
+  }
+  if (walk) { cursor = (cursor + n * stride) % COMBOS; $("cursor").value = String(cursor); }
+  $("run").disabled = false; $("halt").disabled = true; busy = false;
+  line(`■ done — ${kept.length} kept this session · export index.json when you like what you see`, "ok");
+}
+
+/* ─────────────────────────────── wiring the UI ───────────────────────────── */
+function fillSelect(id, items, cur) {
+  const el = $(id);
+  el.innerHTML = "";
+  for (const it of items) {
+    const o = document.createElement("option");
+    o.value = it; o.textContent = it.replace(/_/g, " ");
+    el.appendChild(o);
+  }
+  if (cur) el.value = cur;
+}
+fillSelect("ax-genre", ["auto", ...AXES.genre], "lofi");   // auto = the index picks it, like the farm
+for (const k of ["time", "weather", "framing", "texture", "palette", "lens"])
+  fillSelect("ax-" + k, AXES[k], AXES[k][0]);
+$("combopill").textContent = `${COMBOS.toLocaleString()} combinations · ${AXES.genre.length} moods × 45,360 looks`;
+
+function syncPrompt() {
+  const idx = Math.max(0, Math.floor(num("cursor", 0)));
+  const c = comboOf(idx, val("ax-genre", "lofi"));
+  for (const k of ["time", "weather", "framing", "texture", "palette", "lens"]) $(("ax-" + k)).value = c[k];
+  $("prompt").value = promptFor(c);
+}
+for (const id of ["cursor", "ax-genre", "ax-time", "ax-weather", "ax-framing", "ax-texture", "ax-palette", "ax-lens"])
+  on(id, "change", syncPrompt);
+on("sync", "click", syncPrompt);
+on("step-back", "click", () => { $("cursor").value = String(wrap(Math.max(0, num("cursor", 0) - 1))); syncPrompt(); });
+on("step-night", "click", () => { $("cursor").value = String(wrap(num("cursor", 0) + num("stride", 61))); syncPrompt(); });
+on("random", "click", () => { $("cursor").value = String(Math.floor(Math.random() * COMBOS)); syncPrompt(); });
+on("flip1", "click", () => {
+  const axes = ["time", "weather", "framing", "texture", "palette", "lens"];
+  const k = axes[Math.floor(Math.random() * axes.length)];
+  const el = $("ax-" + k);
+  el.selectedIndex = (el.selectedIndex + 1) % AXES[k].length;
+  // the selects are the truth for this one-off; the cursor does not move, because
+  // stepping the index would change six axes at once instead of the one we flipped
+  const c = comboOf(Math.floor(num("cursor", 0)), val("ax-genre", "lofi"));
+  c[k] = AXES[k][el.selectedIndex];
+  $("prompt").value = promptFor(c);
+  line(`🎲 one axis flipped: ${k} → ${c[k]}`);
+});
+
+on("one", "click", () => {
+  const idx = Math.max(0, Math.floor(num("cursor", 0)));
+  t0 = performance.now();
+  const custom = $("prompt").value.trim();
+  const matrix = promptFor(comboOf(idx, val("ax-genre", "lofi")));
+  makeOne(idx, Math.floor(num("seed", 778)) >>> 0, custom && custom !== matrix ? custom : null);
+});
+on("run", "click", () => runBatch(Math.max(1, Math.min(120, Math.floor(num("n", 8))))));
+on("halt", "click", () => { stopReq = true; line("■ stopping after the image in flight", "wn"); });
+on("copy-prompt", "click", () => { navigator.clipboard && navigator.clipboard.writeText($("prompt").value); line("⧉ prompt copied", "ok"); });
+
+on("clr", "click", () => {
+  $("gallery").innerHTML = ""; kept.length = 0; seen.length = 0;
+  for (const s of ["s-kept", "s-rej", "s-fail"]) $(s).textContent = "0";
+  $("s-eng").textContent = ""; line("▪ table cleared (the shelf itself is untouched)", "wn");
+});
+
+/* exports — index.json in the shelf's exact shape so `thumb-farm.py` can merge it */
+function download(name, blob) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+on("exp-json", "click", () => {
+  const idx = { tag: "thumb-lab", cursor: Math.floor(num("cursor", 0)), made_by: "thumbgen.html (Thumbnail Lab)",
+                at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
+                images: kept.map(({ _blob, ...r }) => r) };
+  download("index.json", new Blob([JSON.stringify(idx, null, 1)], { type: "application/json" }));
+  line(`⬇ index.json with ${idx.images.length} images — put it and the jpgs in the thumb-lab release`, "ok");
+});
+on("exp-files", "click", async () => {
+  for (const r of kept) {
+    if (!r._blob) continue;
+    download(r.file, r._blob);
+    await new Promise((s) => setTimeout(s, 350));
+  }
+  line(`⬇ ${kept.length} files handed to your browser's downloads`, "ok");
+});
+on("exp-prompts", "click", () => {
+  const txt = kept.map((r) => `${r.idx}\t${r.seed}\t${r.genre}\t${r.file}\t${r.prompt}`).join("\n");
+  download("prompts.txt", new Blob([txt || "nothing kept yet\n"], { type: "text/plain" }));
+});
+
+/* the shelf, read live: what the release will actually be choosing from */
+on("combopill", "click", async () => {
+  try {
+    const r = await fetch("https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/releases/download/thumb-lab/index.json", { cache: "no-store" });
+    if (!r.ok) { line("▪ no shelf yet — first nights fill it (HTTP " + r.status + ")", "wn"); return; }
+    const d = await r.json();
+    line(`📏 shelf today: ${(d.images || []).length} images · cursor ${d.cursor}`, "ok");
+  } catch (e) { line("▪ shelf unreadable from here: " + e.message, "no"); }
+});
+
+/* persistence: settings + the index (never the pixels) */
+function save() {
+  try {
+    const cfg = {};
+    for (const id of ["eng-gem", "eng-hf", "eng-pol", "model-gem", "model-hf", "model-pol", "pol-enhance",
+                      "size", "seed", "n", "stride", "delay", "retries", "cursor", "ax-genre",
+                      "g-luma", "g-lumax", "g-spread", "g-bytes", "g-dh", "g-crop", "g-dh-on", "strict", "walk", "seedstep"]) {
+      const el = $(id); if (!el) continue;
+      cfg[id] = el.type === "checkbox" ? el.checked : el.value;
+    }
+    // the keys deliberately do NOT go in localStorage unless he ticks nothing…
+    if (checked("keep-keys")) { cfg["key-gem"] = val("key-gem", ""); cfg["key-hf"] = val("key-hf", ""); }
+    localStorage.setItem("nixlab.cfg", JSON.stringify(cfg));
+  } catch (e) {}
+}
+try {
+  const cfg = JSON.parse(localStorage.getItem("nixlab.cfg") || "{}");
+  for (const [k, v] of Object.entries(cfg)) {
+    const el = $(k); if (!el) continue;
+    if (el.type === "checkbox") el.checked = !!v; else el.value = v;
+  }
+  for (const [k, v] of Object.entries(JSON.parse(localStorage.getItem("nixlab.keys") || "{}"))) {
+    const el = $(k); if (el) el.value = v;
+  }
+} catch (e) {}
+on("keep-keys", "change", (e) => {
+  try {
+    if (e.target.checked) localStorage.setItem("nixlab.keys", JSON.stringify({ "key-gem": val("key-gem", ""), "key-hf": val("key-hf", "") }));
+    else localStorage.removeItem("nixlab.keys");
+    line(e.target.checked ? "⚠ keys kept in this browser's localStorage — only on your own machine" : "▪ keys will be forgotten when this tab closes", e.target.checked ? "wn" : "ok");
+  } catch (err) {}
+});
+for (const id of ["eng-gem", "eng-hf", "eng-pol", "model-gem", "model-hf", "model-pol", "pol-enhance",
+                  "size", "seed", "n", "stride", "delay", "retries", "g-luma", "g-lumax", "g-spread",
+                  "g-bytes", "g-dh", "g-crop", "g-dh-on", "strict", "walk", "seedstep"]) on(id, "change", save);
+document.addEventListener("keydown", (e) => {
+  if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if (e.key === "ArrowRight") { $("cursor").value = String(wrap(num("cursor", 0) + num("stride", 61))); syncPrompt(); }
+  if (e.key === "ArrowLeft") { $("cursor").value = String(Math.max(0, num("cursor", 0) - num("stride", 61))); syncPrompt(); }
+  if (e.key === "r") $("random").click();
+  if (e.key === "Enter") $("run").click();
+});
+syncPrompt();
+line("◦ Thumbnail Lab ready. Tick an engine, paste a key, press ▶ — the gate decides, not the eye.");
+</script>
+</body>
+</html>

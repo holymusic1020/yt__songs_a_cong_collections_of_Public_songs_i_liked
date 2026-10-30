@@ -37,6 +37,7 @@ import hashlib
 import io
 import json
 import os
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -240,6 +241,22 @@ def _post_json(url: str, payload: dict, headers: dict | None = None, timeout: in
         return r.read()
 
 
+def _as_jpeg(data: bytes) -> bytes:
+    """One codec on the shelf. A webp/png answer is re-encoded here, once, so a
+    file named `…jpg` really is a JPEG — a release must not depend on a phone's
+    content sniffing."""
+    try:
+        im = _img(data)
+        if (getattr(im, "format", "") or "").upper() == "JPEG" and len(data) >= MIN_BYTES:
+            return data
+        out = io.BytesIO()
+        im.convert("RGB").save(out, "JPEG", quality=95)
+        b = out.getvalue()
+        return b if len(b) >= MIN_BYTES else data
+    except Exception:
+        return data
+
+
 def _to169(data: bytes) -> bytes:
     """Centre-crop any answer to 16:9 and re-encode, so a square reply from an
     engine is still a frame we can use. On any trouble the original bytes come
@@ -426,20 +443,149 @@ def _hf(meta_prompt: str, seed: int):
     return None, last or "huggingface: no verdict"
 
 
+def _space_host(space_id: str = "") -> str:
+    sid = (space_id or os.environ.get("THUMB_SPACE_ID", "") or "black-forest-labs/FLUX.1-schnell").strip()
+    owner, _, name = sid.partition("/")
+    if not name:
+        owner, name = "black-forest-labs", "FLUX.1-schnell"
+    # Spaces hostnames are the id with every "." and "_" folded to "-" and the
+    # whole thing lower-cased: FLUX.1-schnell lives at …-flux-1-schnell.hf.space.
+    # Skip that and TLS fails with a hostname-mismatch that reads like a dead
+    # space rather than a typo (measured twice on 2026-10-30).
+    host = f"{owner}-{name}".lower().replace("_", "-").replace(".", "-")
+    return f"https://{host}.hf.space"
+
+
+def _api_prefix(base: str) -> str:
+    """Gradio moved its API root once already — ask the app, don't assume."""
+    try:
+        d = json.loads(_get(base + "/config", timeout=25).decode("utf-8", "replace"))
+        return (d.get("api_prefix") or "/gradio_api").rstrip("/")
+    except Exception:
+        return "/gradio_api"
+
+
+def _sse_value(url: str, timeout: int = 240):
+    """Read one gradio queued call to its `complete` frame, by hand.
+
+    No gradio_client, no pip. (Night one learned that a quiet failed install
+    takes a whole engine away, so every engine here speaks plain HTTP.)
+    """
+    req = urllib.request.Request(url, headers={"Accept": "text/event-stream",
+                                               "User-Agent": "yt-auto-thumb/1.0"})
+    ev, data = "", []
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            for raw in r:
+                line = raw.decode("utf-8", "replace").rstrip("\r\n")
+                if not line:                       # an SSE frame is over
+                    payload = "\n".join(data)
+                    if ev == "complete":
+                        try:
+                            return json.loads(payload), "ok"
+                        except Exception as e:
+                            return None, f"unreadable complete frame ({str(e)[:60]})"
+                    if ev == "error":
+                        return None, f"space error: {payload[:180]}"
+                    ev, data = "", []
+                    continue
+                if line.startswith("event:"):
+                    ev = line.split(":", 1)[1].strip()
+                elif line.startswith("data:"):
+                    data.append(line.split(":", 1)[1].strip())
+    except Exception as e:
+        return None, f"{type(e).__name__} {str(e)[:90]}"
+    return None, "stream ended before a complete frame"
+
+
+def _space(meta_prompt: str, seed: int):
+    """Third, and the one that saves the night when no key works: the official
+    FLUX.1-schnell demo Space on Hugging Face — no token, no key, ₹0.
+
+    Measured 2026-10-30 from a datacenter IP, the same class of network a GitHub
+    runner is: submit → **4.2 s and 16.8 s** on two calls → a real 1280×720
+    image, 35-69 kB, mean luma 60-136, which walks straight through `usable()`.
+    Then the next three calls were refused in 0.7 s: the demo rate-limits per
+    visitor, so one night of this is a few images, not twenty-four.
+
+    That is the answer to the boss's exact sentence — "if a Gemini API key fails
+    or any other API key fails, then that workflow will run and generate a new
+    thumbnail based on the prompt" — and tonight is that night: his key came
+    back 429 RESOURCE_EXHAUSTED on both image models.
+
+    Park it with THUMB_SPACE=0, move it with THUMB_SPACE_ID / THUMB_SPACE_API.
+    """
+    if os.environ.get("THUMB_SPACE", "1").strip() == "0":
+        return None, "space parked (THUMB_SPACE=0)"
+    base, api = _space_host(), (os.environ.get("THUMB_SPACE_API") or "infer").strip("/")
+    pfx = _api_prefix(base)
+    payload = {"data": [PROMPT_PREFIX + meta_prompt, int(seed) % (2 ** 31), False, W, H, 4]}
+    last = ""
+    for attempt in range(1, 3):                       # the demo is polite about a second try
+        try:
+            back = _post_json(f"{base}{pfx}/call/{api}", payload, timeout=60)
+            event = json.loads(back.decode("utf-8", "replace")).get("event_id")
+        except Exception as e:
+            last = f"submit refused ({str(e)[:110]})"
+            if attempt < 2:
+                _pause(8)
+            continue
+        if not event:
+            last = f"no event_id ({back[:70]!r})"
+            if attempt < 2:
+                _pause(8)
+            continue
+        val, why = _sse_value(f"{base}{pfx}/call/{api}/{event}", timeout=240)
+        if val is None:
+            # "space error: null" is what a rate-limited demo says here — a busy
+            # signal, not a broken one, so it must never read as a code bug
+            # what the demo actually sends is `event: error` / `data: null` —
+            # busy, frozen, or rate-limiting this IP: it says which, and I don't
+            last = f"{why[:170]} — the shared demo is not taking jobs from here right now"
+            if attempt < 2:
+                _pause(20)
+            continue
+        if isinstance(val, dict) and "value" in val:
+            val = val["value"]
+        rec = (val[0] if isinstance(val, list) and val else val)
+        if not isinstance(rec, dict):
+            last = f"answer we cannot read ({str(val)[:120]})"
+            continue
+        u = rec.get("url") or rec.get("path") or ""
+        if not u:
+            last = f"no file url in the answer ({str(rec)[:100]})"
+            continue
+        try:
+            data = _get(u if str(u).startswith("http") else base + str(u), timeout=90)
+        except Exception as e:
+            last = f"file fetch failed ({str(e)[:80]})"
+            if attempt < 2:
+                _pause(8)
+            continue
+        return data, f"hf-space/{api}{'' if attempt == 1 else ' · retry'}"
+    return None, f"space: {last}"
+
+
+def _pause(s: float) -> None:
+    """Sleep, unless a test wants no sleeping."""
+    if os.environ.get("THUMB_INSTANT") != "1":
+        time.sleep(s)
+
+
 def _pollinations(meta_prompt: str, seed: int):
     """Third, and only third: the engine from the boss's 2022 page. Kept because
     it is free and sometimes serves one image per burst; measured 402/503 from a
     datacenter IP on 2026-10-30, same as the repo's own EP.064 note."""
-    last = ""
+    whys = []
     for model in ("flux", "turbo"):
         try:
             data = _get(pollinations_url(PROMPT_PREFIX + meta_prompt, seed, model=model), timeout=120)
             return _to169(data), f"pollinations/{model}"
         except urllib.error.HTTPError as e:
-            last = f"pollinations/{model}: HTTP {e.code}"
+            whys.append(f"pollinations/{model}: HTTP {e.code}")
         except Exception as e:
-            last = f"pollinations/{model}: {str(e)[:60]}"
-    return None, last
+            whys.append(f"pollinations/{model}: {str(e)[:60]}")
+    return None, " · ".join(whys)
 
 
 def generate(prompt: str, seed: int, near: list[int] | None = None) -> tuple[bytes | None, str, str]:
@@ -450,6 +596,8 @@ def generate(prompt: str, seed: int, near: list[int] | None = None) -> tuple[byt
         ladder.append(_gemini)
     if os.environ.get("THUMB_HF", "1").strip() != "0":
         ladder.append(_hf)
+    if os.environ.get("THUMB_SPACE", "1").strip() != "0":
+        ladder.append(_space)
     if os.environ.get("THUMB_POLLINATIONS", "1").strip() != "0":
         ladder.append(_pollinations)
     whys = []
@@ -462,7 +610,7 @@ def generate(prompt: str, seed: int, near: list[int] | None = None) -> tuple[byt
         if not data:
             whys.append(label)
             continue
-        data = _to169(data)                      # a square answer is still a frame
+        data = _as_jpeg(_to169(data))            # a square answer is still a frame
         im, why = usable(data, near=near)
         if im is None:
             whys.append(f"{label} rejected → {why}")
