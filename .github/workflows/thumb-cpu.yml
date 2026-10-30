@@ -53,7 +53,13 @@ concurrency:
 jobs:
   cpu:
     name: one long, quiet CPU night
-    if: ${{ vars.THUMB_CPU != '0' }}
+    # A hand dispatch ALWAYS runs — that is what "the third backup can be started any
+    # time" means. The repo Variable only silences the SCHEDULE. (Measured 2026-10-30:
+    # with the condition written as `vars.THUMB_CPU != '0'` alone, a dispatch on a repo
+    # where that Variable does not exist was reported `skipped` with zero steps — an
+    # unset `vars` key does not compare like an empty string. Do not gate a manual run
+    # on a variable that may not exist.)
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.THUMB_CPU != '0' }}
     runs-on: ubuntu-latest
     timeout-minutes: 300          # 5 h of work inside GitHub's 6 h kill — the job ends itself
     env:
