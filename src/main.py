@@ -1127,22 +1127,33 @@ def main() -> None:
         # portrait image pillarboxed into 16:9 (~70 % black bar), and our covers
         # are moody on purpose (grain + scrim, mean luma measured at 10–26 / 255
         # on the live channel), so the grid read as N near-black rectangles.
-        # thumb.build() re-lights the SAME artwork — brand law intact, no
-        # redesign, the render/subtitle/master chain untouched — and it is set on
-        # every upload. Cosmetic → wrapped, never fatal; THUMB=0 turns it off.
+        # Now fixed the way he asked (2026-10-26, "don't make the thumbnails by
+        # you"): thumb.pick() takes ONE AI frame for the release — the pre-generated
+        # bank shelf first (tools/thumb_farm.py, filled nightly by its own workflow),
+        # then live Gemini → Hugging Face → Pollinations — and art.overlay puts our
+        # brand + title on it while thumb.build re-lights it out of the scrim. The
+        # episode cover is only the last step, so a dead-API night still beats a
+        # black bar. One frame per release, shared by long/short/twin (the twin gets
+        # its own chip), so a flaky free tier is touched once a day. Cosmetic →
+        # wrapped, never fatal. Dials: THUMB=0 off · THUMB_AI=0 no live calls ·
+        # THUMB_BANK=0 no shelf · THUMB_RELIGHT=0 no cover fallback.
         if os.environ.get("THUMB", "1").strip() != "0" and (vid or sid or sid2):
             try:
                 from src import thumb
+                _art, _src, _note = thumb.pick(meta, ep, rng, cover, OUT)
+                if _art is None:
+                    print(f"  🖼 no thumbnail this run ({_note}) — YouTube picks a frame")
                 for _lbl, _id, _slow in (("long", vid, False), ("short", sid, False),
                                          ("twin", sid2, True)):
-                    if not _id:
+                    if not _id or _art is None:
                         continue
-                    _jp = thumb.build(cover, meta, ep,
+                    _jp = thumb.build(_art, meta, ep,
                                       OUT / f"ep{ep:03d}_thumb{'_twin' if _slow else ''}.jpg",
                                       slowed=_slow)
                     if _jp and uploader.set_thumbnail(_id, _jp):
-                        print(f"  ✅ thumbnail set on the {_lbl} · "
-                              f"{'slowed variant' if _slow else 'release art'}")
+                        manifest.setdefault("thumbnail", {})[_lbl] = {
+                            "source": _src, "file": Path(_jp).name}
+                        print(f"  ✅ thumbnail set on the {_lbl} · from {_src}")
             except Exception as e:
                 print(f"  (thumbnail pass skipped: {str(e)[:110]} — uploads are already live)")
 

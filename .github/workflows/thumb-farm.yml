@@ -1,0 +1,100 @@
+# 🖼 thumb farm — fills the AI thumbnail bank. Decorative lane, same law as the
+# b-roll farm: it shares no lock, no temp dir, no code path with the release
+# except src/thumb_bank.py, whose every entry point returns None instead of
+# raising. If this workflow is deleted, the daily release still publishes
+# exactly what it published last week (it just falls back to the cover it made).
+#
+# Why it exists (boss 2026-10-26): "don't make the thumbnails by you … generate
+# hundreds and thousands of combination thumbnails. If a Gemini API key fails or
+# any other API key fails, then that workflow will run and generate a new
+# thumbnail based on the prompt." The matrix in src/thumb_bank.py is 907,200
+# combinations; this farm walks it a slice at a time and stores what survives
+# validation on the `thumb-lab` release asset shelf.
+#
+# Cost: zero. Gemini free tier → Hugging Face free inference (HF_TOKEN is already
+# a repo Secret) → the anonymous Pollinations tier. No GPU, no Kaggle, no paid API.
+name: 🖼 thumb farm (AI thumbnail bank)
+
+on:
+  schedule:
+    - cron: "35 5 * * *"           # 11:05 BDT — nowhere near a release, and 7 h
+                                   # after the b-roll farm so the two never fight
+  workflow_dispatch:
+    inputs:
+      n:
+        description: "how many images to attempt this run"
+        required: false
+        default: "24"
+      genres:
+        description: "comma list to focus on (blank = the whole genre wheel)"
+        required: false
+        default: ""
+
+concurrency:
+  group: thumb-farm
+  cancel-in-progress: false        # a half-filled shelf is still a shelf
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  farm:
+    if: github.event_name == 'workflow_dispatch' || vars.THUMB_FARM != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45            # 24 images at free-tier speeds plus slack
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}   # src/keys.py rotates the pool
+      GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}   # on 429 before giving up —
+      GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}   # on 2026-10-29 one key hit
+      GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}   # RESOURCE_EXHAUSTED and the
+      GEMINI_API_KEY_6: ${{ secrets.GEMINI_API_KEY_6 }}   # whole night had no AI art
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      # The shelf is pushed with the repo's own working token (the one the b-roll
+      # farm and bossdrop already use); GITHUB_TOKEN is only a fallback.
+      GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      THUMB_FARM_N: ${{ inputs.n }}
+      THUMB_GENRES: ${{ inputs.genres }}
+      THUMB_FARM: ${{ vars.THUMB_FARM }}
+      THUMB_BANK_TARGET: ${{ vars.THUMB_BANK_TARGET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps (Pillow + numpy only — the engines are plain HTTP)
+        run: pip install --quiet pillow numpy
+
+      - name: 🖼 Fill the bank
+        # `|| true` on purpose: the farm is decorative. A night where every free
+        # tier says no must be a green checkmark with a printed reason, not a red
+        # X next to the release the boss actually cares about.
+        run: |
+          python3 tools/thumb_farm.py --n "${THUMB_FARM_N:-24}" || echo "⚠ farm errored — shelf untouched, releases unaffected"
+
+      - name: 📏 What is on the shelf
+        run: |
+          curl -sfL -o /tmp/index.json "https://github.com/$GITHUB_REPOSITORY/releases/download/thumb-lab/index.json" || true
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('/tmp/index.json')
+          if not p.exists():
+              print("  (no shelf yet — first nights fill it; releases use their cover meanwhile)")
+              raise SystemExit(0)
+          d = json.loads(p.read_text())
+          imgs = d.get('images', [])
+          eng = {}
+          for r in imgs:
+              eng[r.get('engine', '?')] = eng.get(r.get('engine', '?'), 0) + 1
+          print(f"  🖼 {len(imgs)} images · cursor {d.get('cursor')} · engines {eng}")
+          if imgs:
+              luma = sorted(r.get('luma', 0) for r in imgs)
+              print(f"  mean luma min/med/max = {luma[0]:.0f}/{luma[len(luma)//2]:.0f}/{luma[-1]:.0f} "
+                    f"(the old channel thumbnails measured 8–25 — that was the bug)")
+          for n in d.get('nights', [])[-3:]:
+              print(f"  night {n.get('at')}: +{n.get('added')} new, {n.get('rejected')} rejected → total {n.get('total')}")
+          PY

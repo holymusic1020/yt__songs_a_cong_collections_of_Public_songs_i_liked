@@ -130,3 +130,49 @@ def build(cover_path, meta: dict, ep: int, out_path, *, slowed: bool = False) ->
 def dials() -> dict:
     """What the run will do — kept as a function so the UT can read the truth."""
     return {"THUMB": os.environ.get("THUMB", "1").strip() != "0"}
+
+
+def pick(meta: dict, ep: int, rng, cover, out_dir):
+    """(art_path, source, note) — ONE frame chosen per release, exactly as real
+    labels do: the long and its Shorts share the day's cover art, the twin gets a
+    chip on top of it. Cheaper and calmer than generating three images, and it is
+    the DAYS that were all-black, not the videos within a day.
+
+    He was explicit: *don't make the thumbnails by you*. So the pixels come from an
+    AI model — the pre-generated bank shelf first (that is what makes a dead-API
+    night still look fresh), live generation second (Gemini → Hugging Face →
+    Pollinations). Re-lighting the episode's own cover is the LAST step, only so a
+    release never ships the old black bar. Nothing here can raise.
+
+    Branding stays ours: an AI frame gets art.overlay() (channel · title ·
+    EP · genre · BPM · KEY) laid over it, then relight() pulls it back out of the
+    scrim's darkness. Dials: THUMB=0 everything off · THUMB_AI=0 no live
+    generation · THUMB_BANK=0 no shelf · THUMB_RELIGHT=0 no cover fallback ·
+    THUMB_BRAND=0 no overlay.
+    """
+    out_dir = Path(out_dir)
+    if os.environ.get("THUMB", "1").strip() == "0":
+        return None, "off", "THUMB=0"
+    base, src, note = None, "", ""
+    if os.environ.get("THUMB_AI", "1").strip() != "0":
+        try:
+            from src import thumb_bank
+            base, src, note = thumb_bank.acquire(meta, ep, out_dir / "thumbcache", rng)
+            if base is not None and os.environ.get("THUMB_BRAND", "1").strip() != "0":
+                try:
+                    from PIL import Image
+                    from src import art
+                    branded = art.overlay(meta, ep, rng, Image.open(base),
+                                          out_dir / f"ep{ep:03d}_thumbbase.png")
+                    if branded and Path(branded).exists():
+                        base = Path(branded)
+                except Exception as e:
+                    print(f"  (thumb branding skipped: {str(e)[:80]} — using the raw AI frame)")
+        except Exception as e:
+            base, src, note = None, "", f"bank/live failed: {str(e)[:90]}"
+    if base is None:
+        if os.environ.get("THUMB_RELIGHT", "1").strip() == "0":
+            print(f"  🖼 no AI frame and THUMB_RELIGHT=0 → no custom thumbnail ({note})")
+            return None, "off", note
+        base, src = cover, (note or "") and f"cover-relight ({note})" or "cover-relight"
+    return base, src, note
