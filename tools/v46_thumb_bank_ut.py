@@ -250,6 +250,20 @@ try:
 except ImportError:
     chk(True, "(pyyaml not installed here — structure checked textually)")
 
+print("── 5b · a blank dispatch input must not kill the farm (it did, once) ──")
+r3 = subprocess.run([sys.executable, "tools/thumb_farm.py", "--dry", "--n", "2"],
+                    cwd=ROOT, capture_output=True, text=True,
+                    env={**os.environ, "THUMB_FARM_N": "", "THUMB_BANK_TARGET": "",
+                         "THUMB_SLEEP_S": "", "THUMB_BUDGET_S": "",
+                         "THUMB_STAGE": str(TMP / "stage2")})
+chk(r3.returncode == 0 and "crashed" not in r3.stdout + r3.stderr,
+    "empty env dials fall back to the defaults", (r3.stdout + r3.stderr)[-160:])
+r4 = subprocess.run([sys.executable, "tools/thumb_farm.py", "--dry"],
+                    cwd=ROOT, capture_output=True, text=True,
+                    env={**os.environ, "THUMB_FARM_N": "not-a-number",
+                         "THUMB_STAGE": str(TMP / "stage3")})
+chk(r4.returncode == 0, "garbage in a Variable still exits 0 (decorative lane law)")
+
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
 chk("thumb.pick(meta, ep, rng, cover, OUT)" in m, "main calls pick() once per release")

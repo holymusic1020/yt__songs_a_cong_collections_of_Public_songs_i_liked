@@ -48,6 +48,20 @@ INDEX = TB.INDEX_FILE
 NIGHTS = "nights.json"
 
 
+def _i(name: str, default: int) -> int:
+    """An env/Variable that is EMPTY must not crash the farm.
+
+    This is not paranoia: a `workflow_dispatch` input that the boss leaves blank
+    arrives as "" — and the first real run of this file (2026-10-30, run
+    41066066865) died on exactly that, `int("")`, with the log line
+    "⚠ thumb farm crashed: invalid literal for int() with base 10: ''". The
+    crash handler did its job (exit 0, release unaffected), but a farm that
+    cannot start from a blank box is a farm that never fills the shelf.
+    """
+    v = (os.environ.get(name) or "").strip()
+    return int(v) if v.lstrip("-").isdigit() else default
+
+
 def run(cmd, timeout=300, check=False):
     try:
         return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
@@ -87,11 +101,11 @@ def cursor_of(shelf: dict) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--n", type=int, default=int(os.environ.get("THUMB_FARM_N", "24")))
-    ap.add_argument("--target", type=int, default=int(os.environ.get("THUMB_BANK_TARGET", "900")))
+    ap.add_argument("--n", type=int, default=_i("THUMB_FARM_N", 24))
+    ap.add_argument("--target", type=int, default=_i("THUMB_BANK_TARGET", 900))
     ap.add_argument("--genres", default=os.environ.get("THUMB_GENRES", ""))
-    ap.add_argument("--sleep", type=float, default=float(os.environ.get("THUMB_SLEEP_S", "2.0")))
-    ap.add_argument("--budget-s", type=int, default=int(os.environ.get("THUMB_BUDGET_S", "1500")))
+    ap.add_argument("--sleep", type=float, default=float(_i("THUMB_SLEEP_S", 2)))
+    ap.add_argument("--budget-s", type=int, default=_i("THUMB_BUDGET_S", 1500))
     ap.add_argument("--dry", action="store_true", help="build prompts, call no API, upload nothing")
     args = ap.parse_args()
 
