@@ -612,7 +612,11 @@ _d = _y.safe_load(cpu_wf)
 chk(True, "thumb-cpu.yml is real YAML the platform can run")
 chk("timeout-minutes: 300" in cpu_wf, "the job ends itself at 5 h (the platform kills at 6 — measured ceiling)")
 chk("download.pytorch.org/whl/cpu" in cpu_wf, "torch CPU wheels, not the 2 GB CUDA build")
-chk("actions/cache@v4" in cpu_wf and "huggingface" in cpu_wf, "the 4 GB of weights are cached between nights")
+_cch = cpu_wf[cpu_wf.index("actions/cache"):cpu_wf.index("Install torch")]
+chk("~/.cache/pip" in _cch and "cache/huggingface" not in _cch,
+    "only the pip downloads are cached: the weights cost 14 s (measured), and a 5.5 GB "
+    "nightly cache is not his 10 GB quota to spend", " ".join(_cch.splitlines()[-4:])[:80])
+chk("github.run_id" not in _cch, "the cache key is stable — cache@v4 is not asked to rewrite a key nightly")
 chk("--cpu-only" in cpu_wf and "THUMB_BANK_TARGET" in cpu_wf, "it writes to the SAME shelf through the SAME farm")
 chk("github.event_name == 'workflow_dispatch' || vars.THUMB_CPU != '0'" in cpu_wf,
     "a hand dispatch always runs; THUMB_CPU=0 only silences the SCHEDULE",
@@ -670,6 +674,8 @@ chk(TC._clip_prompt(object(), _long) == _long and TC._clip_prompt(None, _long) =
 cpu_src = (ROOT / "src" / "thumb_cpu.py").read_text(encoding="utf-8")
 chk("dtype=torch.float32" in cpu_src and "except TypeError" in cpu_src and "torch_dtype" in cpu_src,
     "loads with the new `dtype=` and falls back to `torch_dtype=` (diffusers 0.42 warned it is renamed in 1.0)")
+chk("THUMB_CPU_CLIP_TOKENS" in cpu_src and "THUMB_CPU_CLIP_TOKENS" in (ROOT / "docs" / "CONTROL-PANEL.md").read_text(encoding="utf-8"),
+    "the CLIP-window dial in the manual is a dial that exists (docs never ship ahead of the code)")
 chk("_clip_prompt(pipe, full)" in cpu_src and "prompt=full" in cpu_src,
     "the trim is what the pipeline is actually handed")
 chk("HF_TOKEN: ${{ secrets.HF_TOKEN }}" in cpu_wf,

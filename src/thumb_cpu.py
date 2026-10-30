@@ -19,14 +19,16 @@ The arithmetic that shapes the design (all of it checked today, don't re-derive)
     out FLUX.1-schnell's fp32 diffusers repo (30 GB+) and every **gated**
     Stability repo (SD 3.5, SDXL-Turbo accept-a-licence) — a gated repo 401s in
     CI and a 401 in a cosmetic lane is exactly the noise we are not building.
-    What fits: `stable-diffusion-v1-5/stable-diffusion-v1-5` — SD 1.5, ~4 GB
-    fp32, **not gated**, CreativeML OpenRAIL-M (commercial use allowed, with the
+    What fits: `stable-diffusion-v1-5/stable-diffusion-v1-5` — SD 1.5, 5.5 GB
+    of fp32 safetensors (unet 3.4 + text encoder 1.7 + vae 0.35, timed in the
+    job log: Hub → `cpu engine up` 14 s later), **not gated**, CreativeML OpenRAIL-M (commercial use allowed, with the
     usual use-policy line), native 512². Same family the whole open ecosystem
     ships, and the cover-art lane's licence posture does not change: our own
     branding and relight go on top afterwards.
-  · 4 vCPU float32, 768×448, 20 steps ≈ **3-8 minutes an image** (measured in CI
-    by the run this file ships with, not guessed from a GPU blog), so one Sunday
-    night is ~20-40 frames. The bank target is 900, so CPU is the slow lane that
+  · 4 vCPU float32, 768×448, 20 steps = **445 s and 446 s an image** — measured
+    by run 41081522380 (2026-10-30 15:31→15:47 UTC, 2 frames, 0 rejected), not
+    guessed from a GPU blog. So a 300-minute job banks ~35 frames and a Sunday
+    night covers a month of single-frame fallback demand. The bank target is 900, so CPU is the slow lane that
     still fills the shelf with nothing else switched on — which is the point.
 
 `generate(prompt, seed)` speaks the same contract as every other engine in
@@ -114,11 +116,12 @@ def _clip_prompt(pipe, text: str) -> str:
         tok = getattr(pipe, "tokenizer", None)
         if tok is None:
             return text
-        ids = tok(text, truncation=False, padding=False, max_length=77)["input_ids"][0]
-        if len(ids) <= 75:
+        limit = max(8, int(_num("THUMB_CPU_CLIP_TOKENS", 75)))
+        ids = tok(text, truncation=False, padding=False, max_length=limit + 2)["input_ids"][0]
+        if len(ids) <= limit:
             return text
-        out = tok.decode(ids[:75], skip_special_tokens=True).strip().rstrip(",")
-        print(f"  🐢 prompt trimmed {len(ids)} → 75 CLIP tokens (SD 1.5 reads 77)", flush=True)
+        out = tok.decode(ids[:limit], skip_special_tokens=True).strip().rstrip(",")
+        print(f"  🐢 prompt trimmed {len(ids)} → {limit} CLIP tokens (SD 1.5 reads 77)", flush=True)
         return out or text
     except Exception:
         return text                                   # a tokenizer hiccup must not cost a frame

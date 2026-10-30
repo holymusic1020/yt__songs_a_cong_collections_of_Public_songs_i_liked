@@ -83,13 +83,26 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: 🧊 cache the weights (~4 GB fp32)
+      - name: 🧊 cache the pip downloads (NOT the weights)
+        # Measured on the first two nights (2026-10-30, 15:26 and 15:31 UTC), so this is a
+        # decision and not a preference:
+        #   * the weights are 5.5 GB of fp32 and diffusers pulled them in ~14 s — a runner
+        #     talks to the Hub at roughly 400 MB/s. Caching that against the 10 GB per-repo
+        #     Actions cache quota is a bad trade, so ~/.cache/huggingface is deliberately
+        #     NOT listed here.
+        #   * caching it would not even behave the way a reader expects: night 1 saved the
+        #     key, night 2 restored it and printed "Cache hit occurred on the primary key
+        #     ..., not saving cache" — actions/cache never overwrites an existing key, so
+        #     the 5.5 GB fetched on night 2 was thrown away when the job ended. A
+        #     run-unique key would fix that and fill his quota with 5.5 GB every night.
+        # The pip cache is small, stable and saves real time (torch is a ~200 MB wheel),
+        # and the path is ~/.cache/pip, not ~/.pip — night 1 was caching an empty directory.
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.cache/huggingface
-            ~/.cache/pip
-          key: thumb-cpu-${{ vars.THUMB_CPU_MODEL || 'stable-diffusion-v1-5/stable-diffusion-v1-5' }}-sd15
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-thumb-cpu-v1
+          restore-keys: |
+            ${{ runner.os }}-pip-thumb-cpu-
 
       - name: Install torch (CPU wheels) + the pipeline
         # No `--quiet`: the first night of this lane needs to show what it pulled,

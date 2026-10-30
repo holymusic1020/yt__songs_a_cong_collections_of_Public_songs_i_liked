@@ -429,11 +429,14 @@ failed then the third backup will start its work. I don't care about how long…
 10 hours for 1 thumbnail on workflow."* Measured answer first: **one Actions job may run 6 hours
 (max 360 min) and free public-repo runners are 4 vCPU / 16 GB** — so 10 hours inside a single job is
 impossible, and no runner has a GPU. The lane therefore runs **stable-diffusion-v1-5 in fp32 on CPU**
-(~3–8 min per 768×448 frame, ~4 GB of weights), inside its own workflow, with a 5-hour self-imposed
+(**7.4 min** per 768×448 frame at 20 steps; 5.5 GB of weights, fetched in ~14 s — both measured
+on 2026-10-30 at 15:32–15:47 UTC), inside its own workflow, with a 5-hour self-imposed
 stop, banking frames into the **same shelf** the releases read.
 
 **The engine** — `src/thumb_cpu.py`: `StableDiffusionPipeline.from_pretrained(MODEL, torch_dtype=float32)`
-+ attention-slicing + VAE-slicing/tile decode, `DDIMGenerator`, default **20 steps @ 7.5 guidance**,
++ attention-slicing + VAE-slicing/tile decode, the model repo's own
+scheduler (no override — nothing in `thumb_cpu.py` touches `pipe.scheduler`, and the default at 20 steps
+passed the gate twice), default **20 steps @ 7.5 guidance**,
 `safety_checker=None` (the farm gate is the judge — it rejects blank/black frames, so the checker's
 watermark-hunting false refusals would only waste the night). Same `(bytes|None, why)` contract as every
 other engine, same `usable()` gate, and the gate is **never bypassed** by the retry: a rejected frame is
@@ -444,8 +447,10 @@ SD 3 / 3.5 need an accepted licence + a token and cannot be cloned unattended. `
 CI; this one cannot.
 
 **The workflow** — `.github/workflows/thumb-cpu.yml`: `workflow_dispatch` (`n`, `steps`) + a **Sunday
-12:10 BDT** schedule, `timeout-minutes: 300`, `actions/cache@v4` on `~/.cache/huggingface` so the 4 GB
-is fetched once, and it calls the same farm with `--cpu-only`, so the shelf, the index, the cursor,
+12:10 BDT** schedule, `timeout-minutes: 300`, a **pip-only** `actions/cache@v4` (the 5.5 GB of
+weights arrive in 14 s, so caching them against the 10 GB per-repo quota is a bad trade — and
+`actions/cache` never overwrites a key it already hit, so night 2's download was silently discarded:
+that is why the path list has `~/.cache/pip` and not `~/.cache/huggingface`), and it calls the same farm with `--cpu-only`, so the shelf, the index, the cursor,
 the dedupe and the release-night picker are all untouched. The pip install has **no `|| true`** — a
 missing torch must read as a failed step, not as 25 silent refusals (that is how night 1 lost the SDK).
 
@@ -458,7 +463,27 @@ nothing else. Both sides are **off until he says so**:
 | `THUMB_CPU_AUTO` | unset | the nightly farm dispatches the CPU job when the shelf holds fewer than `THUMB_CPU_MIN` rows. |
 | `THUMB_CPU_MIN` | `3` | that "thin" line. |
 | `THUMB_CPU_N` | `12` | frames per wake-up. |
+| `THUMB_CPU_CLIP_TOKENS` | `75` | how much of the prompt SD 1.5 is allowed to read (its CLIP
+tower stops at 77; the farm writes ~131, so the tail is trimmed rather than silently dropped). |
 | `THUMB_CPU_MODEL` / `_STEPS` / `_GUIDANCE` / `_W` / `_H` / `_RETRY` | SD 1.5 / 20 / 7.5 / 768 / 448 / 2 | the knobs. `_STEPS 25`, `_GUIDANCE 90` (9.0) and `_RETRY 4` are the answers to "it looks soft"; `THUMB_CPU_MODEL=stabilityai/stable-diffusion-xl-base-1.0` is the answer to "make it stronger" — it will just take ~4× longer, which he has already said is fine. |
+
+**Measured on the first two nights (2026-10-30, 15:26 / 15:31 UTC) — the numbers to plan with:**
+
+| what | value | where it came from |
+|---|---|---|
+| torch + diffusers install | 55 s | step 5, `Successfully installed … diffusers-0.42.1` |
+| weights live (5.5 GB) | ~14 s | `🐢 cpu engine up` at 15:32:57, first import 15:32:43 |
+| one frame, 768×448 @ 20 steps | **445 s and 446 s** | `🐢 done in 445s · 284,049B · luma 97` |
+| a whole 2-frame night | 915 s, `+2 new, 0 rejected` | the farm's own summary line |
+| frames a 300-minute job can bank | ~35 | (300 − 3) min ÷ 7.4 min |
+| runner cores | `threads=2 cpus=4` | the import inventory step |
+
+Quality note that only the log gave up: SD 1.5's CLIP tower reads **77 tokens** and the farm writes
+**131**, so the model was quietly keeping the first 77 and dropping the tail — the lighting and
+"music-release cover art" instructions, i.e. the part that makes a picture read as a *thumbnail*.
+`_clip_prompt()` now trims with the real tokenizer to 75 tokens and prints `prompt trimmed 131 → 75
+CLIP tokens`. FLUX and Gemini read far more, so the other engines keep the full prompt.
+
 
 **The empty-Variable trap, fixed for the whole lane** (measured on the first dispatch, 15:27 UTC
 2026-10-30): `thumb-cpu.yml` called the farm with `--target "${{ vars.THUMB_BANK_TARGET }}"` on a repo
