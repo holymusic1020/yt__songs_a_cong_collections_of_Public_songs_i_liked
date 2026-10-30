@@ -692,6 +692,21 @@ class _ListyPipe:
     tokenizer = _Listy()
 chk(len(TC._clip_prompt(_Batch(), "w " * 120).split()) == 73,
     "a tokenizer that rejects extra kwargs still gets trimmed (CI's transformers 5.22 does exactly this)")
+import collections as _co
+class _BatchEnc(_co.UserDict):      # mapping, NOT a dict subclass — exactly like BatchEncoding
+    pass
+class _MapTok:
+    def __call__(self, text, **kw):
+        if kw:
+            raise TypeError("kwargs are a TypeError in transformers 5.x")
+        return _BatchEnc({"input_ids": [[101] + [7] * len(text.split()) + [102]]})
+    def decode(self, ids, skip_special_tokens=True):
+        return " ".join(["w"] * max(0, len(ids) - 2 * int(skip_special_tokens)))
+class _MapPipe:
+    tokenizer = _MapTok()
+chk(len(TC._clip_prompt(_MapPipe(), "w " * 120).split()) == 73,
+    "a BatchEncoding-shaped mapping (not a dict!) is still trimmed — the exact shape CI uses",
+    str(len(TC._clip_prompt(_MapPipe(), "w " * 120).split())))
 chk(len(TC._clip_prompt(_ListyPipe(), "w " * 120).split()) == 73,
     "and a tokenizer returning a bare batch-of-one list is handled, not swallowed")
 chk(TC._clip_prompt(_ListyPipe(), "four small words") == "four small words", "short text still short")

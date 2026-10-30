@@ -123,10 +123,19 @@ def _clip_prompt(pipe, text: str) -> str:
         # silently became nothing. One argument, slice by hand, and any real failure
         # is LOUD, because a cosmetic lane is allowed to be weak but not to lie.
         enc = tok(text)
-        ids = enc["input_ids"] if isinstance(enc, dict) else enc
-        if not isinstance(ids, list):
+        # `BatchEncoding` is a Mapping but NOT a dict subclass — `isinstance(enc, dict)`
+        # is False for it, and the "fallback" then handed back the KEY LIST ("input_ids"),
+        # which is 1 long, so the trim quietly declined to trim. Measured twice: the first
+        # fix printed nothing and CI still logged "133 > 77"; index it, don't guess it.
+        try:
+            ids = enc["input_ids"]
+        except (TypeError, KeyError, IndexError):
+            ids = enc
+        if isinstance(ids, tuple):
             ids = list(ids)
-        while ids and isinstance(ids[0], list):        # batch-of-one: [[101, 7, …]]
+        if isinstance(ids, str) or not hasattr(ids, "__len__") or not len(ids):
+            return text
+        while isinstance(ids, list) and ids and isinstance(ids[0], list):   # batch-of-one
             ids = ids[0]
         if len(ids) <= limit:
             return text
