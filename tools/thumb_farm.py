@@ -148,7 +148,7 @@ def main() -> int:
         data, engine, why = TB.generate(prompt, seed, near=near)
         if data is None:
             rejected += 1
-            print(f"  [{i:02d}] ✗ {why[:120]}")
+            print(f"  [{i:02d}] ✗ {why[:420]}")
             if "402" in (why or "") or "503" in (why or ""):
                 # every engine said no — a night of that is a night over, not a
                 # loop of timeouts on a wall (the EP.064 lesson, same as art_free)

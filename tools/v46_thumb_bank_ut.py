@@ -27,6 +27,7 @@ Network is faked (monkeypatched transports) — this test makes zero real calls.
 """
 import io
 import json
+import base64
 import os
 import subprocess
 import sys
@@ -264,6 +265,77 @@ r4 = subprocess.run([sys.executable, "tools/thumb_farm.py", "--dry"],
                          "THUMB_STAGE": str(TMP / "stage3")})
 chk(r4.returncode == 0, "garbage in a Variable still exits 0 (decorative lane law)")
 
+print("── 5c · what the first live run taught the engines ──")
+from PIL import Image as _Im
+sq = TMP / "sq.jpg"
+_Im.new("RGB", (1024, 1024), (120, 90, 60))
+import numpy as _np
+_arr = _np.random.default_rng(4).integers(0, 255, (1024, 1024, 3), dtype=_np.uint8)
+_Im.fromarray(_arr.astype("uint8")).save(sq, "JPEG", quality=92)
+_sqb = sq.read_bytes()
+cropped = TB._to169(_sqb)
+cim = TB._img(cropped)
+chk(cim.width == 1024 and cim.height == 576, "a square engine answer is centre-cropped to 16:9",
+    f"{cim.width}x{cim.height}")
+wide = TB._img(_Im.new("RGB", (1280, 720), (90, 90, 90)).save(TMP / "w.jpg", "JPEG", quality=92) or (TMP / "w.jpg").read_bytes())
+chk(TB._to169((TMP / "w.jpg").read_bytes()) == (TMP / "w.jpg").read_bytes(),
+    "an already-16:9 answer is passed through untouched (no re-encode, no loss)")
+chk(len(TB.hf_url("a/b")) == 2 and "router.huggingface.co" in TB.hf_url("a/b")[0],
+    "HF router is first — api-inference no longer resolves (URLError -5, measured 2026-10-30)")
+chk("imageConfig" not in str(TB._genai_rest.__defaults__), "the REST call keeps its shape simple")
+
+# Gemini with no SDK on the box must still speak REST (the runner that crashed)
+_orig_rest, _orig_post = TB._genai_rest, TB._post_json
+try:
+    import sys as _sys
+    _saved = {k: v for k, v in _sys.modules.items() if k.startswith("google")}
+    for k in list(_sys.modules):
+        if k.startswith("google"):
+            del _sys.modules[k]
+    _sys.modules["google"] = None                 # `from google import genai` → ImportError
+    TB._genai_rest = lambda key, model, prompt, seed, wide=True: (
+        (_sqb, "ok") if "good" in key else (None, "HTTP 429 quota exceeded"))
+    os.environ["GEMINI_API_KEY"] = "nope-good"
+    art, eng = TB._gemini("a room at dusk", 11)
+    chk(art is not None and eng.startswith("gemini-rest/"),
+        "no SDK on the runner → raw REST still generates (that was the crash)")
+    os.environ["GEMINI_API_KEY"] = "nope-bad"
+    art2, why2 = TB._gemini("a room at dusk", 11)
+    chk(art2 is None and "429" in why2, "and a refusal is reported, never swallowed", why2[:90])
+    os.environ["GEMINI_API_KEY"] = "nope-good,nope-bad"      # a pool that rotates
+    art3, eng3 = TB._gemini("a room at dusk", 11)
+    chk(art3 is not None, "a dead first key is rotated off a pool of two")
+    os.environ["GEMINI_API_KEY"] = ""
+finally:
+    TB._genai_rest, TB._post_json = _orig_rest, _orig_post
+    for k in list(_sys.modules):
+        if k.startswith("google"):
+            del _sys.modules[k]
+    _sys.modules.update(_saved)
+    os.environ.pop("GEMINI_API_KEY", None)
+
+# HF: router JSON shape must be understood
+TB._post_json = lambda url, payload, headers=None, timeout=180: (
+    b'{"data":[{"b64_json":"' + base64.b64encode(_sqb) + b'"}]}')
+os.environ["HF_TOKEN"] = "x"
+h1, h2 = TB._hf("a room at dusk", 3)
+chk(h1 is not None and h2.startswith("huggingface/FLUX"), "HF router b64_json decodes to an image", h2)
+_im = TB._img(h1)
+chk(_im.width == 1024 and _im.height == 576, "and it lands 16:9 after the crop", f"{_im.width}x{_im.height}")
+def _boom(url, payload, headers=None, timeout=180):
+    raise urllib.error.HTTPError(url, 401, "Unauthorized", None, None)
+TB._post_json = _boom
+h3, h4 = TB._hf("a room at dusk", 3)
+chk(h3 is None and "401" in h4, "a token without inference permission is named in the log", h4[:80])
+del TB._post_json
+os.environ.pop("HF_TOKEN", None)
+
+# generate() must accept an engine's square frame (crop feeds the gate)
+TB._pollinations = lambda mp, sd: (_sqb, "pollinations/flux")
+TB._gemini = lambda mp, sd: (None, "sdk missing")
+TB._hf = lambda mp, sd: (None, "no HF_TOKEN")
+g1, g2, g3 = TB.generate("x", 1)
+chk(g1 is not None and g2 == "pollinations/flux", "generate() crops before the gate, so a square engine still ships", g3[:80])
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
 chk("thumb.pick(meta, ep, rng, cover, OUT)" in m, "main calls pick() once per release")

@@ -195,6 +195,21 @@ def _luma_pair(im) -> tuple[float, float]:
 
 
 # ─────────────────────────────── the engines ────────────────────────────────
+# What each engine is, and what was measured about it on 2026-10-30 (do not
+# re-derive these; the first live farm run — job 41066336729 — printed all of it):
+#   · the genai SDK is not on a runner unless requirements.txt is installed, and
+#     `pip install genai` is the WRONG package name (it is `google-genai`);
+#   · api-inference.huggingface.co no longer resolves at all → URLError -5;
+#   · router.huggingface.co/v1/images/generations answers 401 without a token →
+#     the path is alive, the token is the variable;
+#   · image.pollinations.ai still paywalls a datacenter IP (flux 503 / turbo 402).
+# So: every engine has a dependency-free HTTP path, and a refusal must never
+# look like a success.
+PROMPT_PREFIX = "Generate one 1280x720 cinematic photograph. "
+GEMINI_MODELS = ("gemini-3.1-flash-image", "gemini-2.5-flash-image")   # same list src/art_gemini.py verified live
+HF_MODELS = ("black-forest-labs/FLUX.1-schnell", "stabilityai/sdxl-turbo")
+
+
 def pollinations_url(prompt: str, seed: int, w: int = W, h: int = H, model: str = "flux") -> str:
     """His HTML's URL, upgraded: nologo + explicit seed + referrer (the modern
     anonymous tier wants it) and a prompt-safe percent-encode."""
@@ -203,8 +218,10 @@ def pollinations_url(prompt: str, seed: int, w: int = W, h: int = H, model: str 
             f"&seed={int(seed)}&nologo=true&model={model}&referrer=nixspeech")
 
 
-def hf_url(model: str) -> tuple[str, str]:
-    return (f"https://api-inference.huggingface.co/models/{model}", model)
+def hf_url(model: str) -> list:
+    """Endpoints for one HF model, best-first (see the measurement above)."""
+    return ["https://router.huggingface.co/v1/images/generations",
+            f"https://api-inference.huggingface.co/models/{model}"]
 
 
 def _get(url: str, headers: dict | None = None, timeout: int = 90) -> bytes:
@@ -214,81 +231,210 @@ def _get(url: str, headers: dict | None = None, timeout: int = 90) -> bytes:
         return r.read()
 
 
-def _gemini(meta_prompt: str, seed: int):
-    """Primary: the boss's own Gemini key(s), rotating the pool on 429/403."""
+def _post_json(url: str, payload: dict, headers: dict | None = None, timeout: int = 180) -> bytes:
+    req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST",
+                                 headers={"Content-Type": "application/json",
+                                          "User-Agent": "yt-auto-thumb/1.0",
+                                          **(headers or {})})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read()
+
+
+def _to169(data: bytes) -> bytes:
+    """Centre-crop any answer to 16:9 and re-encode, so a square reply from an
+    engine is still a frame we can use. On any trouble the original bytes come
+    back — this can only ever make an image more acceptable, never fail."""
     try:
-        from src import keys
-        from google import genai
-        from google.genai import types
+        im = _img(data)
+        if abs(im.width / im.height - W / H) <= 0.06:
+            return data
+        if im.width * H / W <= im.height:
+            h2 = max(1, int(round(im.width * H / W)))
+            y0 = (im.height - h2) // 2
+            im = im.crop((0, y0, im.width, y0 + h2))
+        else:
+            w2 = max(1, int(round(im.height * W / H)))
+            x0 = (im.width - w2) // 2
+            im = im.crop((x0, 0, x0 + w2, im.height))
+        if im.width < 900:
+            return data
+        out = io.BytesIO()
+        im.convert("RGB").save(out, "JPEG", quality=95)
+        b = out.getvalue()
+        return b if len(b) >= MIN_BYTES else data
+    except Exception:
+        return data
+
+
+def _dead_key(hint: str) -> bool:
+    s = (hint or "").lower()
+    return any(k in s for k in ("429", "quota", "resource_exhausted", "403", "permission",
+                                "invalid api key", "api_key_not_valid", "unauthenticated"))
+
+
+def _genai_rest(key: str, model: str, prompt: str, seed: int, wide: bool = True):
+    """Gemini over raw urllib — no SDK, no pip, works on a runner whose install
+    step failed. (bytes|None, hint)"""
+    cfg = {"responseModalities": ["TEXT", "IMAGE"] if wide else ["IMAGE"],
+           "seed": int(seed) % (2 ** 31), "temperature": 0.9}
+    if wide:
+        cfg["imageConfig"] = {"aspectRatio": "16:9"}
+    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+           f"{model}:generateContent?key={urllib.parse.quote(key)}")
+    try:
+        raw = _post_json(url, {"contents": [{"parts": [{"text": prompt}]}],
+                               "generationConfig": cfg}, timeout=180)
+    except urllib.error.HTTPError as e:
+        try:
+            detail = e.read().decode("utf-8", "replace")[:280]
+        except Exception:
+            detail = ""
+        return None, f"HTTP {e.code} {detail}"
     except Exception as e:
-        return None, f"genai unavailable ({str(e)[:50]})"
-    pool = keys.pool("GEMINI_API_KEY")
+        return None, f"{type(e).__name__} {str(e)[:90]}"
+    try:
+        d = json.loads(raw.decode("utf-8", "replace"))
+    except Exception:
+        return None, f"not json ({raw[:60]!r})"
+    import base64
+    for c in (d.get("candidates") or []):
+        for part in (c.get("content") or {}).get("parts") or []:
+            blob = part.get("inlineData") or part.get("inline_data") or {}
+            if blob.get("data"):
+                try:
+                    return base64.b64decode(blob["data"]), "ok"
+                except Exception as e:
+                    return None, f"bad base64 ({str(e)[:50]})"
+    err = (d.get("error") or {}).get("message") or d.get("promptFeedback") or "no inline image part"
+    return None, str(err)[:280]
+
+
+def _gemini(meta_prompt: str, seed: int):
+    """Primary: the boss's own Gemini key(s) — his words were "I have already
+    added my Gemini API key there to keep the thumbnails as backup".
+
+    The proven call shape first (`src/art_gemini._image_from_model`, the helper
+    the nightly cover art already uses, so the model ids are ones this repo has
+    seen live), then the same thing over raw HTTP so a missing pip package
+    cannot close the lane. Pool rotation on a key-level refusal: with one key in
+    the pool that is a no-op, but GEMINI_API_KEY_2…_6 light it up unchanged."""
+    prompt = PROMPT_PREFIX + meta_prompt
+    try:
+        from src import keys as keypool
+        pool = keypool.pool("GEMINI_API_KEY")
+    except Exception as e:
+        return None, f"key pool unavailable ({str(e)[:50]})"
     if not pool:
         return None, "no GEMINI_API_KEY in this environment"
-    last = ""
-    for model in ("gemini-3.1-flash-image", "gemini-2.5-flash-image"):
-        for k in pool:
-            try:
-                client = genai.Client(api_key=k)
-                cfg = types.GenerateContentConfig(
-                    response_mime_type="image/png",
-                    seed=int(seed) % (2 ** 31),
-                    temperature=0.9)
-                r = client.models.generate_content(
-                    model=model,
-                    contents=("Generate one 1280x720 cinematic image. " + meta_prompt),
-                    config=cfg)
-                for part in getattr(getattr(r, "candidates", None), "__iter__", lambda: [])() or []:
-                    pass
-                cand = (r.candidates or [None])[0]
-                for p in (cand.content.parts if cand and cand.content else []):
-                    inline = getattr(p, "inline_data", None)
-                    if inline and getattr(inline, "data", None):
-                        return inline.data, f"gemini/{model}"
-                last = f"{model}: no image part"
-            except Exception as e:
-                last = f"{model}: {str(e)[:70]}"
-                continue
-    return None, last
+    pin = (os.environ.get("GEMINI_IMAGE_MODEL") or "").strip()
+    models = [m for m in ([pin] if pin else []) + list(GEMINI_MODELS) if m]
+    hints = []
+    try:
+        from google import genai
+        from src import art_gemini
+    except Exception as e:
+        genai = art_gemini = None
+        hints.append(f"sdk missing ({str(e)[:44]})")
+    if genai is not None:
+        for model in models:
+            for k in pool:
+                try:
+                    img, hint = art_gemini._image_from_model(genai.Client(api_key=k), model, prompt)
+                except Exception as e:
+                    img, hint = None, f"{type(e).__name__}: {str(e)[:120]}"
+                if img is not None:
+                    out = io.BytesIO()
+                    img.convert("RGB").save(out, "JPEG", quality=95)
+                    return out.getvalue(), f"gemini/{model}"
+                hints.append(f"sdk/{model}: {hint}")
+                if _dead_key(hint):
+                    continue                     # another key may carry quota
+                break                            # the key is fine, the model is not
+    tries = 0
+    for model in models:
+        for wide in (True, False):
+            for k in pool:                          # rotate the key pool…
+                if tries >= 6:
+                    break                           # …but never past 6 asks per slot
+                tries += 1
+                data, hint = _genai_rest(k, model, prompt, seed, wide=wide)
+                if data:
+                    return _to169(data), f"gemini-rest/{model}"
+                hints.append(f"rest/{model}: {hint}")
+                # only a key-shaped refusal is worth another key for: a wrong
+                # model id or a bad field is the same answer six times over
+                if "404" in hint or not _dead_key(hint):
+                    break
+            if tries >= 6:
+                break
+    return None, (" · ".join(hints)[:420] or "gemini: no verdict")
 
 
 def _hf(meta_prompt: str, seed: int):
-    """Second: free HF inference with the repo's existing HF_TOKEN, ₹0."""
+    """Second engine: Hugging Face free inference with the HF_TOKEN that is
+    already in this repo's Secrets — ₹0, and the exact "if a key fails, another
+    model answers" lane he asked for. Answers are cropped to 16:9 before use."""
     tok = (os.environ.get("HF_TOKEN") or "").strip()
     if not tok:
         return None, "no HF_TOKEN"
-    import json as _j
-    body = {"inputs": meta_prompt,
-            "parameters": {"guidance_scale": 3.5, "num_inference_steps": 4,
-                           "seed": int(seed) % (2 ** 31), "width": W, "height": H},
-            "options": {"wait_for_model": True, "use_cache": True}}
+    prompt = PROMPT_PREFIX + meta_prompt
+    heads = {"Authorization": f"Bearer {tok}"}
     last = ""
-    for model in ("black-forest-labs/FLUX.1-schnell", "stabilityai/sdxl-turbo"):
-        try:
-            req = urllib.request.Request(
-                f"https://api-inference.huggingface.co/models/{model}",
-                data=_j.dumps(body).encode(), method="POST",
-                headers={"Authorization": f"Bearer {tok}", "Content-Type": "application/json",
-                         "User-Agent": "yt-auto-thumb/1.0", "x-wait-for-model": "true"})
-            with urllib.request.urlopen(req, timeout=180) as r:
-                data = r.read()
-            if data[:16].startswith(b'{"error'):
-                last = f"{model}: {data[:80]!r}"
+    for model in HF_MODELS:
+        router, classic = hf_url(model)
+        tries = [(router, {"model": model, "prompt": prompt, "n": 1, "size": "1024x576"}),
+                 (classic, {"inputs": prompt,
+                            "parameters": {"guidance_scale": 3.5, "num_inference_steps": 4,
+                                           "seed": int(seed) % (2 ** 31),
+                                           "width": 1024, "height": 576},
+                            "options": {"wait_for_model": True, "use_cache": True}})]
+        for url, payload in tries:
+            try:
+                data = _post_json(url, payload, headers=heads, timeout=180)
+            except urllib.error.HTTPError as e:
+                try:
+                    detail = e.read().decode("utf-8", "replace")[:200]
+                except Exception:
+                    detail = ""
+                last = f"{model.split('/')[-1]}: HTTP {e.code} {detail}"
                 continue
-            return data, f"huggingface/{model.split('/')[-1]}"
-        except Exception as e:
-            last = f"{model}: {str(e)[:70]}"
-    return None, last
+            except Exception as e:
+                last = f"{model.split('/')[-1]}: {type(e).__name__} {str(e)[:80]}"
+                continue
+            if data[:1] == b"{":
+                try:
+                    d = json.loads(data.decode("utf-8", "replace"))
+                except Exception:
+                    last = f"{model.split('/')[-1]}: not json ({data[:50]!r})"
+                    continue
+                e0 = ((d.get("data") or d.get("images") or [{}])[0]) or {}
+                import base64
+                if e0.get("b64_json"):
+                    return _to169(base64.b64decode(e0["b64_json"])), f"huggingface/{model.split('/')[-1]}"
+                if e0.get("url"):
+                    try:
+                        return _to169(_get(e0["url"], timeout=90)), f"huggingface/{model.split('/')[-1]} · via url"
+                    except Exception as e:
+                        last = f"{model.split('/')[-1]}: url fetch {str(e)[:60]}"
+                        continue
+                last = f"{model.split('/')[-1]}: {str(d.get('error') or d)[:200]}"
+                continue
+            if len(data) < MIN_BYTES:
+                last = f"{model.split('/')[-1]}: {len(data)}B back — not an image"
+                continue
+            return _to169(data), f"huggingface/{model.split('/')[-1]}"
+    return None, last or "huggingface: no verdict"
 
 
 def _pollinations(meta_prompt: str, seed: int):
-    """Third: the engine from the boss's 2022 page. Kept because it is free and
-    sometimes serves one image per burst; measured 402/503 from a datacenter IP."""
+    """Third, and only third: the engine from the boss's 2022 page. Kept because
+    it is free and sometimes serves one image per burst; measured 402/503 from a
+    datacenter IP on 2026-10-30, same as the repo's own EP.064 note."""
     last = ""
     for model in ("flux", "turbo"):
         try:
-            data = _get(pollinations_url(meta_prompt, seed, model=model), timeout=120)
-            return data, f"pollinations/{model}"
+            data = _get(pollinations_url(PROMPT_PREFIX + meta_prompt, seed, model=model), timeout=120)
+            return _to169(data), f"pollinations/{model}"
         except urllib.error.HTTPError as e:
             last = f"pollinations/{model}: HTTP {e.code}"
         except Exception as e:
@@ -316,12 +462,13 @@ def generate(prompt: str, seed: int, near: list[int] | None = None) -> tuple[byt
         if not data:
             whys.append(label)
             continue
+        data = _to169(data)                      # a square answer is still a frame
         im, why = usable(data, near=near)
         if im is None:
             whys.append(f"{label} rejected → {why}")
             continue
         return data, label, "ok"
-    return None, "", " · ".join(whys) or "no engine enabled"
+    return None, "", (" · ".join(whys)[:900]) or "no engine enabled"
 
 
 # ───────────────────────────── the shelf (bank) ─────────────────────────────

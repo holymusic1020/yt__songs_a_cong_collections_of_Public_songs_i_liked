@@ -66,8 +66,21 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install deps (Pillow + numpy only — the engines are plain HTTP)
-        run: pip install --quiet pillow numpy
+      - name: Install deps (Pillow + numpy + the Gemini SDK; the engines are plain HTTP)
+        # `|| true` on the install, and a report of what imported: the first farm
+        # run lost Gemini because this step said `pip install pillow numpy genai`
+        # — `genai` is not the package (`google-genai`) and pip's failure was
+        # quiet, so the lane died with "No module named 'google'".
+        run: |
+          python3 -m pip install --disable-pip-version-check -q -r requirements.txt 2>&1 | tail -3 || true
+          python3 - <<'PY' || true
+          for m in ("PIL", "numpy", "google.genai"):
+              try:
+                  __import__(m)
+                  print(f"  \360\237\237\247 deps: {m} ok")
+              except Exception as e:
+                  print(f"  \u26a0 deps: {m} unavailable ({str(e)[:60]}) — the lane degrades, it does not stop")
+          PY
 
       - name: 🖼 Fill the bank
         # `|| true` on purpose: the farm is decorative. A night where every free
