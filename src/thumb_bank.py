@@ -650,8 +650,15 @@ def pick_index(idx: int, idx_obj, genre_key: str | None = None) -> dict | None:
     rows = (idx_obj or {}).get("images") or []
     if not rows:
         return None
-    mine = [r for r in rows if genre_key and r.get("genre") == genre_key] or rows
-    return mine[idx % len(mine)] if mine else None
+    mine = [r for r in rows if genre_key and r.get("genre") == genre_key]
+    # A young bank is the one place where "same mood first" and "not the same
+    # picture as yesterday" fight each other: with one lofi frame on the shelf,
+    # every lofi night would print that frame and the boss's original complaint
+    # comes straight back. So the genre pool is used only while it is deep enough
+    # to alternate; below that, walk the whole bank — a slightly off-mood frame
+    # beats a rerun, and the farm makes the pool deep within a week or two.
+    pool = mine if len(mine) >= 2 else rows
+    return pool[idx % len(pool)] if pool else None
 
 
 def acquire(meta: dict, ep: int, cache_dir, rng=None):

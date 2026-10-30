@@ -330,6 +330,21 @@ finally:
     else:
         os.environ["GITHUB_REPOSITORY"] = _TBX
 
+print("── 4c · a YOUNG bank must not repeat the picture two nights running ──")
+_one = {"images": [{"file": "onlylofi.jpg", "sha": "a" * 32, "genre": "lofi", "engine": "e", "luma": 90, "spread": 40, "dhash": 1},
+                   {"file": "other1.jpg", "sha": "b" * 32, "genre": "deep_pop", "engine": "e", "luma": 90, "spread": 40, "dhash": 2},
+                   {"file": "other2.jpg", "sha": "c" * 32, "genre": "drift_phonk", "engine": "e", "luma": 90, "spread": 40, "dhash": 4}]}
+picks = [TB.pick_index(ep * 7919 + 7, _one, "lofi")["file"] for ep in (82, 83, 84)]
+chk(len(set(picks)) > 1, "one lofi row + two others ⇒ consecutive episodes get DIFFERENT frames", str(picks))
+_deep = {"images": [{"file": f"lofi{i}.jpg", "sha": f"{i}" * 32, "genre": "lofi", "engine": "e",
+                     "luma": 90, "spread": 40, "dhash": i} for i in range(1, 6)] +
+         [{"file": "x.jpg", "sha": "z" * 32, "genre": "techno", "engine": "e", "luma": 90, "spread": 40, "dhash": 99}]}
+picked = [TB.pick_index(i, _deep, "lofi")["file"] for i in range(5)]
+chk(all(p.startswith("lofi") for p in picked), "a genre pool of ≥2 stays genre-pure", str(picked))
+chk(len(set(picked)) == 5, "and it rotates through all five before repeating", str(picked))
+chk(TB.pick_index(0, {"images": []}, "lofi") is None and TB.pick_index(0, None, "lofi") is None,
+    "an empty or missing index is still None, never a crash")
+
 print("── 5b · a blank dispatch input must not kill the farm (it did, once) ──")
 r3 = subprocess.run([sys.executable, "tools/thumb_farm.py", "--dry", "--n", "2"],
                     cwd=ROOT, capture_output=True, text=True,
