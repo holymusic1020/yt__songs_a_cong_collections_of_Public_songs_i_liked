@@ -35,7 +35,14 @@ concurrency:
   cancel-in-progress: false        # a half-filled shelf is still a shelf
 
 permissions:
-  contents: read
+  # `contents: write` is what the SHELF needs: the farm ends by
+  # `gh release create thumb-lab` + upload, and GITHUB_TOKEN with contents:write
+  # can do that. Night 3 (run 41070084605) proved the alternative does not:
+  # `release create: HTTP 403 Resource not accessible by personal access token`,
+  # because a fine-grained PAT needs the *Releases* permission separately from
+  # Contents — so the workflow token is primary here, and the boss's PAT stays
+  # out of it. This block is only for the release; no code is ever pushed.
+  contents: write
   actions: write
 
 jobs:
@@ -53,7 +60,7 @@ jobs:
       HF_TOKEN: ${{ secrets.HF_TOKEN }}
       # The shelf is pushed with the repo's own working token (the one the b-roll
       # farm and bossdrop already use); GITHUB_TOKEN is only a fallback.
-      GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
       THUMB_FARM_N: ${{ inputs.n }}
       THUMB_GENRES: ${{ inputs.genres }}

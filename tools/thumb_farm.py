@@ -152,10 +152,19 @@ def main() -> int:
         if data is None:
             rejected += 1
             print(f"  [{i:02d}] ✗ {why[:420]}")
-            if "402" in (why or "") or "503" in (why or ""):
-                # every engine said no — a night of that is a night over, not a
-                # loop of timeouts on a wall (the EP.064 lesson, same as art_free)
-                print("  ⏸ engines are refusing this IP tonight — stopping early")
+            if "429" in (why or "") and os.environ.get("THUMB_GEMINI", "1").strip() != "0":
+                # A free-tier quota is a wall for the DAY, not a retry-with.
+                # Tonight's log: 429 RESOURCE_EXHAUSTED on both image models on
+                # the boss's only key. Stop paying for the same answer 24 times.
+                os.environ["THUMB_GEMINI"] = "0"
+                print("  ⏭ Gemini parked for the rest of the night (429 quota) — "
+                      "the other engines keep the lane open")
+            if made == 0 and i >= 1 and ("402" in (why or "") or "503" in (why or "")):
+                # every engine said no AND nothing landed yet — a night of that is
+                # a night over, not a loop of timeouts on a wall (the EP.064
+                # lesson, same as art_free). Once images ARE banked, keep walking.
+                print("  ⏸ every engine is refusing this IP tonight and the shelf is "
+                      "still empty — stopping early")
                 break
             time.sleep(max(0.5, args.sleep))
             continue

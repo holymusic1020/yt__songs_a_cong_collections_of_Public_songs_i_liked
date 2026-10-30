@@ -380,6 +380,20 @@ chk(all(f"ladder.append({fn})" in tail for fn in lad),
     "the ladder is gemini → huggingface → hf-space → pollinations, keys before public demos", tail[:120])
 chk('THUMB_SPACE", "1"' in tail, "and the new engine has its own dial")
 
+print("── 5e · the shelf must be WRITABLE, and a 429 must not eat the night ──")
+wf = (ROOT / ".github" / "workflows" / "thumb-farm.yml").read_text(encoding="utf-8")
+chk("contents: write" in wf, "the farm declares contents: write — a release cannot be made with read")
+chk("secrets.GITHUB_TOKEN || secrets.GH_TOKEN" in wf,
+    "workflow token first: his fine-grained PAT gets HTTP 403 on release create (measured run 41070084605)")
+chk("secrets.GH_TOKEN || secrets.GITHUB_TOKEN" not in wf, "the PAT-first order that failed is gone")
+farm = (ROOT / "tools" / "thumb_farm.py").read_text(encoding='utf-8')
+chk('os.environ["THUMB_GEMINI"] = "0"' in farm and "429" in farm,
+    "a 429 parks Gemini for the rest of the night instead of re-asking 24 times")
+chk("made == 0 and i >= 1" in farm,
+    "the early stop only fires while the shelf is still empty — a half-full night keeps going")
+chk('PACE.get' in farm and '"hf-space": 25.0' in farm,
+    "and the shared FLUX demo gets 25 s of breathing room between images")
+
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
 chk("thumb.pick(meta, ep, rng, cover, OUT)" in m, "main calls pick() once per release")
