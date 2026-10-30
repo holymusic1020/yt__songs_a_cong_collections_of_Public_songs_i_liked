@@ -281,6 +281,55 @@ try:
 except ImportError:
     chk(True, "(pyyaml not installed here — structure checked textually)")
 
+print("── 4b · the shelf must be READABLE, not just writable ──")
+import numpy as _np_ok
+from PIL import Image as _Im_ok
+import urllib.parse as _up
+_ix = {"images": [{"file": "deadbeefcafe1234abcd5678.jpg", "sha": "deadbeefcafe1234abcd5678" + "0" * 16,
+                   "genre": "lofi", "engine": "hf-space/infer", "luma": 95.0, "spread": 40.0, "dhash": 12345}]}
+# a bright, varied 16:9 JPEG built here so the fixture cannot rot with another
+# section's temp files
+# (H, W, 3) — numpy shape, PIL size: getting this backwards builds a
+# portrait fixture that the gate rightly refuses, and the test blames the code.
+_arr_ok = _np_ok.random.default_rng(21).integers(0, 255, (720, 1280, 3), dtype=_np_ok.uint8)
+_im_ok = _Im_ok.fromarray(_arr_ok.astype("uint8"))
+_im_ok.save(TMP / "shelf_fixture.jpg", "JPEG", quality=92)
+_good_bytes = (TMP / "shelf_fixture.jpg").read_bytes()
+_seen_urls = []
+_TB_get, _TB_load = TB._get, TB.load_index
+_TBX = os.environ.get("GITHUB_REPOSITORY")
+os.environ["GITHUB_REPOSITORY"] = "h/r"
+TB.load_index = lambda cache_dir=None: _ix
+def _fake_get(url, headers=None, timeout=90):
+    _seen_urls.append(url)
+    return _good_bytes                      # the shared 16:9 fixture this file already built
+TB._get = _fake_get
+try:
+    got, src, note = TB.acquire({"name": "X", "genre_key": "lofi"}, 82, TMP / "cache_read")
+    chk(src == "bank" and got is not None, "a shelf row is USED, not skipped", str(note)[:90])
+    chk(_seen_urls and _seen_urls[0].endswith("deadbeefcafe1234abcd5678.jpg"),
+        "it is fetched by its shelf file name — never by the local cache name", str(_seen_urls)[:120])
+    chk("github.com/h/r/releases/download/thumb-lab/" in (_seen_urls[0] if _seen_urls else ""),
+        "and from the release asset URL, token-free")
+    _seen_urls.clear()
+    TB.load_index = lambda cache_dir=None: {"images": [{"genre": "techno", "file": "t.jpg",
+                                                         "sha": "t" * 32, "luma": 90, "spread": 40, "dhash": 1}]}
+    got2, src2, note2 = TB.acquire({"name": "Y", "genre_key": "lofi"}, 83, TMP / "cache_read2")
+    chk(src2 == "bank" and got2 is not None,
+        "a genre with no rows falls back to the whole bank rather than to nothing", str(note2)[:80])
+    TB._get = lambda url, headers=None, timeout=90: (_ for _ in ()).throw(RuntimeError("shelf gone"))
+    got3, src3, note3 = TB.acquire({"name": "Z", "genre_key": "lofi"}, 84, TMP / "cache_read3")
+    chk(got3 is None and "bank fetch failed" in note3,
+        "a shelf that 404s is reported in the note, not swallowed", str(note3)[:110])
+except Exception as e:
+    chk(False, "reading the shelf never raises", f"{type(e).__name__}: {e}")
+finally:
+    TB._get, TB.load_index = _TB_get, _TB_load
+    if _TBX is None:
+        os.environ.pop("GITHUB_REPOSITORY", None)
+    else:
+        os.environ["GITHUB_REPOSITORY"] = _TBX
+
 print("── 5b · a blank dispatch input must not kill the farm (it did, once) ──")
 r3 = subprocess.run([sys.executable, "tools/thumb_farm.py", "--dry", "--n", "2"],
                     cwd=ROOT, capture_output=True, text=True,

@@ -674,13 +674,19 @@ def acquire(meta: dict, ep: int, cache_dir, rng=None):
         name_h = int(hashlib.sha256(str(meta.get("name", "")).encode()).hexdigest()[:6], 16)
         row = pick_index(ep * 7919 + name_h, ix, genre) if ix else None
         if row:
-            out = cache / f"bank_{row.get('sha', 'x')[:16]}.jpg"
+            # The asset on the shelf is `row["file"]` — the LOCAL cache name is
+            # not that, and asking the release URL for it 404s every time. This
+            # was found by calling acquire() against the shelf the farm had just
+            # filled (2026-10-30, thumb-lab at 3 images): the bank looked empty
+            # from the outside and every night paid for live generation instead.
+            remote = str(row.get("file") or f"{row.get('sha', '')[:24]}.jpg")
+            out = cache / f"bank_{remote}"
             try:
-                if not out.exists():
-                    out.write_bytes(_get(shelf_url(out.name), timeout=60))
+                if not out.exists() or out.stat().st_size < MIN_BYTES:
+                    out.write_bytes(_get(shelf_url(remote), timeout=60))
                 im, why = usable(out.read_bytes())
                 if im is not None:
-                    return out, "bank", f"{row.get('sha','?')[:8]} · {why}"
+                    return out, "bank", f"{remote[:12]} · {row.get('engine', '?')} · {why}"
                 out.unlink(missing_ok=True)
                 note = f"bank entry unusable ({why})"
             except Exception as e:
@@ -695,4 +701,4 @@ def acquire(meta: dict, ep: int, cache_dir, rng=None):
         out = cache / f"live_ep{ep:03d}.jpg"
         out.write_bytes(data)
         return out, engine, why
-    return None, "", f"generation failed: {why or note}"
+    return None, "", f"generation failed: {why or 'no engine'} · {note or 'bank empty'}"
