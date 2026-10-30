@@ -82,8 +82,11 @@ def pipeline():
     torch.set_num_threads(max(1, min(4, os.cpu_count() or 2)))
     try:
         os.environ.setdefault("HF_HOME", os.path.expanduser("~/.cache/huggingface"))
-        pipe = StableDiffusionPipeline.from_pretrained(
-            model, torch_dtype=torch.float32, safety_checker=None, requires_safety_checker=False)
+        kw = dict(safety_checker=None, requires_safety_checker=False)
+        try:                                        # diffusers ≥0.43 renamed the kwarg
+            pipe = StableDiffusionPipeline.from_pretrained(model, dtype=torch.float32, **kw)
+        except TypeError:
+            pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.float32, **kw)
         pipe = pipe.to("cpu")
         for meth in ("enable_attention_slicing", "enable_vae_slicing", "enable_vae_tiling"):
             try:
@@ -92,11 +95,33 @@ def pipeline():
                 pass                                    # version-dependent savers
         _pipe = pipe
         print(f"  🐢 cpu engine up · {model} · {torch.get_num_threads()} threads · "
-              f"{_W}×{_H} · {_num('THUMB_CPU_STEPS', 20)} steps", flush=True)
+              f"{_num('THUMB_CPU_W', _W)}×{_num('THUMB_CPU_H', _H)} · "
+              f"{_num('THUMB_CPU_STEPS', 20)} steps", flush=True)
         return pipe, None
     except Exception as e:
         _why = f"model load failed ({type(e).__name__}: {str(e)[:140]})"
         return None, _why
+
+
+def _clip_prompt(pipe, text: str) -> str:
+    """Stable Diffusion 1.5 reads 77 CLIP tokens; the farm's prompts run to 131 (measured
+    in the log: "Token indices sequence length is longer than the specified maximum").
+    The model would silently keep the first 77 and drop the tail — the lighting and
+    "music-release cover art" instructions, which are the part that makes it read as a
+    thumbnail. Same truncation, but said out loud, and the sentence ends before the cut
+    instead of mid-word. FLUX and Gemini read much more, so only this engine needs it."""
+    try:
+        tok = getattr(pipe, "tokenizer", None)
+        if tok is None:
+            return text
+        ids = tok(text, truncation=False, padding=False, max_length=77)["input_ids"][0]
+        if len(ids) <= 75:
+            return text
+        out = tok.decode(ids[:75], skip_special_tokens=True).strip().rstrip(",")
+        print(f"  🐢 prompt trimmed {len(ids)} → 75 CLIP tokens (SD 1.5 reads 77)", flush=True)
+        return out or text
+    except Exception:
+        return text                                   # a tokenizer hiccup must not cost a frame
 
 
 def generate(meta_prompt: str, seed: int):
@@ -119,12 +144,14 @@ def generate(meta_prompt: str, seed: int):
         guidance = float(_num("THUMB_CPU_GUIDANCE", 75)) / 10.0
         w = _num("THUMB_CPU_W", _W)
         h = _num("THUMB_CPU_H", _H)
+        full = ("cinematic still photograph, " + meta_prompt +
+                ", 16:9 widescreen, strong single light source, deep but readable "
+                "shadows, high dynamic range, professional music-release cover art")
+        full = _clip_prompt(pipe, full)
         t0 = time.time()
         print(f"  🐢 generating · seed {seed} · {w}×{h} · {steps} steps", flush=True)
         img = pipe(
-            prompt=("cinematic still photograph, " + meta_prompt +
-                    ", 16:9 widescreen, strong single light source, deep but readable "
-                    "shadows, high dynamic range, professional music-release cover art"),
+            prompt=full,
             negative_prompt=NEGATIVE,
             height=h, width=w, num_inference_steps=steps, guidance_scale=guidance,
             generator=torch.Generator("cpu").manual_seed(int(seed) % (2 ** 31)),

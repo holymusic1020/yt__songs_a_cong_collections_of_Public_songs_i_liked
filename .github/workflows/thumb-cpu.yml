@@ -63,6 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300          # 5 h of work inside GitHub's 6 h kill — the job ends itself
     env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}   # anonymous downloads work (measured), but the log
+                                          # said "unauthenticated → slower, rate-limited": free
+                                          # to use, so use it. Never required by this lane.
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
       THUMB_FARM: "1"

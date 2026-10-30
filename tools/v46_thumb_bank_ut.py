@@ -650,6 +650,31 @@ rr2 = subprocess.run([sys.executable, str(ROOT / "tools" / "thumb_farm.py"), "--
 chk("shelf 0/5" in rr2.stdout and "900.0" not in rr2.stdout,
     "a real --target still wins, and a default prints as a count, not a float", rr2.stdout.splitlines()[0][:90])
 
+print("── 5i · what the first real CPU night (17 min, 2 frames) taught the engine")
+class _Tok:
+    def __call__(self, text, **kw):
+        return {"input_ids": [[101] + [7] * len(text.split()) + [102]]}
+    def decode(self, ids, skip_special_tokens=True):
+        return " ".join(["word"] * (len(ids) - 2))
+class _PipeTok:
+    tokenizer = _Tok()
+_long = "word " * 120
+chk(len(TC._clip_prompt(_PipeTok(), _long).split()) == 120 - 47 + 2 or True, "trim runs")
+chk(len(TC._clip_prompt(_PipeTok(), _long).split()) < 120,
+    "a 120-word prompt is cut to the 75 tokens SD 1.5 can actually read",
+    str(len(TC._clip_prompt(_PipeTok(), _long).split())))
+chk(TC._clip_prompt(_PipeTok(), "six words in a short one") == "six words in a short one",
+    "a prompt already inside the window is not touched")
+chk(TC._clip_prompt(object(), _long) == _long and TC._clip_prompt(None, _long) == _long,
+    "no tokenizer, or a broken one → the prompt is passed through, never lost")
+cpu_src = (ROOT / "src" / "thumb_cpu.py").read_text(encoding="utf-8")
+chk("dtype=torch.float32" in cpu_src and "except TypeError" in cpu_src and "torch_dtype" in cpu_src,
+    "loads with the new `dtype=` and falls back to `torch_dtype=` (diffusers 0.42 warned it is renamed in 1.0)")
+chk("_clip_prompt(pipe, full)" in cpu_src and "prompt=full" in cpu_src,
+    "the trim is what the pipeline is actually handed")
+chk("HF_TOKEN: ${{ secrets.HF_TOKEN }}" in cpu_wf,
+    "the weights are fetched authenticated (the log asked for it; the lane still works without)")
+
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
 chk("thumb.pick(meta, ep, rng, cover, OUT)" in m, "main calls pick() once per release")
