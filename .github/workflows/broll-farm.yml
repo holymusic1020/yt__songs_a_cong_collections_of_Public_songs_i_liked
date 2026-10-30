@@ -24,7 +24,12 @@ concurrency:
   cancel-in-progress: false        # a half-rendered shelf is still a shelf
 
 permissions:
-  contents: read
+  # 2026-10-30: release `broll-lab` has NEVER existed. Two stacked causes — the
+  # boss's fine-grained PAT returns 403 on `gh release create` (Releases is its
+  # own permission on that kind of token, separate from Contents), and the
+  # upload passed a flag that gh does not have. contents:write on the workflow
+  # token can create a release; no code is ever pushed from here.
+  contents: write
   actions: write
 
 jobs:
@@ -38,7 +43,7 @@ jobs:
       # Why: this repo's default workflow permission is `read`, and I am not
       # going to ask you to click a setting to move decorative mp4s — the
       # publish lane already proved GH_TOKEN can write releases.
-      GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
       # 🎟 the spare Kaggle account (see 3). Empty on the main account's quota.
       BROLL_KAGGLE_USERNAME: ${{ secrets.BROLL_KAGGLE_USERNAME }}

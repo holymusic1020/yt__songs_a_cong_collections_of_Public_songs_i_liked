@@ -42,6 +42,27 @@ from src import thumb, thumb_bank as TB                    # noqa: E402
 
 TMP = ROOT / "out_ut_bank"
 TMP.mkdir(exist_ok=True)
+
+# Determinism first: every engine is stubbed dead for the whole file, because a
+# shared demo endpoint that answers MID-RUN turns "all engines are dead → use
+# the cover" into a coin flip (it did exactly that on 2026-10-30, and quietly
+# added 90 seconds of real network to a unit test). A section that wants to
+# exercise one engine replaces that function itself — which is the whole point.
+os.environ.setdefault("THUMB_INSTANT", "1")          # no engine may sleep in a UT
+# Cut the wires instead of replacing the engines: every engine here goes through
+# _get / _post_json / _sse_value, so a refusal at that layer means this file can
+# never depend on a demo endpoint's mood — and each section still gets to test
+# the real function, which is the only reason these checks are worth having.
+_REAL_TRANSPORT = {n: getattr(TB, n) for n in ("_get", "_post_json", "_sse_value")}
+
+
+def _offline(*a, **k):
+    raise RuntimeError("network is switched off in this UT")
+
+
+TB._get = TB._post_json = _offline
+TB._sse_value = lambda *a, **k: (None, "network off (UT)")
+
 checks = []
 
 
@@ -212,12 +233,21 @@ class Boom:
         return f
 
 
-sys.modules["src.thumb_bank"] = Boom()          # the module itself is broken
+import src as _pkg                                # the module itself is broken
+# `from src import thumb_bank` resolves the ATTRIBUTE on the package, so putting
+# Boom only in sys.modules was a test that tested nothing — the real module ran,
+# the demo Space answered, and a cover-fallback check quietly became a network
+# test. Break it where the import actually looks.
+_sys_prev = sys.modules.get("src.thumb_bank")
+sys.modules["src.thumb_bank"] = Boom()
+_pkg.thumb_bank = Boom()
 try:
     p, src, note = thumb.pick(meta, 79, np.random.default_rng(1), cover, TMP)
     chk(p == cover, "a crashing bank module still lands on the cover — never on a traceback")
+    chk("bank/live failed" in (note or ""), "and the reason is carried to the receipt", str(note)[:70])
 finally:
-    sys.modules["src.thumb_bank"] = TB
+    sys.modules["src.thumb_bank"] = _sys_prev
+    _pkg.thumb_bank = TB
     os.environ.pop("THUMB_BANK")
 jp = thumb.build(cover, meta, 79, TMP / "t.jpg", slowed=True)
 chk(jp is not None and jp.stat().st_size > 20_000 and Image.open(jp).size == (1280, 720),
@@ -393,6 +423,23 @@ chk("made == 0 and i >= 1" in farm,
     "the early stop only fires while the shelf is still empty — a half-full night keeps going")
 chk('PACE.get' in farm and '"hf-space": 25.0' in farm,
     "and the shared FLUX demo gets 25 s of breathing room between images")
+
+print("── 5f · the upload must actually upload (night 4's last wall) ──")
+for farm in ("tools/thumb_farm.py", "tools/broll_farm.py"):
+    src = (ROOT / farm).read_text(encoding="utf-8")
+    chk('"upload", "--cfile"' not in src,
+        f"{farm} has no invented gh flag in its gh invocation (`--cfile` isn't real)")
+    chk('"--clobber"' in src, f"{farm} clobbers, so index.json can be rewritten nightly")
+chk("uploaded" in (ROOT / "tools/broll_farm.py").read_text(encoding="utf-8") and
+    "up.returncode == 0" in (ROOT / "tools/broll_farm.py").read_text(encoding="utf-8"),
+    "b-roll only claims an upload when gh agrees (a month of silent failure, found)")
+for wf in ("thumb-farm.yml", "broll-farm.yml"):
+    s = (ROOT / ".github/workflows" / wf).read_text(encoding="utf-8")
+    chk("contents: write" in s, f"{wf} may write a release")
+    chk("secrets.GITHUB_TOKEN || secrets.GH_TOKEN" in s,
+        f"{wf} uses the workflow token first — his PAT 403s on Releases")
+chk("out/index.json --clobber" in (ROOT / "tools/thumbgen.html").read_text(encoding="utf-8"),
+    "the command printed on his page is a command that works")
 
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")

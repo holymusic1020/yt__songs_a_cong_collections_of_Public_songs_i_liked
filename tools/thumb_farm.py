@@ -208,16 +208,25 @@ def main() -> int:
     if args.dry:
         return ok(f"dry run — {made} prompts built, no API calls, no upload")
 
+    files = [STAGE / INDEX] + sorted(out.glob("*.jpg"))
     r = run(["gh", "release", "create", TAG, "--title", "🖼 thumb bank (decorative, never fatal)",
+             "--prerelease", "--target", (os.environ.get("GIT_BRANCH") or "main").strip() or "main",
              "--notes", "AI-generated thumbnail shelf. The release lane reads index.json "
              "and picks one; if this whole release disappears, releases still publish."],
             timeout=90)
     if r.returncode != 0 and "already exists" not in (r.stderr or "").lower():
-        print(f"  (release create: {(r.stderr or r.stdout or '')[:120]})")
-    for f in [STAGE / INDEX] + sorted((out).glob("*.jpg")):
-        rr = run(["gh", "release", "upload", "--cfile", TAG, str(f)], timeout=180)
-        if rr.returncode != 0:
-            print(f"  (upload {f.name}: {(rr.stderr or '')[:80]})")
+        print(f"  (release create: {(r.stderr or r.stdout or '')[:160]})")
+    # `--cfile` is not a gh flag. Night 4 (run 41070851775) banked three good
+    # images and then every single upload answered "unknown flag: --cfile",
+    # leaving release `thumb-lab` at zero assets — and the same flag in
+    # broll_farm is why `broll-lab` has never existed. `gh release upload` takes
+    # paths positionally; `--clobber` because index.json is rewritten nightly.
+    rr = run(["gh", "release", "upload", TAG, "--clobber"] + [str(x) for x in files], timeout=900)
+    if rr.returncode != 0:
+        print("  ⚠ upload failed (" + ((rr.stderr or rr.stdout or "").strip())[:180] +
+              ") — the shelf keeps what it had; releases are unaffected")
+    else:
+        print(f"  ⬆ {len(files)} file(s) on release `{TAG}`")
     return ok(f"+{made} new, {rejected} rejected → shelf now {len(shelf['images'])} images "
               f"on `{TAG}` · {int(time.time() - t0)}s")
 

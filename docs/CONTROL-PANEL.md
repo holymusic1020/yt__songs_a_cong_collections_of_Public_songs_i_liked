@@ -350,3 +350,72 @@ switch to public." So the switch is now self-driving:
 * Money: nothing here ever asks for a card. `DSP_PACK=0` stays, the 0-credit Suno/Apiframe keys
   are tried and skipped in favour of the free Kaggle ACE lane, and the render is ffmpeg on a
   GitHub runner. Free forever is the design, not the fallback.
+
+
+> **2026-10-30 audit note (both farms):** `gh release upload --cfile` is not a real gh flag, and
+> both farms were using it — so release `broll-lab` has never existed and `thumb-lab` was created
+> with zero assets. Both files now upload with `--clobber`, `broll-farm.yml` runs with
+> `contents: write` + the workflow token (his fine-grained PAT returns 403 on Releases), and
+> b-roll's "uploaded" line only prints when `gh` exits 0. Until the next farm night the b-roll
+> shelf is legitimately empty and every video uses `src/broll.py`'s fallback,
+> `"stills (Ken Burns)"` — which is what has actually been on screen all month.
+
+## 🖼 21. The AI thumbnail lane (`THUMB*`) — pixels from models, never from me
+
+Boss law, 2026-10-30: *"don't make the thumbnails by you. I have already added my Gemini API
+key there to keep the thumbnails as backup. Generate hundreds and thousands of combination
+thumbnails… If a Gemini API key fails or any other API key fails, then that workflow will run
+and generate a new thumbnail based on the prompt."* The old complaint was "all the video
+thumbnail is same" — measured as mean luma 8-25/255 and a portrait frame pillarboxed into black.
+
+**Where a frame comes from, in order** (`src/thumb_bank.py` → `src/thumb.py pick()`):
+
+| # | source | needs | status measured live |
+|---|---|---|---|
+| 1 | the **bank shelf** (`thumb-lab` release, `index.json` + jpgs) | nothing (public asset) | filled by the farm; `thumb-lab` is a rolling prerelease |
+| 2 | **Gemini** — his key, `gemini-3.1-flash-image` → `gemini-2.5-flash-image`, SDK then raw REST | `GEMINI_API_KEY` (+`_2…_6`) | 2026-10-30: `429 RESOURCE_EXHAUSTED` (free-tier quota, day-wide) — the engine is right, the quota is empty |
+| 3 | **Hugging Face router** `FLUX.1-schnell` / `sdxl-turbo` | `HF_TOKEN` with inference permission | 401 path is live; `api-inference.huggingface.co` is a dead host (URLError -5) — do not re-add it |
+| 4 | **FLUX.1-schnell demo Space** (no key at all) | nothing | ✅ works from a runner: 4-17 s, 1280×720, luma 101-136. Shared demo → paces 25 s, retries once, then says no politely |
+| 5 | **Pollinations** (his 2022 engine) | nothing | 503 (flux) / 402 (turbo) from a datacenter IP — works from a home browser, which is why his page still uses it |
+| 6 | **episode cover, relit** (`11ed998`) | nothing | last-ditch safety net only; `THUMB_RELIGHT=0` disables it (then we ship no custom thumbnail rather than a fake) |
+
+Nothing between 1 and 6 can fail a release: every path returns `None` with a one-line reason,
+the manifest records `thumbnail.<slot>.source` (which engine, or `cover-relight`), and the
+cosmetic lane is wrapped so a dead image API is a log line, never a red night.
+
+**The matrix** — `genre (20) × time (6) × weather (6) × framing (6) × texture (6) × palette (7)
+× lens (5)` = **907,200 combinations**, walked by the farm at stride 61 (coprime with every axis,
+or whole columns become unreachable — pinned in v46). Prompts always ask for 16:9 and always
+forbid text/letters/watermark/people: lettering is `art.overlay()`'s job. Every byte that arrives
+must pass `usable()` — ≥18 kB, ≥900×500, aspect within 0.30 of 16:9, mean luma ≥ 38 (≤ 225),
+contrast spread ≥ 9, dHash ≥ 8 bits from everything already on the shelf — so an engine that
+answers with an error page or a black rectangle cannot poison the bank.
+
+**Dials** (repo Variables under Settings → Secrets and variables → Actions → Variables):
+
+* `THUMB=0` — master off: no pick, no set, no relight. Ship what YouTube picks.
+* `THUMB_BANK=0` — ignore the shelf (live generation still allowed).
+* `THUMB_AI=0` — no live generation (shelf only). Both off = cover relight only.
+* `THUMB_BRAND=0` — no title/logo overlay on the generated art.
+* `THUMB_RELIGHT=0` — no cover fallback; if the AI lane is empty we simply set nothing.
+* `THUMB_GEMINI=0` / `THUMB_HF=0` / `THUMB_SPACE=0` / `THUMB_POLLINATIONS=0` — one engine off.
+  (The farm sets `THUMB_GEMINI=0` for its own process after a 429 — a daily quota is a wall.)
+* `THUMB_FARM=0` — park the nightly `thumb-farm.yml` (cron `35 5 * * *` = 11:05 BDT, 5 h 25 m
+  clear of the release window). `THUMB_FARM_N` (default 24 per night), `THUMB_BANK_TARGET`
+  (900), `THUMB_SLEEP_S` (2), `THUMB_BUDGET_S` (1500), `THUMB_GENRES` (comma list), `THUMB_STAGE`.
+* Model overrides: `GEMINI_IMAGE_MODEL`, `THUMB_SPACE_ID` (default `black-forest-labs/FLUX.1-schnell`),
+  `THUMB_SPACE_API` (default `infer`).
+
+**His page**: `tools/thumbgen.html` — the upgraded FluxGEN v2 (one file, no build, no CDN, no
+billing), also hosted at
+`https://holymusic1020.github.io/yt__songs_a_cong_collections_of_Public_songs_i_liked/thumbgen.html`.
+Same ladder, same 907,200 grid, same gate in the browser (a rejected frame is shown in red with the
+reason), plus `index.json` + file export in the shelf's exact shape. Use it as the manual second
+farm on a day the runners are refused: *Generate* → look at the badges → *download index.json* +
+*download the kept files* → `gh release upload thumb-lab out/*.jpg out/index.json --clobber`.
+`tools/v47_thumbgen_ut.py` runs the page's JavaScript under node and fails if it ever disagrees
+with `thumb_bank.build_prompt()`, so the two halves cannot drift.
+
+**Money**: ₹0 — free tiers and public demo endpoints only. Never apiframe, never a paid image API.
+**Tests**: `tools/v46_thumb_bank_ut.py` (79) + `tools/v45_thumb_ut.py` (34) + `tools/v47_thumbgen_ut.py`
+(37), all inside the `for t in tools/v*_ut.py tools/yamlcheck.py` sweep.
