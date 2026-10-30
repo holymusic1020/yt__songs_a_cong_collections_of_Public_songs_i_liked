@@ -717,6 +717,17 @@ chk("_clip_prompt(pipe, full)" in cpu_src and "prompt=full" in cpu_src,
 chk("HF_TOKEN: ${{ secrets.HF_TOKEN }}" in cpu_wf,
     "the weights are fetched authenticated (the log asked for it; the lane still works without)")
 
+print("── 5j · the log's two sentences, pinned")
+chk(TB.GEMINI_MODELS[0] == "gemini-2.5-flash-image",
+    "the Gemini id that ANSWERS (429 = exists, quota spent) is tried before the one the API 404s",
+    str(TB.GEMINI_MODELS))
+chk('404 "not found for API version v1beta"' in (ROOT / "src" / "thumb_bank.py").read_text(encoding="utf-8"),
+    "the reason for the order is written above the list, not only in this test")
+_fs = (ROOT / "tools" / "thumb_farm.py").read_text(encoding="utf-8")
+chk("tonight has banked " in _fs and "still empty" not in _fs,
+    "the early-stop line no longer calls a shelf of 8 images 'empty'",
+    [l for l in _fs.splitlines() if "stopping early" in l][:1])
+
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
 chk("thumb.pick(meta, ep, rng, cover, OUT)" in m, "main calls pick() once per release")

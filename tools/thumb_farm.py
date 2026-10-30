@@ -207,8 +207,8 @@ def main() -> int:
                 # every engine said no AND nothing landed yet — a night of that is
                 # a night over, not a loop of timeouts on a wall (the EP.064
                 # lesson, same as art_free). Once images ARE banked, keep walking.
-                print("  ⏸ every engine is refusing this IP tonight and the shelf is "
-                      "still empty — stopping early")
+                print(f"  ⏸ every engine is refusing this IP and tonight has banked "
+                      f"nothing — stopping early (the shelf keeps its {have} image(s))")
                 break
             time.sleep(max(0.5, args.sleep))
             continue

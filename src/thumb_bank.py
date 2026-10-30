@@ -15,11 +15,17 @@ What I measured before building (do not re-try these):
     IP. From this workspace just now: `model=flux` → **HTTP 503**, `model=turbo` →
     **HTTP 402 Payment Required**. Same as the repo's own note from EP.064. It
     stays in the ladder, last, because it sometimes serves one image per burst.
-  · Gemini image (his key) is the primary. On 2026-10-29's run it answered
-    `429 RESOURCE_EXHAUSTED` on `gemini-3.1-flash-image` via the SDK path — model
-    name right, quota empty — and `404` for `generate_images`, which is the wrong
-    REST verb for image models. So: pool the keys (`src/keys.py` reads
-    GEMINI_API_KEY, _2 … _6) and rotate on 429 before giving up.
+  · Gemini image (his key) is the primary, and on 2026-10-30 the log said what it
+    really is: `404 not found for API version v1beta` for `gemini-3.1-flash-image`
+    (the id moved; Google renames image models), `429 RESOURCE_EXHAUSTED` for
+    `gemini-2.5-flash-image` (the id is right, the day's quota is not). Two rules
+    follow: try the name that ANSWERS first, and never report 404 as "key broken" —
+    `401/403` would be that. The pool exists (`src/keys.py` reads GEMINI_API_KEY,
+    _2 … _6) but this repo has exactly ONE Gemini secret, so rotation has nowhere to
+    go; the farm therefore caps itself at THUMB_GEMINI_MAX_RUNS frames a night and
+    parks the engine on the first 429, so the 04:00 release inherits an allowance
+    instead of the leftovers. If he ever adds GEMINI_API_KEY_2 the pool grows by
+    itself — no code change, which is what "keep that option" asked for.
   · `HF_TOKEN` is already in this repo's Secrets → the free Hugging Face inference
     endpoint (FLUX.1-schnell, SDXL-Turbo) is the second engine, at ₹0.
   · And the older hazard this file exists to kill: an engine that answers 200 with
@@ -207,7 +213,14 @@ def _luma_pair(im) -> tuple[float, float]:
 # So: every engine has a dependency-free HTTP path, and a refusal must never
 # look like a success.
 PROMPT_PREFIX = "Generate one 1280x720 cinematic photograph. "
-GEMINI_MODELS = ("gemini-3.1-flash-image", "gemini-2.5-flash-image")   # same list src/art_gemini.py verified live
+# Order = what the API answered, not what sounds newest. Measured on the 2026-10-30
+# 16:23 UTC farm run, with the boss's single key: `gemini-3.1-flash-image` →
+# **404 "not found for API version v1beta"** (Google renames image ids constantly —
+# that is a missing name, not a dead key) and `gemini-2.5-flash-image` → **429
+# RESOURCE_EXHAUSTED** (the model is there, the day's allowance is not). The name that
+# exists gets the attempt; a 404 is never counted as a key failure anywhere in this
+# module, and a 429 parks Gemini for the night instead of burning the next four slots.
+GEMINI_MODELS = ("gemini-2.5-flash-image", "gemini-3.1-flash-image")
 HF_MODELS = ("black-forest-labs/FLUX.1-schnell", "stabilityai/sdxl-turbo")
 
 
