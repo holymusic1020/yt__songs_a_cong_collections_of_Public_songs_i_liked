@@ -1,22 +1,5 @@
 [
   {
-    "date": "2026-09-19",
-    "episode": 47,
-    "mode": "dry_run",
-    "kind": "short",
-    "genre": "lofi",
-    "track": "porch light humming",
-    "multipost_dial": "fb,tt,ig",
-    "seconds": 352.3,
-    "youtube": {
-      "video_id": null,
-      "short_id": null,
-      "watch": null,
-      "short": null
-    },
-    "lanes": {}
-  },
-  {
     "date": "2026-09-20",
     "episode": 47,
     "mode": "publish",
@@ -1090,6 +1073,34 @@
       "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
       "ig_photo": "published",
       "ig_photo_id": "18146711890572375",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
+  },
+  {
+    "date": "2026-10-31",
+    "episode": 83,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "ashrise",
+    "track": "coal constellation",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 1007.7,
+    "youtube": {
+      "video_id": null,
+      "short_id": "Cbo3ZAvSU1g",
+      "watch": null,
+      "short": "https://youtu.be/Cbo3ZAvSU1g"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122122725969453777",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7702623020028807189",
+      "ig": "published (reel)",
+      "ig_media_id": "18647021098049394",
+      "ig_user": "nixspeech",
+      "ig_photo": "published",
+      "ig_photo_id": "18317738512303047",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
   }

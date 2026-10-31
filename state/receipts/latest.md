@@ -1,13 +1,13 @@
-# 📋 receipt · EP.082 · 2026-10-30
+# 📋 receipt · EP.083 · 2026-10-31
 
 | | |
 |---|---|
-| track | **marzipan elegy** (deep_pop) |
-| mode | publish · full |
-| youtube | https://youtu.be/8p2-IQ8hQnY · short: https://youtu.be/mnz_SGrV1mY |
+| track | **coal constellation** (ashrise) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/Cbo3ZAvSU1g |
 | multipost dial | `fb,tt,ig` |
-| took | 369.1 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/41091768068 @ 8ee843a |
+| took | 1007.7 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/41150117132 @ c9d0d16 |
 
 ## lanes
 
@@ -15,16 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122122671633453777 |
-| fb_video | published |
-| fb_video_id | 1770612130682812 |
+| fb_reel_id | 122122725969453777 |
 | ig | published (reel) |
-| ig_media_id | 18198820798390963 |
+| ig_media_id | 18647021098049394 |
 | ig_photo | published |
-| ig_photo_id | 18146711890572375 |
+| ig_photo_id | 18317738512303047 |
 | ig_user | nixspeech |
-| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
-| tiktok_publish_id | v_pub_file~v2-1.7702502405431134214 |
+| tiktok_publish_id | v_pub_file~v2-1.7702623020028807189 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
