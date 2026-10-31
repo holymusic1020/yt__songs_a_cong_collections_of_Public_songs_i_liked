@@ -128,6 +128,18 @@ def main() -> int:
 
         r, called, summ = night(manicount=None, mp4_mb=6)
         chk(r.returncode == 0, "a night whose manifest is half-written cannot crash the step")
+
+    _wf = WF.read_text(encoding="utf-8")
+    chk("DOCTOR_SECRETS" in _wf and _wf.count("tools/doctor.py") >= 2,
+        "the pre-flight doctor is quiet about secrets and the release step runs it with the real env",
+        f"doctor calls={_wf.count('tools/doctor.py')}")
+    _pre = _wf[_wf.index("Pre-flight doctor"): _wf.index("Pre-flight doctor") + 700]
+    chk('DOCTOR_SECRETS: "0"' in _pre, "the lying-by-omission step is the one that is silenced, not the truth")
+    chk("rebase.autoStash=true" in _wf and "::error::state.json NOT pushed" in _wf,
+        "a rejected state push can no longer lose the episode counter silently — it retries and shouts")
+    chk(_wf.count("git push") >= 2 and '|| echo "nothing to push"' not in _wf,
+        "the old `git push || echo \"nothing to push\"` (a silent loss of state) is gone")
+
     return 1 if bad else 0
 
 

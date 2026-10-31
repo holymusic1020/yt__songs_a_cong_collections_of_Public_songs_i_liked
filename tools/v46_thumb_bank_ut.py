@@ -728,6 +728,17 @@ chk("tonight has banked " in _fs and "still empty" not in _fs,
     "the early-stop line no longer calls a shelf of 8 images 'empty'",
     [l for l in _fs.splitlines() if "stopping early" in l][:1])
 
+print("── 5k · the cover lane and the thumbnail lane walk ONE measured list")
+from src import art_gemini as _AG
+_art = (ROOT / "src" / "art_gemini.py").read_text(encoding="utf-8")
+chk(list(_AG.MODEL_CANDIDATES) == list(TB.GEMINI_MODELS),
+    "art_gemini and thumb_bank try the same Gemini ids in the same measured order",
+    f"art={list(_AG.MODEL_CANDIDATES)} bank={list(TB.GEMINI_MODELS)}")
+chk(_AG.MODEL_CANDIDATES[0] == "gemini-2.5-flash-image",
+    "the id that ANSWERS (429) leads the cover lane too, after EP.083's '0 scenes' night")
+chk("EP.083" in _art and "404" in _art,
+    "the file says which measurement reordering came from, so it can be re-checked and not re-guessed")
+
 print("── 6 · main.py uses the ladder and tells the truth about it ──")
 m = (ROOT / "src" / "main.py").read_text(encoding="utf-8")
 chk("thumb.pick(meta, ep, rng, cover, OUT)" in m, "main calls pick() once per release")

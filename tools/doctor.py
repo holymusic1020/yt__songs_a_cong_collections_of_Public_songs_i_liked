@@ -41,12 +41,26 @@ for lib in ("googleapiclient", "google.genai"):
 check("ffmpeg", shutil.which("ffmpeg") is not None,
       shutil.which("ffmpeg") or "video render steps will be skipped")
 
-for var in ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN"):
-    v = os.environ.get(var, "")
-    check(f"secret {var}", bool(v), f"set ({len(v)} chars)" if v else "MISSING")
-key = os.environ.get("GEMINI_API_KEY", "")
-check("GEMINI_API_KEY", bool(key),
-      "set — ai copy + gemini art ON" if key else "not set — bank copy + procedural art")
+# DOCTOR_SECRETS=0 = "this step was given no secrets by design". The pre-flight step in
+# publish.yml runs with an empty environment (Actions gives a step only what its own `env:`
+# lists), so on 2026-10-31 it printed three "secret … MISSING" lines about credentials the
+# NEXT step had, and a lane-audit table full of `(empty → ALL cross-posting OFF)`. That is
+# not a diagnosis, it is a false alarm with a ✅/⚠️ in front of it — and the person reading
+# the log at 22:30 cannot tell them apart. So: when asked, say nothing about secrets here
+# and let the release step's own doctor call answer the question with the real environment.
+if os.environ.get("DOCTOR_SECRETS", "1").strip() == "0":
+    print("  🤫 secret + lane checks are SKIPPED here — this step has no environment by")
+    print("     design. The release step runs this same doctor with the real env; read")
+    print("     THAT block (or state/receipts/latest.md, which is authoritative).")
+    _skip_secrets = True
+else:
+    _skip_secrets = False
+    for var in ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN"):
+        v = os.environ.get(var, "")
+        check(f"secret {var}", bool(v), f"set ({len(v)} chars)" if v else "MISSING")
+    key = os.environ.get("GEMINI_API_KEY", "")
+    check("GEMINI_API_KEY", bool(key),
+          "set — ai copy + gemini art ON" if key else "not set — bank copy + procedural art")
 
 st_path = ROOT / "state" / "state.json"
 if st_path.exists():
@@ -63,7 +77,10 @@ if st_path.exists():
 try:
     sys.path.insert(0, str(ROOT))
     from src import lane_audit
-    lane_audit.run()
+    if _skip_secrets:
+        print("  🩺 lane audit SKIPPED in this step (no environment to audit — see above)")
+    else:
+        lane_audit.run()
 except Exception as _lae:                       # never fatal — it is a diagnostic
     print(f"  🩺 lane audit skipped: {_lae}")
 

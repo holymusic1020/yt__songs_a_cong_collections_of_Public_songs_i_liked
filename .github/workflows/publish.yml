@@ -122,6 +122,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: 🩺 Pre-flight doctor
+        # DOCTOR_SECRETS=0 because a step sees ONLY its own `env:` — the release step has
+        # every secret, this one has none, and printing "YT_REFRESH_TOKEN — MISSING" from
+        # an empty room is a false alarm, not a finding (measured 2026-10-31 00:27 UTC).
+        # Dependencies and state are still checked here, which is what a pre-flight is for.
+        env:
+          DOCTOR_SECRETS: "0"
         run: python tools/doctor.py
 
       - name: Compose + render + upload episode
@@ -191,6 +197,10 @@ jobs:
           ACE_MELODY: ${{ vars.ACE_MELODY }}                            # 🎛 0 = the exact old prompt (melody brief off). Blank = ON.                          # 🎛 pin tonight's genre (e.g. lofi). Empty = the rotation decides. Unknown value is ignored by main.py, never fatal.  # 🧪 1 = lanes render-only, zero API calls
         run: |
           set -o pipefail
+          # 🩺 the doctor AGAIN, here, where the real environment exists — so the secrets/lane
+          # report in every run comes from the same env the release is running under. It always
+          # exits 0, so a warning can never break a release; it exits 0 by design.
+          python3 tools/doctor.py
           mkdir -p out
           # SAFE RUN CONTROL: cron always publishes (real release).
           # Manual runs honour the run_mode input:
@@ -337,5 +347,17 @@ jobs:
           [ -d incoming ] && git add 'incoming/*.txt' 'incoming/*.md' 'incoming/*.json' 2>/dev/null || true
           git rm -q -r --cached --ignore-unmatch incoming/*.mp3 incoming/*.wav incoming/*.m4a incoming/*.flac incoming/*.ogg 2>/dev/null || true
           git commit -m "ep: publish run $(date -u +%Y-%m-%d)" || echo "no changes"
-          git pull --rebase origin "${GITHUB_REF_NAME}" || true
-          git push || echo "nothing to push"
+          # `--autostash` because on 2026-10-31 this step printed
+          #   error: cannot pull with rebase: You have unstaged changes.
+          # and still pushed (the state commit landed as c5a2ee1) — but that was luck: a
+          # rejected push here loses state.json, and a lost state.json means tomorrow's run
+          # re-uses tonight's episode number (the duplicate-EP race this workflow's whole
+          # concurrency block exists to stop). So: autostash, and if the push still fails,
+          # say it in a way GitHub itself flags, then retry once after a fresh fetch.
+          git -c rebase.autoStash=true pull --rebase origin "${GITHUB_REF_NAME}" \
+            || echo "  (state pull skipped or conflicted — pushing what this run committed)"
+          if ! git push; then
+            echo "::error::state.json NOT pushed — the next run may reuse this episode. Fix before the next cron."
+            git -c rebase.autoStash=true pull --rebase origin "${GITHUB_REF_NAME}" && git push \
+              || echo "::error::second push attempt also failed — manual fix needed (state/receipts are the truth)."
+          fi

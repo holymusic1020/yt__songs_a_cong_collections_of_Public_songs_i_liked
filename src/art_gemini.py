@@ -16,13 +16,19 @@ from src import keys as keypool   # never `keys`: main() has a local named keys 
 
 from PIL import Image
 
-# Tried in order; first one that returns an image wins.
-# 2026-08 refresh: gemini-2.0-flash-preview-image-generation is dead;
-# gemini-2.5-flash-image(-preview) were shut down 2026-01-15 and the base
-# model retires 2026-10-02. GA replacement: gemini-3.1-flash-image.
+# Tried in order; first one that returns an image wins. The order is the ANSWERS the
+# API gave, not the marketing date sheet — because the cover lane of the real release
+# (EP.083, 2026-10-31 00:37 UTC) reported "⚠ gemini scenes failed (only 0 scenes
+# generated)" while the thumbnail lane, asked the same key 12 hours earlier, got
+#   gemini-3.1-flash-image → 404 "not found for API version v1beta"   (the id moved)
+#   gemini-2.5-flash-image → 429 RESOURCE_EXHAUSTED                    (alive, quota gone)
+# The old comment here said 2.5 "retires 2026-10-02" and put 3.1 first; the endpoint
+# says the opposite about both, so 2.5 goes first and a 404 is never reported as a
+# dead key. Same list the thumbnail lane now walks (src/thumb_bank.py GEMINI_MODELS):
+# one measurement, two lanes, and v46 fails if they ever drift apart.
 MODEL_CANDIDATES = [
-    "gemini-3.1-flash-image",                      # GA 2026-05-28, no shutdown date
-    "gemini-2.5-flash-image",                      # still live (retires 2026-10-02)
+    "gemini-2.5-flash-image",                      # answered 429 = exists; quota is the issue
+    "gemini-3.1-flash-image",                      # 404 on v1beta as of 2026-10-30 — kept in case it returns
 ]
 
 MOODS = {

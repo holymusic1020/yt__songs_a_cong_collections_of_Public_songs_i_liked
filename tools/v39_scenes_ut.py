@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import io
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -160,9 +161,21 @@ def main() -> int:
                         "src/composer.py", "src/master*.py", "src/mascot.py", "src/lyrics.py"],
                        cwd=ROOT, capture_output=True, text=True).stdout.split()
     chk(not d, "render core / lyrics / mascot untouched by this change", str(d))
-    d2 = subprocess.run(["git", "diff", "--name-only", "HEAD", "--", ".github/workflows/publish.yml"],
-                        cwd=ROOT, capture_output=True, text=True).stdout.split()
-    chk(not d2, "publish.yml untouched (no workflow change, no new deps)", str(d2))
+    # The original form of this check was `git diff HEAD -- publish.yml` — "the scenes lane
+    # needed no workflow edit, and never will". That is not true as a law: on 2026-10-31
+    # publish.yml changed twice for reasons that have nothing to do with scenes (the pre-flight
+    # doctor was printing false "secret MISSING" lines, and the state push needed --autostash),
+    # and the check fired on unrelated work, which is how a test becomes a tax. What the
+    # feature ACTUALLY promises is weaker and durable: it needs no NEW environment plumbing,
+    # so the workflow can stay as it is. Assert that instead.
+    wf = (ROOT / ".github" / "workflows" / "publish.yml").read_text(encoding="utf-8")
+    # What the feature really promises is durable: no scene dial may be a HARD
+    # requirement, because a hard one is exactly what would force a workflow edit.
+    hard = set(re.findall(r"os\.environ\[.?(SCENES[A-Z_0-9]*).?\]", src_txt))
+    chk(not hard,
+        "every scenes dial has a code default — the workflow never has to change for this lane",
+        f"hard-required={sorted(hard)}")
+
     chk(not any("import" in l and ("requests" in l or "httpx" in l)
                 for l in (ROOT / "src/art_scenic.py").read_text().splitlines()[:40]),
         "no new dependency — numpy + PIL only, both already installed on the runner")
