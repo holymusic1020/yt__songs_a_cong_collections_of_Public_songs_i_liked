@@ -1,28 +1,19 @@
-# 📋 receipt · EP.083 · 2026-10-31
+# 📋 receipt · EP.084 · 2026-10-31
 
 | | |
 |---|---|
-| track | **coal constellation** (ashrise) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/Cbo3ZAvSU1g |
+| track | **farol na garoa** (brazilian_phonk) |
+| mode | dry_run · full |
+| youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 1007.7 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/41150117132 @ c9d0d16 |
+| took | 1012.0 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/41216017928 @ c70545a |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
-| fb | published |
-| fb_reel_id | 122122725969453777 |
-| ig | published (reel) |
-| ig_media_id | 18647021098049394 |
-| ig_photo | published |
-| ig_photo_id | 18317738512303047 |
-| ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7702623020028807189 |
-| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
