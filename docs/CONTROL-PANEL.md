@@ -536,3 +536,56 @@ the Cloudflare refusal/decode/quota line, the upscale through the real gate, the
 the page's ladder order + the new Cloudflare/Space engines + the pack export) → the 33-file sweep →
 `workflow_dispatch` of `thumb-cpu.yml` with `n=2` → read the log (model download, per-image seconds,
 `🚫` lines) → `GET /releases` for `cpu/stable-diffusion-v1-5` rows in `index.json`.
+## 🔇 23. Two silent-killer idioms (the 11-day silence, 2026-11-13)
+
+Nothing was switched off. Everything was switched off *by accident*, twice, in ways that print
+almost nothing. Read this before writing a new `if:` or a new "is it installed?" check.
+
+**① `if: ... || vars.X != '0'` skips the lane forever if X was never created.**
+An unset `vars.X` is the empty string, and GitHub coerces it to `0` for the comparison, so
+`'' != '0'` is **false**. The intent was "run unless the boss parked it"; the result was
+"never run on a schedule". Measured twice: `thumb-cpu.yml` run #1 (2026-10-30 15:24 UTC,
+`completed · skipped`, zero steps) and `thumb-farm.yml` run #20 (2026-11-12 13:55 UTC) — twelve
+nights of thumbnail banking, gone, with a green-ish `skipped` as the only evidence.
+
+> Rule: a job-level `if` may skip only on an **explicit park** —
+> `if: ${{ !(github.event_name == 'schedule' && vars.THUMB_CPU == '0') }}`.
+> `thumb-farm.yml` now has **no** job-level `if` at all: `tools/thumb_farm.py` reads
+> `THUMB_FARM=0` itself, prints `parked by THUMB_FARM=0`, and exits 0. A two-minute checkout is a
+> cheap price for a lane that cannot be killed by an absent Variable.
+> (`vars.X != ''` — "run only when he filled it in", e.g. `song_drop.yml` + `BOSS_DROP_DATE` — is
+> the opposite intent and is correct. `tools/v46_thumb_bank_ut.py` allows it and bans the other.)
+
+**② A CLI that exists is not a CLI that runs.**
+Run #177 (2026-11-12 18:06 UTC, the only publish attempt in twelve days) died like this:
+
+```
+[ace-kaggle] pip install --quiet kaggle
+kaggle/models/upload_file.py, line 22, in <module>
+  import six
+ModuleNotFoundError: No module named 'six'
+```
+
+`shutil.which("kaggle")` was true, so the old guard never reinstalled, and the lane spent the whole
+release window pushing with a tool that could not import. The `kaggle` wheel imports `six` and does
+not declare it. Then both free HF Spaces lanes failed on their own (one answered `Model not fully
+initialized`, one `RepositoryNotFoundError`), and with `require_vocals=1` the engine printed
+`No vocal music lane succeeded; refusing to publish instrumental fallback` and stopped. **The
+refusal was right — a video of an instrumental over a vocal-subtitle track is the one thing worse
+than no video.**
+
+> Rule: `from src import kaggle_cli` → `kaggle_cli.ensure_kaggle()`. It runs
+> `kaggle --version` against the exact binary it is about to hand back, repairs with `six` when the
+> probe fails, and returns `None` (lane skipped, loudly) rather than pretending. `six` is also
+> pinned in `requirements.txt` so the runner never depends on a lucky image. `tools/v48_kaggle_cli_ut.py`
+> is the proof, offline.
+
+**③ Bonus, not an idiom but a fact: GitHub's own scheduler drops cron firings.**
+Between Oct 31 and Nov 12 the 10:00 UTC publish cron produced **no run object at all** for eleven
+nights, and the firings that did arrive came in 6–8 h late (Nov 12 created 18:06 UTC;
+`thumb-farm`'s 05:35 cron appeared at 13:55). `state: active` on all 13 workflows, repo public, not
+disabled, no `if` on the publish job — this is platform backlog, not a setting in this repo. The
+free answer is a second firing: `publish.yml` now has `0 10 * * *` **and** `0 14 * * *`
+(16:00 and 20:00 BDT). It cannot double-post — `src/state.py` sees the 17 h gap and demotes the
+later run to a dry run, so the catch-up only becomes real on a night the first one failed or never
+came.

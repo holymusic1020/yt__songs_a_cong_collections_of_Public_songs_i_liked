@@ -33,11 +33,13 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import re
 import subprocess
 import tarfile
 import time
 import urllib.request
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 REL_TAG = "broll-lab"
@@ -52,7 +54,28 @@ def enabled() -> bool:
     return os.environ.get("BROLL", "1").strip() != "0"
 
 
+def slug(genre: str) -> str:
+    """One canonical genre spelling for directories, asset names and URLs.
+
+    🐛 2026-11-13, run #178: the render pipeline hands this module `meta["genre"]`, which is the
+    DISPLAY label from `main.py`'s GENRE_TABLE-ish map — "brazilian phonk" — while the farm names
+    its assets and tar members with the snake_case KEY — "brazilian_phonk". So `fetch()` built
+    `…/broll-brazilian phonk.tar.xz`, a URL containing a space, and urllib answered
+    `InvalidURL` (logged as `nothing to fetch for brazilian phonk: InvalidURL`), and the old
+    dir rule stripped the space to `brazilianphonk`, which no farm directory matches either.
+    Two-word genres therefore could never use their clips. Collapsing any run of
+    non-alphanumerics to one `_` makes the label, the key and the asset name agree.
+    """
+    return re.sub(r"[^a-z0-9]+", "_", (genre or "").strip().lower()).strip("_") or "dark_ambient"
+
+
 def libdir(genre: str) -> Path:
+    return ROOT / "assets" / "broll" / slug(genre)
+
+
+def _legacy_dir(genre: str) -> Path:
+    """Where the OLD rule put a library: `brazilianphonk`, no underscore. Read-only fallback, so a
+    shelf that already exists on disk keeps working instead of looking empty for one release."""
     g = "".join(ch for ch in (genre or "dark_ambient").lower() if ch.isalnum() or ch == "_")
     return ROOT / "assets" / "broll" / (g or "dark_ambient")
 
@@ -70,17 +93,21 @@ def _read_manifest(d: Path) -> list[dict]:
 
 def scan(genre: str) -> list[Path]:
     """Verified clips on disk, in farm order. Anything doubtful is dropped here."""
-    d = libdir(genre)
-    if not d.exists():
-        return []
     out = []
-    for p in sorted(d.glob("broll-*.mp4")):
-        try:
-            if p.stat().st_size < MIN_BYTES:
-                continue
-        except OSError:
+    seen = set()
+    for d in (libdir(genre), _legacy_dir(genre)):      # new spelling first, old one as a net
+        if d in seen or not d.exists():
             continue
-        out.append(p)
+        seen.add(d)
+        for p in sorted(d.glob("broll-*.mp4")):
+            try:
+                if p.stat().st_size < MIN_BYTES:
+                    continue
+            except OSError:
+                continue
+            if p not in seen:                  # same file twice = the two dirs are hardlinked
+                seen.add(p)
+                out.append(p)
     return out
 
 
@@ -113,9 +140,10 @@ def fetch(genre: str, budget_s: float = 90.0) -> bool:
     if not repo or "/" not in repo or os.environ.get("BROLL_FETCH", "1").strip() == "0":
         return False
     max_mb = float(os.environ.get("BROLL_MAX_MB", "220") or 220)
-    url = f"https://github.com/{repo}/releases/download/{REL_TAG}/broll-{genre}.tar.xz"
-    d = libdir(genre)
-    tmp = ROOT / "assets" / "broll" / f".dl-{genre}.tar.xz"
+    g = slug(genre)                            # was: the raw label, spaces and all → InvalidURL
+    url = f"https://github.com/{repo}/releases/download/{REL_TAG}/{quote(f'broll-{g}.tar.xz')}"
+    d = libdir(g)
+    tmp = ROOT / "assets" / "broll" / f".dl-{g}.tar.xz"
     tmp.parent.mkdir(parents=True, exist_ok=True)
     before = len(scan(genre))
     t0 = time.monotonic()

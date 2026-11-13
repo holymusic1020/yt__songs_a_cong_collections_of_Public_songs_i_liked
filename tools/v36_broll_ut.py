@@ -9,6 +9,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -341,6 +342,51 @@ try:
           m.count("def _stills() -> Path:") == 1)
 except Exception as e:                                              # noqa: BLE001
     check("16 prompts come from the repo's own scene banks", False, f"{type(e).__name__}: {e}")
+
+# 29-32 · the 2026-11-13 spelling bug (run #178): the render hands this module the DISPLAY label
+# ("brazilian phonk"), the farm names its assets by KEY ("brazilian_phonk"). The label went
+# straight into a URL → `InvalidURL: URL can't contain control characters` → no clips, ever, for
+# any two-word genre; and the old dir rule dropped the space to `brazilianphonk`, which matches
+# nothing the farm wrote. One slug, used in all three places.
+check("29 slug() makes the label and the farm key the same string",
+      broll.slug("brazilian phonk") == "brazilian_phonk" == broll.slug("brazilian_phonk")
+      and broll.slug("Brazilian  Phonk!") == "brazilian_phonk", broll.slug("brazilian phonk"))
+check("30 …so an empty or None genre still resolves to the default library",
+      broll.slug("") == broll.slug(None) == "dark_ambient")
+_src = (ROOT / "src" / "broll.py").read_text(encoding="utf-8")
+check("31 fetch() slugs AND quotes the asset name (a space must never reach urllib)",
+      "g = slug(genre)" in _src and "quote(f'broll-{g}.tar.xz')" in _src)
+    # Line 53 of this file re-roots `broll.libdir` to `TMP / genre` for the checks above, so calling it
+# here would test that stub instead of the real naming rules. Reload gets the pristine module, then
+# only ROOT moves — so `libdir`/`_legacy_dir`/`slug` run exactly as they will on a runner.
+import importlib as _il
+_br = _il.reload(broll)
+_old_root, _br.ROOT = _br.ROOT, TMP
+try:
+    for _d, _nm in ((TMP / "assets/broll/brazilian_phonk", "broll-new.mp4"),
+                    (TMP / "assets/broll/brazilianphonk", "broll-legacy.mp4")):
+        _d.mkdir(parents=True, exist_ok=True)
+        (_d / _nm).write_bytes(b"x" * (_br.MIN_BYTES + 1))
+    _both = sorted(x.name for x in _br.scan("brazilian phonk"))
+    check("32 scan() finds the new spelling AND the old one (a shelf on disk is never lost to a "
+          "rename)", _both == ["broll-legacy.mp4", "broll-new.mp4"], str(_both))
+    check("33 the label and the key resolve to one canonical directory",
+          _br.libdir("brazilian phonk").name == _br.libdir("brazilian_phonk").name
+          == _br.slug("Brazilian Phonk") == "brazilian_phonk",
+          f"{_br.libdir('brazilian phonk')} vs {_br.libdir('brazilian_phonk')}")
+    # Cross-file, because this is two files agreeing on a filename and a space in either one
+    # silently starves the lane (that is exactly what run #178 showed).
+    _farm = (ROOT / "tools" / "broll_farm.py").read_text(encoding="utf-8")
+    _pat_fetch = re.search(r"broll-\{([^}]+)\}\.tar\.xz", (ROOT / "src" / "broll.py").read_text())
+    _pat_farm = re.search(r"broll-\{([^}]+)\}\.tar\.xz", _farm)
+    check("34 the release and the farm build the SAME asset name (fetch: %s / farm: %s)"
+          % (_pat_fetch and _pat_fetch.group(1), _pat_farm and _pat_farm.group(1)),
+          _pat_fetch and _pat_farm
+          and _pat_fetch.group(1).startswith("g") and _pat_farm.group(1).startswith("g")
+          and "genre" not in _pat_fetch.group(1),
+          "fetch must interpolate the SLUG variable, not the raw label argument")
+finally:
+    _br.ROOT = _old_root
 
 print("─" * 72)
 print("UT-36 · b-roll farm · " + ("FAIL: " + ", ".join(fails) if fails else
