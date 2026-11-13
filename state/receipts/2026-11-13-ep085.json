@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "at": "2026-11-13T17:40:47Z",
+  "at": "2026-11-13T20:44:26Z",
   "date": "2026-11-13",
   "episode": 85,
   "mode": "dry_run",
   "kind": "short",
   "genre": "saint_of_leaving",
-  "track": "halogen fog",
+  "track": "highway toll mist",
   "bpm": 96,
   "key": "***",
   "youtube": {
@@ -19,10 +19,10 @@
   "lanes": {
     "dsp": "off — DSP_PACK=0 — streaming packs off"
   },
-  "seconds": 181.5,
-  "run_id": "43474537207",
-  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/43474537207",
-  "sha": "c2e0bb8",
+  "seconds": 178.1,
+  "run_id": "43503736865",
+  "run_url": "https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/43503736865",
+  "sha": "79c1a4f",
   "errors": [],
   "music_lane": "ace-kaggle",
   "dsp": {
@@ -41,7 +41,7 @@
   "require_vocals": "1",
   "lane_audit": {
     "schema": 1,
-    "at": "2026-11-13T17:40:46Z",
+    "at": "2026-11-13T20:44:25Z",
     "net_probes": true,
     "dials": {
       "MULTIPOST": "fb,tt,ig",

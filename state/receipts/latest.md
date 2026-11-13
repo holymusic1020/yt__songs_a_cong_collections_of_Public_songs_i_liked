@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| track | **halogen fog** (saint_of_leaving) |
+| track | **highway toll mist** (saint_of_leaving) |
 | mode | dry_run · short |
 | youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 181.5 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/43474537207 @ c2e0bb8 |
+| took | 178.1 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/43503736865 @ 79c1a4f |
 
 ## lanes
 
