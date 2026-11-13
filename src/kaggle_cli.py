@@ -84,6 +84,11 @@ def kaggle_bin() -> str | None:
 def ensure_kaggle(*, force: bool = False) -> str | None:
     """Return a path to a WORKING kaggle CLI, or None after saying why.
 
+    Every probe is handed the path it is blessing. The first draft called `_imports_ok()` bare,
+    which imports the module in THIS interpreter — so a PATH script belonging to a different
+    interpreter (or a shell wrapper, or a venv shim) looked healthy while `kaggle kernels push`
+    still died. That is the same mistake as `shutil.which`, wearing a better costume.
+
     Order of attempts (each step only runs if the previous one is not proven to work):
       1. already on PATH and already smoke-passed this process  →  free
       2. on PATH and imports fine                                →  free
@@ -96,13 +101,13 @@ def ensure_kaggle(*, force: bool = False) -> str | None:
         return _cache["path"]
 
     path = kaggle_bin()
-    if path and _imports_ok():
+    if path and _imports_ok(path):
         _cache["path"] = path
         return path
 
     if path:
         print("  [kaggle-cli] kaggle is on PATH but will not import — repairing…", flush=True)
-        if _pip(["six"]) == 0 and _imports_ok():
+        if _pip(["six"]) == 0 and _imports_ok(path):
             _cache["path"] = path
             print("  [kaggle-cli] repaired with `six` alone — CLI is live", flush=True)
             return path
@@ -111,13 +116,13 @@ def ensure_kaggle(*, force: bool = False) -> str | None:
 
     if _pip(list(INSTALL)) == 0:
         path = kaggle_bin()
-        if path and _imports_ok():
+        if path and _imports_ok(path):
             _cache["path"] = path
             return path
 
     _pip(list(INSTALL), upgrade=True)
     path = kaggle_bin()
-    if path and _imports_ok():
+    if path and _imports_ok(path):
         _cache["path"] = path
         return path
 
