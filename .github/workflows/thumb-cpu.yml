@@ -59,9 +59,19 @@ jobs:
     # where that Variable does not exist was reported `skipped` with zero steps — an
     # unset `vars` key does not compare like an empty string. Do not gate a manual run
     # on a variable that may not exist.)
-    if: ${{ github.event_name == 'workflow_dispatch' || vars.THUMB_CPU != '0' }}
+    # NOTE the polarity: skip only on an EXPLICIT park. An UNSET repo Variable compared
+    # with `!=` evaluates FALSE on GitHub, so `vars.X != '0'` means "never run on a
+    # schedule" for anyone who has not created X — measured on thumb-cpu.yml run #1
+    # (2026-10-30, `skipped`, zero steps) and again on thumb-farm.yml run #20
+    # (2026-11-12 13:55 UTC, `skipped`: THUMB_FARM was never created as a Variable, so
+    # twelve nights of banking were skipped by a guard nobody had switched on).
+    if: ${{ !(github.event_name == 'schedule' && vars.THUMB_CPU == '0') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 300          # 5 h of work inside GitHub's 6 h kill — the job ends itself
+    timeout-minutes: 150            # 2 h = ~15 frames, and a shorter job is the polite
+                                  # shape: this repo then got NO scheduled run at all for
+                                  # 11 days (Oct 31 → Nov 12). I am not claiming the cause,
+                                  # but a 5-hour CPU job that GitHub has to schedule is a
+                                  # risk I choose not to keep on a cosmetic lane.          # 5 h of work inside GitHub's 6 h kill — the job ends itself
     env:
       HF_TOKEN: ${{ secrets.HF_TOKEN }}   # anonymous downloads work (measured), but the log
                                           # said "unauthenticated → slower, rate-limited": free

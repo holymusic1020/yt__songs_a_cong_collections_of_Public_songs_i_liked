@@ -6,3 +6,5 @@ google-auth-oauthlib>=1.2,<2
 google-genai>=1.0,<2
 gradio_client>=1.4,<2
 pronouncing>=0.2        # 🎵 src/craft.py couplet-rhyme gate (ARPAbet); optional — craft degrades without it
+six>=1.16  # 🚨 2026-11-12 run #177: the kaggle wheel imports six and does NOT declare it
+         # → ModuleNotFoundError inside `kaggle kernels push` → no vocals → no release.

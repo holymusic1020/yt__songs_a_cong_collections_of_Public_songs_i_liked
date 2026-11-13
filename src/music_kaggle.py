@@ -33,6 +33,7 @@ import json
 import os
 import shutil
 import subprocess
+from src import kaggle_cli
 import time
 from pathlib import Path
 
@@ -71,13 +72,11 @@ def _setup_creds() -> Path | None:
         print("  (kaggle skipped: need KAGGLE_USERNAME + (KAGGLE_API_TOKEN "
               "or KAGGLE_KEY))")
         return None
-    if not shutil.which("kaggle"):
-        try:
-            _run(["pip", "install", "--quiet", "kaggle"], timeout=300)
-        except Exception:
-            return None
-        if not shutil.which("kaggle"):
-            return None
+    # 2026-11-12, run #177: `shutil.which("kaggle")` was TRUE and every push still died at
+    # import time (`ModuleNotFoundError: No module named 'six'`) — an existence check cannot see
+    # a broken package. ensure_kaggle() proves the CLI RUNS and repairs it first; src/kaggle_cli.py.
+    if not kaggle_cli.ensure_kaggle():
+        return None
     cfg = Path.home() / ".kaggle"
     cfg.mkdir(exist_ok=True)
     if token:
@@ -104,7 +103,7 @@ def _push(notebook_dir: Path, cfg: Path) -> tuple[int, str]:
     env = dict(os.environ)
     env["KAGGLE_CONFIG_DIR"] = str(cfg)
     r = subprocess.run(
-        [shutil.which("kaggle"), "kernels", "push", "-p", str(notebook_dir)],
+        [kaggle_cli.kaggle_bin() or "kaggle", "kernels", "push", "-p", str(notebook_dir)],
         capture_output=True, text=True, timeout=180, env=env)
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
@@ -117,7 +116,7 @@ def generate(genre_key: str, seconds: float, out_path: Path,
     if cfg is None:
         print("  (kaggle lane skipped: no KAGGLE creds or KAGGLE_OFF=1)")
         return None
-    kaggle = shutil.which("kaggle")
+    kaggle = kaggle_cli.kaggle_bin() or "kaggle"
 
     # 1) push the notebook (this also starts it)
     print("  🎵 kaggle: pushing vocal cook to free GPU…", flush=True)

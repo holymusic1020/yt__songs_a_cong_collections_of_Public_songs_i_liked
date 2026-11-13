@@ -29,6 +29,15 @@ on:
         default: ""
   schedule:
     - cron: "0 10 * * *"         # DAILY 16:00 BDT (boss 2026-09-19: he posts by hand ~15:15, keep the engine clear of it; was 23 9 = 15:23 BDT)
+    # 🧯 2026-11-13 CATCH-UP lane, 20:00 BDT. The evidence: between Oct 31 and Nov 12 the
+    # 16:00 firing produced NO run object at all for eleven nights (and the ones that did
+    # arrive came in 6-8 h late — Nov 12's run was created 18:06 UTC for a 10:00 UTC cron;
+    # thumb-farm's 05:35 cron appeared at 13:55). Nothing in this repo was switched off —
+    # every workflow reports `state: active` — this is GitHub's own scheduler queue. A second
+    # firing is the only free answer to that. It cannot double-post: src/state.py's 17 h
+    # release_recently() sees the 16:00 release and DEMOTES this one to a dry run, so the
+    # catch-up only ever becomes a real release on a night the first one failed or never came.
+    - cron: "0 14 * * *"
 
 # 🔒 one release at a time — kills the duplicate-EP race (manual spam-safe)
 concurrency:

@@ -282,7 +282,13 @@ chk("already exists" in farm_src, "a pre-existing release tag is treated as succ
 wf = (ROOT / ".github" / "workflows" / "thumb-farm.yml").read_text(encoding="utf-8")
 chk('cron: "35 5 * * *"' in wf, "own schedule, 11:05 BDT — nowhere near the release")
 chk("|| true" in wf, "the release step is behind `|| true`")
-chk("THUMB_FARM != '0'" in wf, "and the job itself is gated on the dial")
+# checked on the PARSED document, not the text: the file's explanatory comment legitimately
+# quotes the old `vars.THUMB_FARM != '0'` line to explain why it was removed.
+_wf = __import__("yaml").safe_load(wf)
+chk(all(_j.get("if") in (None, "") for _j in _wf["jobs"].values()),
+    "the farm has NO job-level `if` any more — THUMB_FARM=0 parks it inside the script, because a "
+    "job-level gate on a Variable nobody created skipped 12 nights",
+    str({k: v2.get("if") for k, v2 in _wf["jobs"].items()})[:120])
 chk("GEMINI_API_KEY_6" in wf, "the whole Gemini key pool is wired in (429 rotation)")
 chk("secrets.HF_TOKEN" in wf, "HF_TOKEN is wired for the second engine")
 try:
@@ -607,10 +613,15 @@ else:
     os.environ["GITHUB_REPOSITORY"] = _TBX
 
 cpu_wf = (ROOT / ".github" / "workflows" / "thumb-cpu.yml").read_text(encoding="utf-8")
+import re as _re
 import yaml as _y
 _d = _y.safe_load(cpu_wf)
 chk(True, "thumb-cpu.yml is real YAML the platform can run")
-chk("timeout-minutes: 300" in cpu_wf, "the job ends itself at 5 h (the platform kills at 6 — measured ceiling)")
+_tm = _re.search(r"timeout-minutes:\s*(\d+)", cpu_wf)
+chk(_tm and int(_tm.group(1)) <= 180,
+    f"the CPU job caps itself short ({_tm.group(1) if _tm else 'unbounded'} min, platform kill = 6 h) — "
+    "a cosmetic lane must not be the shape that costs him scheduled runs",
+    "measured: no scheduled publish run at all for 11 days (Oct 31 → Nov 12)")
 chk("download.pytorch.org/whl/cpu" in cpu_wf, "torch CPU wheels, not the 2 GB CUDA build")
 _cch = cpu_wf[cpu_wf.index("actions/cache"):cpu_wf.index("Install torch")]
 chk("~/.cache/pip" in _cch and "cache/huggingface" not in _cch,
@@ -618,9 +629,10 @@ chk("~/.cache/pip" in _cch and "cache/huggingface" not in _cch,
     "nightly cache is not his 10 GB quota to spend", " ".join(_cch.splitlines()[-4:])[:80])
 chk("github.run_id" not in _cch, "the cache key is stable — cache@v4 is not asked to rewrite a key nightly")
 chk("--cpu-only" in cpu_wf and "THUMB_BANK_TARGET" in cpu_wf, "it writes to the SAME shelf through the SAME farm")
-chk("github.event_name == 'workflow_dispatch' || vars.THUMB_CPU != '0'" in cpu_wf,
-    "a hand dispatch always runs; THUMB_CPU=0 only silences the SCHEDULE",
-    "(a bare `vars.X != '0'` on an unset X skipped the job with zero steps — measured 15:25 UTC)")
+chk("!(github.event_name == 'schedule' && vars.THUMB_CPU == '0')" in cpu_wf,
+    "a hand dispatch always runs, and ONLY an explicit THUMB_CPU=0 silences the schedule",
+    "polarity matters: `vars.X != '0'` on an X nobody created is FALSE → zero steps (measured on "
+    "thumb-cpu run #1 2026-10-30 15:24 UTC and thumb-farm run #20 2026-11-12 13:55 UTC)")
 _inst = "\n".join(l for l in cpu_wf.split("Install torch")[1][:1200].splitlines()
                  if l.strip() and not l.strip().startswith("#"))
 chk("|| true" not in _inst and "| tail" not in _inst,
@@ -633,6 +645,24 @@ chk("cpu" in (ROOT / "tools" / "thumb_farm.py").read_text(encoding="utf-8").spli
     "the farm knows the CPU lane needs no politeness interval")
 chk('"pollinations": 16.0' in (ROOT / "tools" / "thumb_farm.py").read_text(encoding="utf-8"),
     "Pollinations paced at its documented 1 request / 15 s")
+
+print("\n── 5z · the law: no scheduled lane may die from an ABSENT Variable ──")
+# 2026-11-12: thumb-farm's `if: ... || vars.THUMB_FARM != '0'` skipped EVERY scheduled night
+# (`completed · skipped`, zero steps, run #20). An UNSET `vars.X` is the empty string and GitHub
+# coerces it to 0 for the comparison, so `'' != '0'` is FALSE — a guard written as "run unless he
+# parked it" means "never run" for anyone who never created the Variable. A job-level `if` may
+# therefore only skip on an EXPLICIT park (`vars.X == '0'`), never on the absence of one.
+import glob as _glob
+for _f in sorted(_glob.glob(str(ROOT / ".github" / "workflows" / "*.yml"))):
+    _src = open(_f, encoding="utf-8").read()
+    # the trap is precisely `vars.X != '0'` — "run unless he parked it", which for an X that was
+    # never created means "never". `vars.X != ''` is the OPPOSITE intent (run only when he filled
+    # it in, e.g. song_drop.yml's BOSS_DROP_DATE) and is correct, so it is not flagged.
+    _bad = [l.strip() for l in _src.splitlines()
+            if l.strip().startswith("if:")
+            and _re.search(r"vars\.[A-Z0-9_]+\s*!=\s*[\"']0[\"']", l)]
+    chk(not _bad, f"{os.path.basename(_f)}: no job-level `if` skips on an absent Variable"
+        + (f"  ← {', '.join(_bad)[:100]}" if _bad else ""), "gate-polarity")
 
 print("── 5h · the farm cannot be killed by an empty ${{ }} substitution ──")
 # Measured failure: `--target "${{ vars.THUMB_BANK_TARGET }}"` with that Variable unset

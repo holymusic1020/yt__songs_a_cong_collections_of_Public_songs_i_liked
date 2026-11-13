@@ -47,7 +47,13 @@ permissions:
 
 jobs:
   farm:
-    if: github.event_name == 'workflow_dispatch' || vars.THUMB_FARM != '0'
+    # NO job-level `if` here on purpose. An earlier version had
+    #   if: github.event_name == 'workflow_dispatch' || vars.THUMB_FARM != '0'
+    # and `vars.THUMB_FARM` has never existed, so every scheduled night evaluated FALSE
+    # and the farm `skipped` (measured: run #20, 2026-11-12 13:55 UTC). The script already
+    # parks itself — `THUMB_FARM=0` prints "parked by THUMB_FARM=0 — the shelf is
+    # untouched tonight" and exits 0 — and a two-minute checkout is a cheap price for a
+    # lane that cannot be killed by an absent Variable.
     runs-on: ubuntu-latest
     timeout-minutes: 45            # 24 images at free-tier speeds plus slack
     env:

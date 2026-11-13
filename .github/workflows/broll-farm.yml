@@ -63,7 +63,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: kaggle cli
-        run: pip install --quiet kaggle || pip install --quiet --break-system-packages kaggle
+        run: pip install --quiet kaggle six || pip install --quiet --break-system-packages kaggle six
       - name: run the farm (always a soft exit — a failed shelf costs nothing)
         run: python tools/broll_farm.py
       - name: what is on the shelf
