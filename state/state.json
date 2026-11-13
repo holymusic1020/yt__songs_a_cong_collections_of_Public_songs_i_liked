@@ -1,5 +1,5 @@
 {
-  "episode": 83,
+  "episode": 84,
   "history": [
     {
       "episode": 1,
@@ -1079,29 +1079,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-10-31T02:30:43Z",
       "at": "2026-10-31T00:42:10+00:00"
+    },
+    {
+      "episode": 84,
+      "kind": "full",
+      "youtube_id": "PfFO_4sBTuc",
+      "video_id": "PfFO_4sBTuc",
+      "short_id": "-z2LUgscEpA",
+      "title": "chuva no viaduto — Nix Speech (official audio)",
+      "name": "chuva no viaduto",
+      "genre": "brazilian_phonk",
+      "publish_at": "2026-11-13T11:20:27Z",
+      "short_publish_at": "2026-11-13T09:51:29Z",
+      "at": "2026-11-13T06:42:07+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-10-19",
-      "episode": 71,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "lofi",
-      "track": "fading hallway bulb",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122120033109453777",
-        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The total chunk count is invalid\",\"log_id\":\"20261020023835AD6CBF706A89AAA38A2D\"}}",
-        "ig": "published (reel)",
-        "ig_media_id": "18022170887927579",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "17895057390681212",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-20",
       "episode": 72,
@@ -1370,6 +1363,30 @@
       "track": "farol na garoa",
       "multipost_dial": "fb,tt,ig",
       "lanes": {
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-13",
+      "episode": 84,
+      "mode": "publish",
+      "kind": "full",
+      "genre": "brazilian_phonk",
+      "track": "chuva no viaduto",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122125816959453777",
+        "fb_video": "published",
+        "fb_video_id": "1675780544330961",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7707542205703112711",
+        "ig": "published (reel)",
+        "ig_media_id": "18017493842977835",
+        "ig_user": "nixspeech",
+        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+        "ig_photo": "published",
+        "ig_photo_id": "18107675414004651",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
