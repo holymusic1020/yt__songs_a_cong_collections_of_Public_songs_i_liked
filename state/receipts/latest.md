@@ -1,19 +1,28 @@
-# 📋 receipt · EP.085 · 2026-11-13
+# 📋 receipt · EP.085 · 2026-11-14
 
 | | |
 |---|---|
-| track | **highway toll mist** (saint_of_leaving) |
-| mode | dry_run · short |
-| youtube | — · short: — |
+| track | **cold hallway tile** (saint_of_leaving) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/6lHnLPKP1gg |
 | multipost dial | `fb,tt,ig` |
-| took | 178.1 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/43503736865 @ 79c1a4f |
+| took | 549.5 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/43615857108 @ c87e477 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
+| fb | published |
+| fb_reel_id | 122126159007453777 |
+| ig | published (reel) |
+| ig_media_id | 18022795802954039 |
+| ig_photo | published |
+| ig_photo_id | 18214148836364885 |
+| ig_user | nixspeech |
+| tiktok_publish_id | v_pub_file~v2-1.7708067034248120340 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
