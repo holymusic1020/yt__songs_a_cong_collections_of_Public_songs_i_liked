@@ -1,5 +1,5 @@
 {
-  "episode": 84,
+  "episode": 85,
   "history": [
     {
       "episode": 1,
@@ -1092,32 +1092,22 @@
       "publish_at": "2026-11-13T11:20:27Z",
       "short_publish_at": "2026-11-13T09:51:29Z",
       "at": "2026-11-13T06:42:07+00:00"
+    },
+    {
+      "episode": 85,
+      "kind": "short",
+      "youtube_id": "6lHnLPKP1gg",
+      "video_id": null,
+      "short_id": "6lHnLPKP1gg",
+      "title": "cold hallway tile — Nix Speech (official audio)",
+      "name": "cold hallway tile",
+      "genre": "saint_of_leaving",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-11-14T20:02:16Z",
+      "at": "2026-11-14T16:37:58+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-10-21",
-      "episode": 73,
-      "mode": "publish",
-      "kind": "full",
-      "genre": "drift_phonk",
-      "track": "frosted motel mirror",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122120501805453777",
-        "fb_video": "published",
-        "fb_video_id": "1668107401410165",
-        "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The total chunk count is invalid\",\"log_id\":\"2026102123371114A2D176A03ABF8CD7A1\"}}",
-        "ig": "published (reel)",
-        "ig_media_id": "18098824205420900",
-        "ig_user": "nixspeech",
-        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
-        "ig_photo": "published",
-        "ig_photo_id": "18637525600014279",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-10-22",
       "episode": 74,
@@ -1379,6 +1369,27 @@
       "track": "highway toll mist",
       "multipost_dial": "fb,tt,ig",
       "lanes": {
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-14",
+      "episode": 85,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "saint_of_leaving",
+      "track": "cold hallway tile",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122126159007453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7708067034248120340",
+        "ig": "published (reel)",
+        "ig_media_id": "18022795802954039",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18214148836364885",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
