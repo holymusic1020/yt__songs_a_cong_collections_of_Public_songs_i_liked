@@ -1,28 +1,19 @@
-# 📋 receipt · EP.087 · 2026-11-16
+# 📋 receipt · EP.088 · 2026-11-16
 
 | | |
 |---|---|
-| track | **wet velvet curtain** (lambs_teeth) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/2PjN_iLbsOI |
+| track | **basement copper breath** (god_in_the_bass) |
+| mode | dry_run · full |
+| youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 1716.4 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/43947828574 @ 86d4c49 |
+| took | 169.7 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/43975953110 @ e4dcd84 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
-| fb | published |
-| fb_reel_id | 122126580873453777 |
-| ig | published (reel) |
-| ig_media_id | 18132640172490487 |
-| ig_photo | published |
-| ig_photo_id | 17869068510677111 |
-| ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7708869772884232213 |
-| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 

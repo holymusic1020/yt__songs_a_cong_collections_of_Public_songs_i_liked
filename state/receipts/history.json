@@ -1,24 +1,5 @@
 [
   {
-    "date": "2026-09-29",
-    "episode": 55,
-    "mode": "dry_run",
-    "kind": "full",
-    "genre": "velvet_fang",
-    "track": "cold silk collar",
-    "multipost_dial": "fb,tt,ig",
-    "seconds": 141.9,
-    "youtube": {
-      "video_id": null,
-      "short_id": null,
-      "watch": null,
-      "short": null
-    },
-    "lanes": {
-      "dsp": "off — DSP_PACK=0 — streaming packs off"
-    }
-  },
-  {
     "date": "2026-09-30",
     "episode": 55,
     "mode": "publish",
@@ -1066,6 +1047,25 @@
       "ig_user": "nixspeech",
       "ig_photo": "published",
       "ig_photo_id": "17869068510677111",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
+  },
+  {
+    "date": "2026-11-16",
+    "episode": 88,
+    "mode": "dry_run",
+    "kind": "full",
+    "genre": "god_in_the_bass",
+    "track": "basement copper breath",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 169.7,
+    "youtube": {
+      "video_id": null,
+      "short_id": null,
+      "watch": null,
+      "short": null
+    },
+    "lanes": {
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
   }
