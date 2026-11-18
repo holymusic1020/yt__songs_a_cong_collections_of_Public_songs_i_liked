@@ -1,28 +1,19 @@
-# 📋 receipt · EP.089 · 2026-11-18
+# 📋 receipt · EP.090 · 2026-11-18
 
 | | |
 |---|---|
-| track | **neon vestibule** (anime_titan) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/sUvAwNmZIAE |
+| track | **parquet gospel** (disco_house) |
+| mode | dry_run · full |
+| youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 969.8 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/44373232303 @ 1a7814a |
+| took | 1102.7 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/44403679754 @ 6b554eb |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
-| fb | published |
-| fb_reel_id | 122127013191453777 |
-| ig | published (reel) |
-| ig_media_id | 18139134751734511 |
-| ig_photo | published |
-| ig_photo_id | 17916673740492800 |
-| ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7709588371634456628 |
-| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
