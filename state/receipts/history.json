@@ -1,33 +1,5 @@
 [
   {
-    "date": "2026-10-02",
-    "episode": 57,
-    "mode": "publish",
-    "kind": "short",
-    "genre": "templestep",
-    "track": "car park drizzle",
-    "multipost_dial": "fb,tt,ig",
-    "seconds": 199.1,
-    "youtube": {
-      "video_id": null,
-      "short_id": "1H7fAaOfIiE",
-      "watch": null,
-      "short": "https://youtu.be/1H7fAaOfIiE"
-    },
-    "lanes": {
-      "fb": "published",
-      "fb_reel_id": "122114949735453777",
-      "tt": "uploaded → DRAFT (boss publishes in-app)",
-      "tiktok_publish_id": "v_pub_file~v2-1.7692104190730143751",
-      "ig": "published (reel)",
-      "ig_media_id": "17988627618075231",
-      "ig_user": "nixspeech",
-      "ig_photo": "published",
-      "ig_photo_id": "18112855982111581",
-      "dsp": "off — DSP_PACK=0 — streaming packs off"
-    }
-  },
-  {
     "date": "2026-10-03",
     "episode": 58,
     "mode": "publish",
@@ -1057,6 +1029,34 @@
       "short": null
     },
     "lanes": {
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
+  },
+  {
+    "date": "2026-11-18",
+    "episode": 89,
+    "mode": "publish",
+    "kind": "short",
+    "genre": "anime_titan",
+    "track": "neon vestibule",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 969.8,
+    "youtube": {
+      "video_id": null,
+      "short_id": "sUvAwNmZIAE",
+      "watch": null,
+      "short": "https://youtu.be/sUvAwNmZIAE"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122127013191453777",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7709588371634456628",
+      "ig": "published (reel)",
+      "ig_media_id": "18139134751734511",
+      "ig_user": "nixspeech",
+      "ig_photo": "published",
+      "ig_photo_id": "17916673740492800",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
   }
