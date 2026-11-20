@@ -1187,18 +1187,6 @@
   ],
   "receipts": [
     {
-      "date": "2026-11-13",
-      "episode": 85,
-      "mode": "dry_run",
-      "kind": "short",
-      "genre": "saint_of_leaving",
-      "track": "highway toll mist",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
-    {
       "date": "2026-11-14",
       "episode": 85,
       "mode": "publish",
@@ -1423,6 +1411,18 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18456953164130423",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-20",
+      "episode": 92,
+      "mode": "dry_run",
+      "kind": "full",
+      "genre": "baroque_waltz",
+      "track": "tallow on marble",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
