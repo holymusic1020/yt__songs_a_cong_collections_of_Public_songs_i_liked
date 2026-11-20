@@ -1,5 +1,5 @@
 {
-  "episode": 90,
+  "episode": 91,
   "history": [
     {
       "episode": 1,
@@ -1170,33 +1170,22 @@
       "publish_at": "2026-11-19T21:08:15Z",
       "short_publish_at": "2026-11-19T20:51:52Z",
       "at": "2026-11-19T19:14:46+00:00"
+    },
+    {
+      "episode": 91,
+      "kind": "short",
+      "youtube_id": "wd38K7pUJUc",
+      "video_id": null,
+      "short_id": "wd38K7pUJUc",
+      "title": "halogen rooftop rain — Nix Speech (official audio)",
+      "name": "halogen rooftop rain",
+      "genre": "skyline_anthem",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-11-20T19:44:03Z",
+      "at": "2026-11-20T18:43:38+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-11-13",
-      "episode": 84,
-      "mode": "publish",
-      "kind": "full",
-      "genre": "brazilian_phonk",
-      "track": "chuva no viaduto",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122125816959453777",
-        "fb_video": "published",
-        "fb_video_id": "1675780544330961",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7707542205703112711",
-        "ig": "published (reel)",
-        "ig_media_id": "18017493842977835",
-        "ig_user": "nixspeech",
-        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
-        "ig_photo": "published",
-        "ig_photo_id": "18107675414004651",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-11-13",
       "episode": 85,
@@ -1413,6 +1402,27 @@
       "track": "terrace rain signal",
       "multipost_dial": "fb,tt,ig",
       "lanes": {
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-20",
+      "episode": 91,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "skyline_anthem",
+      "track": "halogen rooftop rain",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122127421353453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7710325875195217941",
+        "ig": "published (reel)",
+        "ig_media_id": "18679130890042190",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18456953164130423",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
