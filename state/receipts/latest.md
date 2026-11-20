@@ -1,28 +1,19 @@
-# 📋 receipt · EP.091 · 2026-11-20
+# 📋 receipt · EP.092 · 2026-11-20
 
 | | |
 |---|---|
-| track | **halogen rooftop rain** (skyline_anthem) |
-| mode | publish · short |
-| youtube | — · short: https://youtu.be/wd38K7pUJUc |
+| track | **tallow on marble** (baroque_waltz) |
+| mode | dry_run · full |
+| youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 924.5 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/44793089795 @ 8bec9fc |
+| took | 7199.6 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/44821703556 @ 56db303 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
-| fb | published |
-| fb_reel_id | 122127421353453777 |
-| ig | published (reel) |
-| ig_media_id | 18679130890042190 |
-| ig_photo | published |
-| ig_photo_id | 18456953164130423 |
-| ig_user | nixspeech |
-| tiktok_publish_id | v_pub_file~v2-1.7710325875195217941 |
-| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
