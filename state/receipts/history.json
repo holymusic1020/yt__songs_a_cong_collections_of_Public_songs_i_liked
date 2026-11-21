@@ -1,33 +1,5 @@
 [
   {
-    "date": "2026-10-08",
-    "episode": 62,
-    "mode": "publish",
-    "kind": "short",
-    "genre": "indie_waves",
-    "track": "wet asphalt hum",
-    "multipost_dial": "fb,tt,ig",
-    "seconds": 555.7,
-    "youtube": {
-      "video_id": null,
-      "short_id": "QQMI64gg35o",
-      "watch": null,
-      "short": "https://youtu.be/QQMI64gg35o"
-    },
-    "lanes": {
-      "fb": "published",
-      "fb_reel_id": "122116861803453777",
-      "tt": "uploaded → DRAFT (boss publishes in-app)",
-      "tiktok_publish_id": "v_pub_file~v2-1.7694348418616985607",
-      "ig": "published (reel)",
-      "ig_media_id": "18005496299790914",
-      "ig_user": "nixspeech",
-      "ig_photo": "published",
-      "ig_photo_id": "17911440156497124",
-      "dsp": "off — DSP_PACK=0 — streaming packs off"
-    }
-  },
-  {
     "date": "2026-10-09",
     "episode": 63,
     "mode": "publish",
@@ -1036,6 +1008,37 @@
       "short": null
     },
     "lanes": {
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
+  },
+  {
+    "date": "2026-11-21",
+    "episode": 92,
+    "mode": "publish",
+    "kind": "full",
+    "genre": "baroque_waltz",
+    "track": "candelabra frost",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 4493.5,
+    "youtube": {
+      "video_id": "jaBT7I3spOk",
+      "short_id": "uuExD60ClyE",
+      "watch": "https://youtu.be/jaBT7I3spOk",
+      "short": "https://youtu.be/uuExD60ClyE"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122127668247453777",
+      "fb_video": "published",
+      "fb_video_id": "1053739651085675",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7710740305917691922",
+      "ig": "published (reel)",
+      "ig_media_id": "18102733955430991",
+      "ig_user": "nixspeech",
+      "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+      "ig_photo": "published",
+      "ig_photo_id": "18602514856068531",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
   }
