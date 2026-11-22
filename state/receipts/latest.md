@@ -1,13 +1,13 @@
-# 📋 receipt · EP.092 · 2026-11-21
+# 📋 receipt · EP.093 · 2026-11-22
 
 | | |
 |---|---|
-| track | **candelabra frost** (baroque_waltz) |
-| mode | publish · full |
-| youtube | https://youtu.be/jaBT7I3spOk · short: https://youtu.be/uuExD60ClyE |
+| track | **fogged window latch** (dark_ambient) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/ZaKPlCNNey8 |
 | multipost dial | `fb,tt,ig` |
-| took | 4493.5 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/44945385273 @ dcc2f8f |
+| took | 4421.8 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/45066738732 @ 9590a87 |
 
 ## lanes
 
@@ -15,16 +15,13 @@
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
 | fb | published |
-| fb_reel_id | 122127668247453777 |
-| fb_video | published |
-| fb_video_id | 1053739651085675 |
+| fb_reel_id | 122127864999453777 |
 | ig | published (reel) |
-| ig_media_id | 18102733955430991 |
+| ig_media_id | 18063465122552020 |
 | ig_photo | published |
-| ig_photo_id | 18602514856068531 |
+| ig_photo_id | 18138387820674243 |
 | ig_user | nixspeech |
-| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
-| tiktok_publish_id | v_pub_file~v2-1.7710740305917691922 |
+| tiktok_publish_id | v_pub_file~v2-1.7711114315952523270 |
 | tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
