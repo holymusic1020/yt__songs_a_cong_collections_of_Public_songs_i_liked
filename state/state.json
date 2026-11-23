@@ -1,5 +1,5 @@
 {
-  "episode": 93,
+  "episode": 94,
   "history": [
     {
       "episode": 1,
@@ -1209,33 +1209,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-11-22T23:05:04Z",
       "at": "2026-11-22T21:43:01+00:00"
+    },
+    {
+      "episode": 94,
+      "kind": "full",
+      "youtube_id": "IqK-2Rvj8kg",
+      "video_id": "IqK-2Rvj8kg",
+      "short_id": "YtFuWEguNQc",
+      "title": "am balcony fog — Nix Speech (official audio)",
+      "name": "am balcony fog",
+      "genre": "orbit_trap",
+      "publish_at": "2026-11-24T01:32:27Z",
+      "short_publish_at": "2026-11-24T00:28:25Z",
+      "at": "2026-11-23T22:14:34+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-11-15",
-      "episode": 86,
-      "mode": "publish",
-      "kind": "full",
-      "genre": "indie_waves",
-      "track": "wetsuit heart",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122126373411453777",
-        "fb_video": "published",
-        "fb_video_id": "29282562661374345",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7708446787174189063",
-        "ig": "published (reel)",
-        "ig_media_id": "18198258295394977",
-        "ig_user": "nixspeech",
-        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
-        "ig_photo": "published",
-        "ig_photo_id": "18122151845069325",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-11-15",
       "episode": 87,
@@ -1461,6 +1450,30 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18138387820674243",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-23",
+      "episode": 94,
+      "mode": "publish",
+      "kind": "full",
+      "genre": "orbit_trap",
+      "track": "am balcony fog",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122128044657453777",
+        "fb_video": "published",
+        "fb_video_id": "1147826051478301",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7711493569219053569",
+        "ig": "published (reel)",
+        "ig_media_id": "18030226784876639",
+        "ig_user": "nixspeech",
+        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+        "ig_photo": "published",
+        "ig_photo_id": "18415223884094437",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
