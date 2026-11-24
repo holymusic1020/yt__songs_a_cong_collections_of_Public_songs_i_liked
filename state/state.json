@@ -1226,18 +1226,6 @@
   ],
   "receipts": [
     {
-      "date": "2026-11-15",
-      "episode": 87,
-      "mode": "dry_run",
-      "kind": "short",
-      "genre": "lambs_teeth",
-      "track": "copper streetlight mist",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
-    {
       "date": "2026-11-16",
       "episode": 87,
       "mode": "publish",
@@ -1474,6 +1462,18 @@
         "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
         "ig_photo": "published",
         "ig_photo_id": "18415223884094437",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-24",
+      "episode": 95,
+      "mode": "dry_run",
+      "kind": "short",
+      "genre": "lofi",
+      "track": "tiled moonlight",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
