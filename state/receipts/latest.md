@@ -1,31 +1,19 @@
-# 📋 receipt · EP.094 · 2026-11-23
+# 📋 receipt · EP.095 · 2026-11-24
 
 | | |
 |---|---|
-| track | **am balcony fog** (orbit_trap) |
-| mode | publish · full |
-| youtube | https://youtu.be/IqK-2Rvj8kg · short: https://youtu.be/YtFuWEguNQc |
+| track | **tiled moonlight** (lofi) |
+| mode | dry_run · short |
+| youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 1735.5 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/45275034855 @ 9bb0d88 |
+| took | 180.4 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/45303946694 @ 6063d06 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
-| fb | published |
-| fb_reel_id | 122128044657453777 |
-| fb_video | published |
-| fb_video_id | 1147826051478301 |
-| ig | published (reel) |
-| ig_media_id | 18030226784876639 |
-| ig_photo | published |
-| ig_photo_id | 18415223884094437 |
-| ig_user | nixspeech |
-| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
-| tiktok_publish_id | v_pub_file~v2-1.7711493569219053569 |
-| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 

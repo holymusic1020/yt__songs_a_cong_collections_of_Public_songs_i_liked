@@ -1,24 +1,5 @@
 [
   {
-    "date": "2026-10-11",
-    "episode": 65,
-    "mode": "dry_run",
-    "kind": "short",
-    "genre": "anime_titan",
-    "track": "flooded iron balcony",
-    "multipost_dial": "fb,tt,ig",
-    "seconds": 774.5,
-    "youtube": {
-      "video_id": null,
-      "short_id": null,
-      "watch": null,
-      "short": null
-    },
-    "lanes": {
-      "dsp": "off — DSP_PACK=0 — streaming packs off"
-    }
-  },
-  {
     "date": "2026-10-12",
     "episode": 65,
     "mode": "publish",
@@ -1039,6 +1020,25 @@
       "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
       "ig_photo": "published",
       "ig_photo_id": "18415223884094437",
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
+  },
+  {
+    "date": "2026-11-24",
+    "episode": 95,
+    "mode": "dry_run",
+    "kind": "short",
+    "genre": "lofi",
+    "track": "tiled moonlight",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 180.4,
+    "youtube": {
+      "video_id": null,
+      "short_id": null,
+      "watch": null,
+      "short": null
+    },
+    "lanes": {
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
   }
