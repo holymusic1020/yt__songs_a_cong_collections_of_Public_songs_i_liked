@@ -1,19 +1,31 @@
-# 📋 receipt · EP.096 · 2026-11-24
+# 📋 receipt · EP.096 · 2026-11-25
 
 | | |
 |---|---|
-| track | **mothball anthem** (deep_pop) |
-| mode | dry_run · full |
-| youtube | — · short: — |
+| track | **foyer at four** (deep_pop) |
+| mode | publish · full |
+| youtube | https://youtu.be/HcNE9gosiNI · short: https://youtu.be/1psG-PpN_O0 |
 | multipost dial | `fb,tt,ig` |
-| took | 981.5 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/45508782609 @ a200a70 |
+| took | 1038.4 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/45689333522 @ 723aeb3 |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
+| fb | published |
+| fb_reel_id | 122128368651453777 |
+| fb_video | published |
+| fb_video_id | 1779342203703098 |
+| ig | published (reel) |
+| ig_media_id | 17940927231126236 |
+| ig_photo | published |
+| ig_photo_id | 18240340165319345 |
+| ig_user | nixspeech |
+| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
+| tiktok_publish_id | v_pub_file~v2-1.7712202961481451540 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 

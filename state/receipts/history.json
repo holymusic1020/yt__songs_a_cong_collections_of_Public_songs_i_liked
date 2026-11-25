@@ -1,32 +1,5 @@
 [
   {
-    "date": "2026-10-13",
-    "episode": 66,
-    "mode": "publish",
-    "kind": "short",
-    "genre": "disco_house",
-    "track": "mirrorball therapy",
-    "multipost_dial": "fb,tt,ig",
-    "seconds": 1153.2,
-    "youtube": {
-      "video_id": null,
-      "short_id": "kehk0uMoNRw",
-      "watch": null,
-      "short": "https://youtu.be/kehk0uMoNRw"
-    },
-    "lanes": {
-      "fb": "published",
-      "fb_reel_id": "122118461295453777",
-      "tt": "rejected 400: {\"error\":{\"code\":\"invalid_params\",\"message\":\"The chunk size is invalid\",\"log_id\":\"2026101401495390FBC12F1A25F524D6CC\"}}",
-      "ig": "published (reel)",
-      "ig_media_id": "18121661530986924",
-      "ig_user": "nixspeech",
-      "ig_photo": "published",
-      "ig_photo_id": "17906822058593278",
-      "dsp": "off — DSP_PACK=0 — streaming packs off"
-    }
-  },
-  {
     "date": "2026-10-14",
     "episode": 67,
     "mode": "publish",
@@ -1040,6 +1013,37 @@
       "short": null
     },
     "lanes": {
+      "dsp": "off — DSP_PACK=0 — streaming packs off"
+    }
+  },
+  {
+    "date": "2026-11-25",
+    "episode": 96,
+    "mode": "publish",
+    "kind": "full",
+    "genre": "deep_pop",
+    "track": "foyer at four",
+    "multipost_dial": "fb,tt,ig",
+    "seconds": 1038.4,
+    "youtube": {
+      "video_id": "HcNE9gosiNI",
+      "short_id": "1psG-PpN_O0",
+      "watch": "https://youtu.be/HcNE9gosiNI",
+      "short": "https://youtu.be/1psG-PpN_O0"
+    },
+    "lanes": {
+      "fb": "published",
+      "fb_reel_id": "122128368651453777",
+      "fb_video": "published",
+      "fb_video_id": "1779342203703098",
+      "tt": "uploaded → DRAFT (boss publishes in-app)",
+      "tiktok_publish_id": "v_pub_file~v2-1.7712202961481451540",
+      "ig": "published (reel)",
+      "ig_media_id": "17940927231126236",
+      "ig_user": "nixspeech",
+      "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+      "ig_photo": "published",
+      "ig_photo_id": "18240340165319345",
       "dsp": "off — DSP_PACK=0 — streaming packs off"
     }
   }
