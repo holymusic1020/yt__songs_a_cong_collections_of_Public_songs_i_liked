@@ -1,19 +1,28 @@
-# 📋 receipt · EP.097 · 2026-11-25
+# 📋 receipt · EP.097 · 2026-11-26
 
 | | |
 |---|---|
-| track | **vapor verdict** (drift_phonk) |
-| mode | dry_run · short |
-| youtube | — · short: — |
+| track | **graveyard shift deluxe** (drift_phonk) |
+| mode | publish · short |
+| youtube | — · short: https://youtu.be/z1Tc4QEkVk0 |
 | multipost dial | `fb,tt,ig` |
-| took | 1607.8 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/45716716041 @ e7158f7 |
+| took | 1935.2 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/45883957854 @ 1768c1c |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
+| fb | published |
+| fb_reel_id | 122128557021453777 |
+| ig | published (reel) |
+| ig_media_id | 18186424402426001 |
+| ig_photo | published |
+| ig_photo_id | 18148325860608448 |
+| ig_user | nixspeech |
+| tiktok_publish_id | v_pub_file~v2-1.7712572556632524807 |
+| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
