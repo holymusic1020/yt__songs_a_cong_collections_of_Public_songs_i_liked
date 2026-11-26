@@ -1,5 +1,5 @@
 {
-  "episode": 96,
+  "episode": 97,
   "history": [
     {
       "episode": 1,
@@ -1248,21 +1248,22 @@
       "publish_at": "2026-11-25T21:49:51Z",
       "short_publish_at": "2026-11-25T22:01:27Z",
       "at": "2026-11-25T20:07:21+00:00"
+    },
+    {
+      "episode": 97,
+      "kind": "short",
+      "youtube_id": "z1Tc4QEkVk0",
+      "video_id": null,
+      "short_id": "z1Tc4QEkVk0",
+      "title": "graveyard shift deluxe — Nix Speech (official audio)",
+      "name": "graveyard shift deluxe",
+      "genre": "drift_phonk",
+      "publish_at": "immediate",
+      "short_publish_at": "2026-11-26T22:23:56Z",
+      "at": "2026-11-26T20:00:36+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-11-17",
-      "episode": 89,
-      "mode": "dry_run",
-      "kind": "short",
-      "genre": "anime_titan",
-      "track": "subway neon",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-11-18",
       "episode": 89,
@@ -1500,6 +1501,27 @@
       "track": "vapor verdict",
       "multipost_dial": "fb,tt,ig",
       "lanes": {
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-26",
+      "episode": 97,
+      "mode": "publish",
+      "kind": "short",
+      "genre": "drift_phonk",
+      "track": "graveyard shift deluxe",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122128557021453777",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7712572556632524807",
+        "ig": "published (reel)",
+        "ig_media_id": "18186424402426001",
+        "ig_user": "nixspeech",
+        "ig_photo": "published",
+        "ig_photo_id": "18148325860608448",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
