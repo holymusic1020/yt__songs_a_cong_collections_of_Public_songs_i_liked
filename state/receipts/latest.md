@@ -1,31 +1,19 @@
-# 📋 receipt · EP.098 · 2026-11-27
+# 📋 receipt · EP.099 · 2026-11-27
 
 | | |
 |---|---|
-| track | **kerosene on silk** (villain_pop) |
-| mode | publish · full |
-| youtube | https://youtu.be/Ia7J4APMDvc · short: https://youtu.be/pDBXhE9QyWg |
+| track | **wet highway glass** (chart_pop) |
+| mode | dry_run · short |
+| youtube | — · short: — |
 | multipost dial | `fb,tt,ig` |
-| took | 1106.0 s |
-| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/46056508363 @ baedabc |
+| took | 1189.9 s |
+| run | https://github.com/holymusic1020/yt__songs_a_cong_collections_of_Public_songs_i_liked/actions/runs/46076424993 @ 5c64bac |
 
 ## lanes
 
 | lane | result |
 |---|---|
 | dsp | off — DSP_PACK=0 — streaming packs off |
-| fb | published |
-| fb_reel_id | 122128729611453777 |
-| fb_video | published |
-| fb_video_id | 2257914034772674 |
-| ig | published (reel) |
-| ig_media_id | 18138419293807754 |
-| ig_photo | published |
-| ig_photo_id | 18134733778813638 |
-| ig_user | nixspeech |
-| ig_video | off — set MULTIPOST_IG_LONG=1 to also post the long video to IG |
-| tiktok_publish_id | v_pub_file~v2-1.7712938792344143892 |
-| tt | uploaded → DRAFT (boss publishes in-app) |
 
 ## 🩺 lane audit
 
