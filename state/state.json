@@ -1,5 +1,5 @@
 {
-  "episode": 97,
+  "episode": 98,
   "history": [
     {
       "episode": 1,
@@ -1261,30 +1261,22 @@
       "publish_at": "immediate",
       "short_publish_at": "2026-11-26T22:23:56Z",
       "at": "2026-11-26T20:00:36+00:00"
+    },
+    {
+      "episode": 98,
+      "kind": "full",
+      "youtube_id": "Ia7J4APMDvc",
+      "video_id": "Ia7J4APMDvc",
+      "short_id": "pDBXhE9QyWg",
+      "title": "kerosene on silk — Nix Speech (official audio)",
+      "name": "kerosene on silk",
+      "genre": "villain_pop",
+      "publish_at": "2026-11-27T23:27:13Z",
+      "short_publish_at": "2026-11-27T23:05:02Z",
+      "at": "2026-11-27T19:42:13+00:00"
     }
   ],
   "receipts": [
-    {
-      "date": "2026-11-18",
-      "episode": 89,
-      "mode": "publish",
-      "kind": "short",
-      "genre": "anime_titan",
-      "track": "neon vestibule",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "fb": "published",
-        "fb_reel_id": "122127013191453777",
-        "tt": "uploaded → DRAFT (boss publishes in-app)",
-        "tiktok_publish_id": "v_pub_file~v2-1.7709588371634456628",
-        "ig": "published (reel)",
-        "ig_media_id": "18139134751734511",
-        "ig_user": "nixspeech",
-        "ig_photo": "published",
-        "ig_photo_id": "17916673740492800",
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
     {
       "date": "2026-11-18",
       "episode": 90,
@@ -1522,6 +1514,30 @@
         "ig_user": "nixspeech",
         "ig_photo": "published",
         "ig_photo_id": "18148325860608448",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-27",
+      "episode": 98,
+      "mode": "publish",
+      "kind": "full",
+      "genre": "villain_pop",
+      "track": "kerosene on silk",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
+        "fb": "published",
+        "fb_reel_id": "122128729611453777",
+        "fb_video": "published",
+        "fb_video_id": "2257914034772674",
+        "tt": "uploaded → DRAFT (boss publishes in-app)",
+        "tiktok_publish_id": "v_pub_file~v2-1.7712938792344143892",
+        "ig": "published (reel)",
+        "ig_media_id": "18138419293807754",
+        "ig_user": "nixspeech",
+        "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
+        "ig_photo": "published",
+        "ig_photo_id": "18134733778813638",
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
