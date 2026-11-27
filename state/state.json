@@ -1278,18 +1278,6 @@
   ],
   "receipts": [
     {
-      "date": "2026-11-18",
-      "episode": 90,
-      "mode": "dry_run",
-      "kind": "full",
-      "genre": "disco_house",
-      "track": "parquet gospel",
-      "multipost_dial": "fb,tt,ig",
-      "lanes": {
-        "dsp": "off — DSP_PACK=0 — streaming packs off"
-      }
-    },
-    {
       "date": "2026-11-19",
       "episode": 90,
       "mode": "publish",
@@ -1538,6 +1526,18 @@
         "ig_video": "off — set MULTIPOST_IG_LONG=1 to also post the long video to IG",
         "ig_photo": "published",
         "ig_photo_id": "18134733778813638",
+        "dsp": "off — DSP_PACK=0 — streaming packs off"
+      }
+    },
+    {
+      "date": "2026-11-27",
+      "episode": 99,
+      "mode": "dry_run",
+      "kind": "short",
+      "genre": "chart_pop",
+      "track": "wet highway glass",
+      "multipost_dial": "fb,tt,ig",
+      "lanes": {
         "dsp": "off — DSP_PACK=0 — streaming packs off"
       }
     }
